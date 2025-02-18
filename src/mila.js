@@ -62,44 +62,60 @@ entorno.universo.Mila = {
 */
 
 if (entorno.enNodeJs()) {
-  const fs = await import("node:fs");
+  Mila._os = process;
+  Mila._fs = await import("node:fs");
   Mila._accesoArchivo = function(ruta, funcion) {
-    fs.readFile(ruta, "utf8", (error, contenido) => {
+    Mila._fs.readFile(ruta, "utf8", (error, contenido) => {
       const resultado = {};
       if (error) {
-        resultado.error = error
+        resultado.error = error;
       } else {
-        resultado.contenido = contenido
+        resultado.contenido = contenido;
       }
       funcion(resultado);
     });
-  }
+  };
   const vm = await import("node:vm");
   Mila._AgregarCodigo = function(codigo, tipo) {
     const script = new vm.Script(codigo);
     if (tipo == "Mila") {
-      const contexto = Object.assign({},entorno.universo);
+      const contexto = {};
       vm.createContext(contexto);
+      for (let campo of Object.getOwnPropertyNames(entorno.universo)) {
+        Object.defineProperty(contexto, campo, {
+          value: entorno.universo[campo],
+          enumerable: entorno.universo.propertyIsEnumerable(campo),
+          writable: true
+        });
+      }
       script.runInContext(contexto);
     } else { // tipo = "JS"
       script.runInThisContext();
     }
-  }
+  };
+  Mila.os = function() { return Mila._os; }
+  Mila.fs = function() { return Mila._fs; }
 } else {
   Mila._accesoArchivo = function(ruta, funcion) {
     let pedido = new XMLHttpRequest();
     try {
       pedido.open("GET", ruta, true);
       pedido.onreadystatechange = function() {
-        if (pedido.readyState == 4 && pedido.status == 200) {
-          funcion({contenido: pedido.responseText});
+        if (pedido.readyState == 4) {
+          const resultado = {};
+          if (pedido.status == 200) {
+            resultado.contenido = pedido.responseText;
+          } else {
+            resultado.error = pedido.status;
+          }
+          funcion(resultado);
         }
       };
       pedido.send("");
     } catch (e) {
       funcion({error: e});
     }
-  }
+  };
   Mila._AgregarCodigo = function(codigo, tipo) {
     let script = document.createElement("script");
     if (tipo == "Mila") {
@@ -107,7 +123,9 @@ if (entorno.enNodeJs()) {
     }
     script.text = codigo;
     document.head.appendChild(script);
-  }
+  };
+  Mila.os = function() { Mila.Error("No disponible en el navegador"); }
+  Mila.fs = function() { Mila.Error("No disponible en el navegador"); }
 }
 
 // Archivos
@@ -138,7 +156,9 @@ Mila.Cargar = function(rutaArchivo) {
     // rutaArchivo es una cadena de texto correspondiente a la ruta relativa de un archivo de código milascript.
   // Falla si el archivo ya fue solicitado antes.
   // Falla si el entorno no es capaz de acceder al archivo (por ejemplo si el archivo no existe o no se tiene acceso de lectura a él).
-  Mila._CargarArchivoMila_En_(rutaArchivo, "./");
+  Mila._raizProyecto = Mila._ubicacionDe_(rutaArchivo);
+  const nombreArchivo = Mila._nombreDe_(rutaArchivo);
+  Mila._CargarArchivoMila_En_(nombreArchivo, "./");
 };
 
 Mila.CargarScript = function(rutaArchivo) {
@@ -146,7 +166,7 @@ Mila.CargarScript = function(rutaArchivo) {
     // rutaArchivo es una cadena de texto correspondiente a la ruta relativa de un archivo de código Javascript.
   // Falla si el archivo ya fue solicitado antes.
   // Falla si el entorno no es capaz de acceder al archivo (por ejemplo si el archivo no existe o no se tiene acceso de lectura a él).
-  Mila._CargarArchivo_DeTipo_En_(rutaArchivo, "JS", "./");
+  Mila._CargarArchivoJs_En_(rutaArchivo, "./");
 };
 
 Mila._CargarArchivoMila_En_ = function(rutaArchivo, ubicacion, aPedidoDe=null) {
@@ -158,6 +178,17 @@ Mila._CargarArchivoMila_En_ = function(rutaArchivo, ubicacion, aPedidoDe=null) {
   // Falla si el archivo ya fue solicitado antes.
   // Falla si el entorno no es capaz de acceder al archivo (por ejemplo si el archivo no existe o no se tiene acceso de lectura a él).
   Mila._CargarArchivo_DeTipo_En_(rutaArchivo, "Mila", ubicacion, aPedidoDe);
+};
+
+Mila._CargarArchivoJs_En_ = function(rutaArchivo, ubicacion, aPedidoDe=null) {
+  // Carga el archivo de código Javascript que se encuentra en la ruta dada, en la ubicación dada.
+    // rutaArchivo es una cadena de texto correspondiente a la ruta relativa de un archivo de código Javascript.
+    // ubicacion es una cadena de texto correspondiente a la ubicación desde donde se acccede a la ruta.
+    // aPedidoDe es una cadena de texto correspondiente al archivo que inició el pedido y requiere a este otro para funcionar
+      // (null si se carga a mano o si no es un requisito fuerte).
+  // Falla si el archivo ya fue solicitado antes.
+  // Falla si el entorno no es capaz de acceder al archivo (por ejemplo si el archivo no existe o no se tiene acceso de lectura a él).
+  Mila._CargarArchivo_DeTipo_En_(rutaArchivo, "JS", ubicacion, aPedidoDe);
 };
 
 Mila._CargarArchivo_DeTipo_En_ = function(rutaArchivo, tipoArchivo, ubicacion, aPedidoDe=null) {
@@ -190,6 +221,7 @@ Mila._PedirContenidoArchivo_ = function(rutaArchivo) {
       Mila._RecibirContenidoArchivo_(rutaArchivo, resultado.contenido);
     } else {
       Mila.Error(`No se pudo cargar el archivo ${rutaArchivo}.`);
+      Mila.MostrarError(resultado.error);
     }
   });
 };
@@ -202,9 +234,9 @@ Mila._RecibirContenidoArchivo_ = function(rutaArchivo, contenido) {
   Mila._archivos[rutaArchivo].estado = ESTADO_CONTENIDO_RECIBIDO;
   let configuracion;
   if (Mila._archivos[rutaArchivo].tipo == "Mila") {
-    let inicioEncabezado = contenido.indexOf('({');
+    let inicioEncabezado = contenido.indexOf('Mila.Modulo({');
     let finEncabezado = contenido.indexOf('});');
-    eval(`configuracion = {${contenido.substring(inicioEncabezado+2,finEncabezado)}};`);
+    eval(`configuracion = {${contenido.substring(inicioEncabezado+13,finEncabezado)}};`);
     configuracion.codigo = contenido.substring(finEncabezado+3);
   } else { // tipo = "JS"
     configuracion = {codigo:contenido};
@@ -225,6 +257,11 @@ Mila._CargarDependenciasArchivo_ = function(rutaArchivo, configuracion) {
       Mila._CargarArchivoMila_En_(archivoImportado, '');
     }
   }
+  for (let archivoImportado of configuracion.usaJs) {
+    if (!Mila._archivo_Existe(archivoImportado)) {
+      Mila._CargarArchivoJs_En_(archivoImportado, '');
+    }
+  }
   configuracion.pendientes = [];
   for (let archivoImportado of configuracion.necesita) {
     if (Mila._archivo_Existe(archivoImportado)) {
@@ -234,6 +271,17 @@ Mila._CargarDependenciasArchivo_ = function(rutaArchivo, configuracion) {
       }
     } else {
       Mila._CargarArchivoMila_En_(archivoImportado, '', rutaArchivo);
+      configuracion.pendientes.push(archivoImportado);
+    }
+  }
+  for (let archivoImportado of configuracion.necesitaJs) {
+    if (Mila._archivo_Existe(archivoImportado)) {
+      Mila._RegistrarDependenciaDe_A_(rutaArchivo, archivoImportado);
+      if (!Mila._archivo_YaFueEjecutado(archivoImportado)) {
+        configuracion.pendientes.push(archivoImportado);
+      }
+    } else {
+      Mila._CargarArchivoJs_En_(archivoImportado, '', rutaArchivo);
       configuracion.pendientes.push(archivoImportado);
     }
   }
@@ -355,12 +403,22 @@ Mila._rutaCompletaA_Desde_ = function(rutaArchivo, ubicacion) {
   // Describe la ruta absoluta del archivo que se encuentra en la ruta dada, relativa a la ubicación dada.
     // rutaArchivo es una cadena de texto correspondiente a la ruta relativa de un archivo.
     // ubicacion es una cadena de texto correspondiente a la ubicación desde donde se acccede a la ruta.
-  return rutaArchivo.startsWith('./')
-    ? rutaArchivo
-    : rutaArchivo.startsWith('/')
-        ? `.${rutaArchivo}`
-        : `${ubicacion}${rutaArchivo}`
-  ;
+  let resultado = rutaArchivo;
+  if (resultado.startsWith('/')) {
+    resultado = `.${resultado}`;
+  }
+  if (!resultado.startsWith('./')) {
+    resultado = `${ubicacion}${resultado}`;
+  }
+  while (resultado.includes("/../") && !resultado.startsWith("./../")) {
+    let ultimoDP = resultado.lastIndexOf("/../");
+    let diagonalAnterior = resultado.slice(0,ultimoDP).lastIndexOf("/");
+    resultado = resultado.slice(0,diagonalAnterior+1).concat(resultado.slice(ultimoDP+4));
+  }
+  if (resultado.startsWith('./')) {
+    resultado = (Mila._raizProyecto) + resultado.slice(2);
+  }
+  return resultado;
 };
 
 Mila._Ajustar_Para_ = function(configuracion, rutaArchivo) {
@@ -369,12 +427,11 @@ Mila._Ajustar_Para_ = function(configuracion, rutaArchivo) {
     // configuracion es el objeto de configuración del archivo dado.
   configuracion.rutaArchivo = rutaArchivo;
   configuracion.ubicacion = Mila._ubicacionDe_(rutaArchivo);
-  configuracion.usa = (configuracion.usa || []).map(
-    x => Mila._rutaCompletaA_Desde_(x, configuracion.ubicacion)
-  );
-  configuracion.necesita = (configuracion.necesita || []).map(
-    x => Mila._rutaCompletaA_Desde_(x, configuracion.ubicacion)
-  );
+  for (let campo of ['usa','necesita','usaJs','necesitaJs']) {
+    configuracion[campo] = (configuracion[campo] || []).map(
+      x => Mila._rutaCompletaA_Desde_(x, configuracion.ubicacion)
+    );
+  }
 };
 
 Mila.Compilar_DeTipo_ = function(configuracion, tipo) {
@@ -382,10 +439,16 @@ Mila.Compilar_DeTipo_ = function(configuracion, tipo) {
     // configuracion es el objeto de configuración de un archivo.
     // tipo es una cadena de texto correspondiente al tipo de archivo cuyo código se compila
       // (puede ser "Mila" si el archivo es de milascript o "JS" si es de Javascript).
-  let encabezado = (tipo == "Mila" && !entorno.universo.compilado) ? [
-    `const _miRuta = "${configuracion.rutaArchivo}";`,
-    `const _miUbicacion = "${configuracion.ubicacion}"`
-  ] : [];
+  let encabezado = [];
+  if (tipo == "Mila") {
+    if (entorno.enNodeJs()) {
+      encabezado.push("Object.setPrototypeOf(Object.getPrototypeOf([]), Array.prototype)");
+    }
+    if (!entorno.universo.compilado) {
+      encabezado.push(`const _miRuta = "${configuracion.rutaArchivo}";`);
+      encabezado.push(`const _miUbicacion = "${configuracion.ubicacion}"`);
+    }
+  }
   let cierre = [
     `Mila._InformarEjecucion_("${configuracion.rutaArchivo}");`
   ]
@@ -400,6 +463,13 @@ Mila._ubicacionDe_ = function(rutaOriginal) {
     // rutaOriginal es una cadena de texto correspondiente a la ruta de un archivo.
   let ultimaDiagonal = rutaOriginal.lastIndexOf("/");
   return rutaOriginal.substring(0,ultimaDiagonal+1);
+};
+
+Mila._nombreDe_ = function(rutaOriginal) {
+  // Describe el nombre del archivo o de la carpeta cuya ruta es la ruta dada.
+    // rutaOriginal es una cadena de texto correspondiente a la ruta de un archivo o una carpeta.
+  let ultimaDiagonal = rutaOriginal.lastIndexOf("/");
+  return rutaOriginal.substring(ultimaDiagonal+1);
 };
 
 Mila._EncolarArchivo_DeTipo_ = function(rutaArchivo, tipoArchivo, aPedidoDe) {
@@ -515,6 +585,12 @@ Mila._RegistrarModulo_En_ = function(nombreModulo, moduloMadre, rutaModuloMadre)
 
 // Errores y advertencias
 
+Mila.MostrarError = function(error) {
+  console.log(`Tipo: ${typeof error}`);
+  console.log(`Prototipo: ${Object.getPrototypeOf(error)}`);
+  console.log(error);
+};
+
 Mila.Error = function(mensaje) {
   // Falla e informa un error con el mensaje dado.
     // mensaje es una cadena de texto correspondiente a la descripción del error a informar.
@@ -544,10 +620,14 @@ Mila._Inicializar = function() {
 
 Mila.EjecutarInicializacionesPendientes = function() {
   // Ejecuta las funciones de inicialización registradas por los módulos.
+  const funcionesAEjecutar = [];
   for (let funcion of Mila._inicializacion) {
-    funcion();
+    funcionesAEjecutar.push(funcion);
   }
   Mila._inicializacion = [];
+  for (let funcion of funcionesAEjecutar) {
+    funcion();
+  }
 };
 
 if (entorno.universo.compilado) {
@@ -556,11 +636,12 @@ if (entorno.universo.compilado) {
   for (let i=0; i<process.argv.length; i++) {
     if (process.argv[i].endsWith("mila.js")) {
       if (process.argv.length>i+1) {
+        entorno.argumentos = process.argv.slice(i+2);
         Mila.Cargar(process.argv[i+1]);
       } else {
-        i = process.argv.length;
         Mila.Error(`No se pasa ningún script de Mila.`);
       }
+      i = process.argv.length;
     }
   }
 }
