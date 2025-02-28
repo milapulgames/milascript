@@ -22,6 +22,7 @@ Repositorio oficial del lenguaje de programación milascript.
 * `src/geometria.js`: Módulo Geometria de milascript.
 ---
 * `src/test/lista.js`: Tests del módulo Lista de milascript.
+* `src/test/objeto.js`: Tests del módulo Objeto de milascript.
 * `src/test/tipo.js`: Tests del módulo Tipo de milascript.
 * `src/test/tiempo.js`: Tests del módulo Tiempo de milascript.
 * `src/test/geometria.js`: Tests del módulo Geometria de milascript.
