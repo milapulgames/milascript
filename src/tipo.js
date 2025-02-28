@@ -37,11 +37,15 @@ Mila.Tipo.Registrar = function(dataTipo) {
       // Puede incluir el campo prototipo, un objeto a cuyo prototipo asociar el tipo definido.
         // En caso de no inlcuirse este campo, el tipo no se asocia a ningún prototipo.
       // Debe incluir el campo es que permita determinar si un elemento es del tipo.
-        // Si se incluye el campo prototipo, el campo es puede ser una función que tome un elemento del prototipo y devuelva si el elemento es del tipo o puede ser una cadena de texto correspondiente al nombre de la función que determina si un elemento es del tipo (la implementación de la función únicamente verificará que el elemento tenga el prototipo adecuado).
+        // Si se incluye el campo prototipo, el campo es puede ser una función que tome un elemento del prototipo y devuelva si el elemento
+        // es del tipo o puede ser una cadena de texto correspondiente al nombre de la función que determina si un elemento es del tipo
+        // (la implementación de la función únicamente verificará que el elemento tenga el prototipo adecuado).
         // Si no se incluye el campo prototipo, el campo es debe ser una función que tome un elemento y devuelva si el elemento es del tipo.
-      // Puede incluir el campo igualdad, una función que toma dos elementos del tipo y devuelve si los elementos son observacionalmente iguales.
+      // Puede incluir el campo igualdad que puede ser una función que tome dos elementos del tipo y devuelva si los elementos son
+        // observacionalmente iguales o una lista de nombres de campos correspondientes a los campos que deben ser iguales.
         // En caso de no inlcuirse este campo, se asume que el tipo no tiene relación de equivalencia.
-      // Puede incluir el campo orden, una función que toma dos elementos del tipo y devuelve si el primero está antes que el segundo en la relación de orden del tipo.
+      // Puede incluir el campo orden, una función que toma dos elementos del tipo y devuelve si el primero está antes que el segundo en la
+        // relación de orden del tipo.
         // En caso de no inlcuirse este campo, se asume que el tipo no tiene relación de orden.
       // Debe incluir el campo strTipo, una función que devuelve la representación textual del tipo.
       // Debe incluir el campo strInstancia, una función que toma un elemento del tipo y devuelve su representación textual.
@@ -120,7 +124,14 @@ Mila.Tipo.Registrar = function(dataTipo) {
         });
       }
     }
-    if (!('igualdad' in nuevoTipo)) {
+    if ('igualdad' in nuevoTipo) {
+      if (Array.isArray(nuevoTipo.igualdad)) {
+        const campos = nuevoTipo.igualdad;
+        nuevoTipo.igualdad = function(elemento1, elemento2) {
+          return campos.every(x => Mila.Tipo.esIgualA_(elemento1[x], elemento2[x]));
+        };
+      }
+    } else {
       nuevoTipo.igualdad = (elemento1, elemento2) =>
         Mila.Error(`Los elementos de tipo ${nuevoTipo.nombre} no se pueden comparar por igualdad.`);
     }
@@ -298,7 +309,7 @@ Mila.Tipo.Registrar({
   },
   strInstancia: function(elemento) {
     return elemento.strTipo();
-  } 
+  }
 });
 
 // Tipo Nada: el tipo de los valores nulos (null, undefined, NaN).
@@ -383,6 +394,9 @@ Mila.Tipo.Registrar({
   nombre: "Funcion",
   prototipo: Function,
   es: "esUnaFuncion",
+  igualdad: function(elemento1, elemento2) {
+    return Mila.Tipo.esIgualA_(Mila.Tipo.aTexto(elemento1), Mila.Tipo.aTexto(elemento2));
+  },
   strTipo: function() {
     return "Función";
   }
