@@ -20,6 +20,10 @@ Mila.Geometria.cuadradoCentradoEn__DeLado_ = function(x, y, lado) {
   return Mila.Geometria.rectanguloCentradoEn__De_x_(x, y, lado, lado);
 };
 
+Mila.Geometria.rectanguloCompleto = function() {
+  return Mila.Geometria.rectanguloCentradoEn__De_x_(-Infinity, -Infinity, Infinity, Infinity);
+};
+
 Mila.Geometria.circuloEn__DeRadio_ = function(x, y, radio) {
   return new Mila.Geometria._Circulo(x, y, radio)
 };
