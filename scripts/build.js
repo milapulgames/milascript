@@ -22,12 +22,14 @@ Mila.alIniciar(function() {
       const objetivo = argumentos[0];
       const rutaRaiz = Mila._ubicacionDe_(objetivo);
       const nombre = Mila._nombreDe_(objetivo);
-      const archivosInlcuidos = [{ruta:"./milascript/mila", tipo:"Mila"}];
-      Mila.os().chdir(rutaRaiz);
+      const archivosInlcuidos = [{ruta:"./src/mila", tipo:"Mila"}];
+      if (rutaRaiz.length > 0) {
+        Mila.os().chdir(rutaRaiz);
+      }
+      Mila._archivos = {};
       Mila.Base.ReemplazarFuncion_De_Por_("_Agregar_AlEntorno", Mila, function(funcionOriginal) {
         return function(proximoACargar) {
           archivosInlcuidos.push({ruta:proximoACargar, tipo:Mila._archivos[proximoACargar].tipo});
-          archivosInlcuidos.push();
           Mila._EmpezarACargar_(proximoACargar);
           Mila._InformarEjecucion_(proximoACargar);
         };
