@@ -11,6 +11,8 @@ Mila.Modulo({
     de error invoca a la función pasándole como argumento un objeto que representa el resultado de la operación.
     El objeto tendrá el campo 'error' cuyo valor será el error que ocurrió.
     No funciona en el navegador.
+  Mila._solicitudArchivo : Solicita al usuario seleccionar una ruta. Tomo una función de un parámetro, correspondiente a la función a
+    ejecutar con el contenido (como texto) del archivo seleccionado.
 */
 
 Mila.Archivo._accesoArchivo = Mila._accesoArchivo;
@@ -25,9 +27,26 @@ if (Mila.entorno().enNodeJs()) {
       }
     });
   };
+  Mila.Archivo._solicitudArchivo = function(funcion) {
+    // TODO
+  };
 } else {
   Mila.Archivo._escrituraArchivo = function(ruta, contenido, funcionFalla) {
     Mila.Error("No se puede escribir un archivo desde el navegador");
+  };
+  Mila.Archivo._solicitudArchivo = function(funcion) {
+    const selector = document.createElement('input');
+    selector.type = 'file';
+    selector.onchange = e => {
+      let archivoSeleccionado = e.target.files[0];
+      let lector = new FileReader();
+      lector.readAsText(archivoSeleccionado, 'UTF-8');
+      reader.onload = readerEvent => {
+        let contenidoArchivo = readerEvent.target.result;
+        funcion(contenidoArchivo);
+      };
+    };
+    selector.click();
   };
 }
 
@@ -47,4 +66,10 @@ Mila.Archivo.Escribir_EnElArchivo_ = function(contenido, ruta, funcionFalla) {
   //   El objeto tendrá el campo 'error' cuyo valor será el error que ocurrió.
   //   No funciona en el navegador.
   Mila.Archivo._escrituraArchivo(ruta, contenido, funcionFalla);
+};
+
+Mila.Archivo.SolicitarArchivoYLuego_ = function(funcion) {
+  // Solicita al usuario seleccionar una ruta. Toma una función de un parámetro, correspondiente a la función a ejecutar
+  //   con el contenido (como texto) del archivo seleccionado.
+  Mila.Archivo._solicitudArchivo(funcion);
 };
