@@ -1,6 +1,6 @@
-Mila.Modulo({necesita:['../lista','../test']});
+Mila.Modulo({usa:['../lista','../test']});
 
-Mila.Test.Evaluar_([
+Mila.alIniciar(() => Mila.Test.Evaluar_([
   {i:"let a=[1,2,3,4,5];a.esVacia()", o:false,                            d:"esVacia devuelve falso con una lista no vacía"},
   {i:"let a=[];a.esVacia()", o:true,                                      d:"esVacia devuelve verdadero con una lista vacía"},
   {i:"let a=[1,2,3,4,5];a.primero()", o:1,                                d:"primero devuelve el primer elemento"},
@@ -119,4 +119,4 @@ Mila.Test.Evaluar_([
   {i:"let a=[2,6,2];a.maximo();a", o:[2,6,2],                             d:"maximo no modifica la lista"},
   {i:"let a=[2,6,2];a.mejorSegun_(maximoEntre_Y_)", o:6,                  d:"mejorSegun_ devuelve el máximo de la lista"},
   {i:"let a=[2,6,2];a.mejorSegun_(maximoEntre_Y_);a", o:[2,6,2],          d:"mejorSegun_ no modifica la lista"}
-]);
+]));

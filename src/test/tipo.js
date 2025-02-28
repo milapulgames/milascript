@@ -1,6 +1,6 @@
-Mila.Modulo({necesita:['../tipo','../test']});
+Mila.Modulo({usa:['../tipo','../test']});
 
-Mila.Test.Evaluar_([
+Mila.alIniciar(() => Mila.Test.Evaluar_([
   {i:"Mila.Tipo.esNada(Mila.Nada)", o:true,                           d:"esNada devuelve true con un Nada (1)"},
   {i:"Mila.Nada.esNada()", o:true,                                    d:"esNada devuelve true con un Nada (2)"},
   {i:"Mila.Tipo.esNada(null)", o:true,                                d:"esNada devuelve true con un null"},
@@ -59,4 +59,4 @@ Mila.Test.Evaluar_([
   {i:"(true).esDeTipo_(Mila.Tipo.Numero)", o:false,                   d:"esDeTipo_ devuelve false al pasar el tipo incorrecto (2)"},
   {i:"(true).aTexto()", o:"Cierto",                                   d:"aTexto devuelve 'Cierto' con true"},
   {i:"(false).aTexto()", o:"Falso",                                   d:"aTexto devuelve 'Falso' con false"}
-]);
+]));
