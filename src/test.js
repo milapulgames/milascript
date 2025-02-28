@@ -7,6 +7,7 @@ Mila.Modulo({
   d: Descripción (string) - Descripción del test.
   i: Entrada (string) - El código a ejecutar.
   o (opcional): Salida (any) - El valor que se espera obtener como resultado de la ejecución.
+  oX (opcional; sólo si no está 'o'): Salida (string) - Un texto que al evaluarlo se obtiene el resultado esperado.
   e (opcional): Errores a generar (string | [string]) - Los mensajes de error que se espera que genere la ejecución.
   w (opcional): Advertencias a generar (string | [string]) - Los mensajes de advertencia que se espera que genere la ejecución.
 */
@@ -62,8 +63,13 @@ Mila.Test.Evaluar_ = function(tests) {
       }
       Error(mensaje);
     }
+    let esperado = null;
     if ('o' in test) {
-      let esperado = test.o;
+      esperado = test.o;
+    } else if ('oX' in test) {
+      esperado = eval(test.oX);
+    }
+    if (esperado !== null) {
       if (Mila.Tipo.esDeOtroTipoQue_(resultado, esperado)) {
         Error(`Falló el test ${test.d}\n\tSe esperaba algo de tipo <${Mila.Tipo.tipo(esperado)}> (${esperado}) pero se obtuvo algo de tipo <${Mila.Tipo.tipo(resultado)}> (${resultado})`);
       } else if (Mila.Tipo.esDistintoA_(resultado, esperado)) {
