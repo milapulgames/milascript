@@ -335,7 +335,8 @@ Mila.Lista.SacarElementosDespuesDe_ = function(lista, elemento) {
     // lista es una lista de elementos, aquella de la cual se quitan sus últimos elementos.
     // elemento puede ser cualquier dato.
   // PRE: La lista dada contiene al menos una vez al elemento dado.
-  for (let i=0; i < Mila.Lista.longitud(lista) - Mila.Lista.posicionDe_(lista, elemento); i++) {
+  const cantidadASacar = Mila.Lista.longitud(lista) - Mila.Lista.posicionDe_(lista, elemento);
+  for (let i=0; i < cantidadASacar; i++) {
     Mila.Lista.SacarUltimo(lista);
   }
 };
@@ -419,7 +420,8 @@ Mila.Lista.SacarLosQueCumplen = function(lista, condicion) {
   // Saca los elementos de la lista dada que cumplen la condición dada.
     // lista es una lista de elementos, aquella de la cual se quitan los elementos que cumplen la condición.
     // condicion es una función que toma un elemento y devuelve un booleano.
-  for (let i=0; i<Mila.Lista.longitud(lista); i++) {
+  const cantidadDeElementos = Mila.Lista.longitud(lista);
+  for (let i=0; i<cantidadDeElementos; i++) {
     let elementoActual = Mila.Lista.primero(lista);
     Mila.Lista.SacarPrimero(lista);
     if (!condicion(elementoActual)) {
@@ -433,7 +435,8 @@ Mila.Lista.SacarLosQueNoCumplen = function(lista, condicion) {
   // Saca los elementos de la lista dada que no cumplen la condición dada.
     // lista es una lista de elementos, aquella de la cual se quitan los elementos que no cumplen la condición.
     // condicion es una función que toma un elemento y devuelve un booleano.
-  for (let i=0; i<Mila.Lista.longitud(lista); i++) {
+  const cantidadDeElementos = Mila.Lista.longitud(lista);
+  for (let i=0; i<cantidadDeElementos; i++) {
     let elementoActual = Mila.Lista.primero(lista);
     Mila.Lista.SacarPrimero(lista);
     if (condicion(elementoActual)) {
