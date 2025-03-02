@@ -20,13 +20,16 @@ Mila.Tipo._Definir_EnPrototipo_ = function(nombre, prototipo, posicionDeThis=0) 
 };
 
 Mila.Tipo._tipos = {}; // Mapa de tipos definidos.
-Mila.Tipo._tiposPorPrototipo = {}; // Mapa de tipos asociados a un prototipo (las claves son los prototipos y los valores sus tipos asociados).
-Mila.Tipo._tiposSinPrototipo = []; // Lista de tipos que no están asociados a ningún prototipo (más que Object).
+Mila.Tipo._tiposParametricos = {}; // Mapa de objetos usados como base para los tipos paramétricos.
+Mila.Tipo._tiposPorPrototipo = {}; // Mapa de tipos asociados a un prototipo (las claves son los prototipos y los valores son los nombres de sus tipos asociados).
+Mila.Tipo._tiposSinPrototipo = []; // Lista de nombres de tipos que no están asociados a ningún prototipo (más que Object).
 
 Mila.Tipo._Tipo = function Tipo(dataTipo) {
   // Constructor del prototipo para el tipo Tipo.
   for (let clave in dataTipo) {
-    this[clave] = dataTipo[clave];
+    if (!['puedeSer','tipoPara'].includes(clave)) { // Sólo para las definiciones de los tipos paramétricos
+      this[clave] = dataTipo[clave];
+    }
   }
 };
 
@@ -53,11 +56,16 @@ Mila.Tipo.Registrar = function(dataTipo) {
         // relación de orden del tipo.
         // En caso de no inlcuirse este campo, se asume que el tipo no tiene relación de orden.
       // Puede incluir el campo strTipo que puede ser un texto correspondiente a la representación textual del tipo o una función
-        // que no tome parámetros y devuelva dicha representación.
+        // que tome como parámetro al tipo y devuelva dicha representación.
         // En caso de no inlcuirse este campo, se asume que la representación textual del tipo es igual a su nombre.
       // Puede incluir el campo strInstancia, una función que toma un elemento del tipo y devuelve su representación textual.
         // En caso de no inlcuirse este campo, si se incluye el campo prototipo (ya sea en este o en alguno de sus supertipos) se utiliza
         // en su lugar la función toString del prototipo y si no, se utiliza la función strInstancia del tipo Registro.
+      // Puede incluir el campo parametros, una lista de textos correspondientes a los nombres de los parámetros en caso de que se esté
+        // registrando un tipo paramétrico. En tal caso, se pueden incluir además los campos puedeSer (una función que toma un elemento
+        // y devuelve un booleano correspondiente a si el elemento puede ser del tipo paramétrico, para alguna combinación de parámetros)
+        // y tipoPara (una función que toma un elemento y, asumiendo que el resultado de puedeSer con dicho elemento es verdadero, devuelve
+        // una instanciación del tipo paramétrico para tal elemento).
   // Falla si ya se registró antes un tipo con el mismo nombre.
   // Falla si el nombre colisiona con algún campo ya existente.
   // Falla si se pasa el campo prototipo y ya se registró antes un tipo con ese mismo prototipo.
@@ -66,19 +74,20 @@ Mila.Tipo.Registrar = function(dataTipo) {
   } else if (dataTipo.nombre in Mila.Tipo) {
     Mila.Error(`No se puede registrar un tipo con el nombre ${dataTipo.nombre} porque ese campo ya está en uso.`);
   } else {
-    const nuevoTipo = new Mila.Tipo._Tipo(dataTipo);
+    if ('parametros' in dataTipo && 'prototipo' in dataTipo) {
+      Mila.Error(`No se puede registrar un tipo paramétrico con prototipo.`);
+    }
+    const nuevoTipo = Object.assign({}, dataTipo);
     nuevoTipo.subtipos = [];
     let supertipo = null;
     if ('subtipoDe' in nuevoTipo) {
       supertipo = Mila.Tipo.esUnTipo(nuevoTipo.subtipoDe) ? nuevoTipo.subtipoDe : Mila.Tipo._tipos[nuevoTipo.subtipoDe];
-      for (let clave of ['igualdad','orden','strInstancia']) {
+      for (let clave of ['igualdad','orden','strInstancia']) { // Claves heredadas a los subtipos
         if (!(clave in nuevoTipo)) {
           nuevoTipo[clave] = supertipo[clave];
         }
       }
     }
-    Mila.Tipo._tipos[nuevoTipo.nombre] = nuevoTipo;
-    Mila.Tipo[nuevoTipo.nombre] = nuevoTipo;
     if ('prototipo' in nuevoTipo) {
       if (!('name' in nuevoTipo.prototipo) || (nuevoTipo.prototipo.name.length == 0)) {
         Mila.Error(`Prototipo inválido: debe tener un nombre (la función se debe definir "... .NOMBRE = function NOMBRE() {...")`);
@@ -86,7 +95,7 @@ Mila.Tipo.Registrar = function(dataTipo) {
       if (nuevoTipo.prototipo.name in Mila.Tipo._tiposPorPrototipo) {
         Mila.Error(`Ya se registró un tipo con el prototipo ${nuevoTipo.prototipo.name}.`);
       }
-      Mila.Tipo._tiposPorPrototipo[nuevoTipo.prototipo.name] = nuevoTipo;
+      Mila.Tipo._tiposPorPrototipo[nuevoTipo.prototipo.name] = nuevoTipo.nombre;
       if ('strInstancia' in nuevoTipo) {
         Mila.Base.DefinirFuncionDeInstancia_({
           prototipo: nuevoTipo.prototipo,
@@ -97,6 +106,7 @@ Mila.Tipo.Registrar = function(dataTipo) {
         nuevoTipo.strInstancia = function(elemento) { return nuevoTipo.prototipo.prototype.toString.call(elemento); }
       }
       if (typeof nuevoTipo.es == 'string') {
+        nuevoTipo.validacionAdicionalPrototipo = function(elemento) { return true; };
         Mila.Base.DefinirFuncionDeInstancia_({
           prototipo: nuevoTipo.prototipo,
           nombre: nuevoTipo.es,
@@ -110,11 +120,6 @@ Mila.Tipo.Registrar = function(dataTipo) {
         nuevoTipo.es = function(elemento) {
           return Object.getPrototypeOf(elemento) === nuevoTipo.prototipo.prototype;
         };
-        Mila.Base.DefinirFuncionDeInstancia_({
-          prototipo: nuevoTipo.prototipo,
-          nombre: 'tipo',
-          codigo: `Mila.Tipo._tipos.${nuevoTipo.nombre}`
-        });
       } else if (typeof nuevoTipo.es == 'function') {
         nuevoTipo.validacionAdicionalPrototipo = nuevoTipo.es;
         if (nuevoTipo.es.name.length > 0 && nuevoTipo.es.name != "es") {
@@ -132,12 +137,12 @@ Mila.Tipo.Registrar = function(dataTipo) {
         nuevoTipo.es = function(elemento) {
           return Object.getPrototypeOf(elemento) === nuevoTipo.prototipo.prototype && nuevoTipo.validacionAdicionalPrototipo(elemento);
         };
-        Mila.Base.DefinirFuncionDeInstancia_({
-          prototipo: nuevoTipo.prototipo,
-          nombre: 'tipo',
-          codigo: `Mila.Tipo._tipoConPrototipo("${nuevoTipo.nombre}", this)`
-        });
       }
+      Mila.Base.DefinirFuncionDeInstancia_({
+        prototipo: nuevoTipo.prototipo,
+        nombre: 'tipo',
+        codigo: `Mila.Tipo._tipoConPrototipo("${nuevoTipo.nombre}", this)`
+      });
     } else {
       if (supertipo !== null) {
         Mila.Tipo._Registrar_ComoSubtipoDe_(nuevoTipo, supertipo);
@@ -183,12 +188,30 @@ Mila.Tipo.Registrar = function(dataTipo) {
     if ('strTipo' in nuevoTipo) {
       if (typeof nuevoTipo.strTipo == 'string') {
         const strTipo = nuevoTipo.strTipo;
-        nuevoTipo.strTipo = function() { return strTipo; };
+        nuevoTipo.strTipo = function(tipo) { return strTipo; };
       }
     } else {
-      nuevoTipo.strTipo = function() { return nuevoTipo.nombre; };
+      nuevoTipo.strTipo = function(tipo) { return nuevoTipo.nombre; };
     }
+    let definicionTipo;
+    if ('parametros' in nuevoTipo) {
+      definicionTipo = Mila.Tipo._tipoParametrico(nuevoTipo);
+    } else {
+      definicionTipo = new Mila.Tipo._Tipo(nuevoTipo);
+    }
+    Mila.Tipo._tipos[nuevoTipo.nombre] = definicionTipo;
+    Mila.Tipo[nuevoTipo.nombre] = definicionTipo;
   }
+};
+
+Mila.Tipo._tipoParametrico = function(nuevoTipo) {
+  Mila.Tipo._tiposParametricos[nuevoTipo.nombre] = nuevoTipo;
+  let codigo = `const resultado = new Mila.Tipo._Tipo(Mila.Tipo._tiposParametricos.${nuevoTipo.nombre});`;
+  for (let parametro of nuevoTipo.parametros) {
+    codigo += `\nresultado.${parametro} = ${parametro};`
+  }
+  codigo += `\nreturn resultado;`
+  return Function.apply(this, nuevoTipo.parametros.concat([codigo]));
 };
 
 Mila.Tipo._Registrar_ComoSubtipoDe_ = function(nuevoTipo, supertipo) {
@@ -239,7 +262,7 @@ Mila.Tipo.tipo = function(elemento) {
   }
   let prototipo = Object.getPrototypeOf(elemento);
   if (prototipo !== null && prototipo.constructor.name in Mila.Tipo._tiposPorPrototipo) {
-    return Mila.Tipo._tiposPorPrototipo[prototipo.constructor.name];
+    return Mila.Tipo._tipos[Mila.Tipo._tiposPorPrototipo[prototipo.constructor.name]];
   }
   return Mila.Tipo._tipoSinPrototipo(elemento);
 };
@@ -260,7 +283,15 @@ Mila.Tipo._tipoConPrototipo = function(idTipo, elemento) {
 
 Mila.Tipo._tipoConPrototipoSub = function(idSubtipo, elemento) {
   const tipo = Mila.Tipo._tipos[idSubtipo];
-  if (tipo.validacionAdicionalTipo(elemento)) {
+  if (idSubtipo in Mila.Tipo._tiposParametricos) { // Es un tipo parámetrico
+    if (
+      'puedeSer' in Mila.Tipo._tiposParametricos[idSubtipo] &&
+      'tipoPara' in Mila.Tipo._tiposParametricos[idSubtipo] &&
+      Mila.Tipo._tiposParametricos[idSubtipo].puedeSer(elemento)
+    ) {
+      return Mila.Tipo._tiposParametricos[idSubtipo].tipoPara(elemento);
+    }
+  } else if ('validacionAdicionalTipo' in tipo && tipo.validacionAdicionalTipo(elemento)) {
     for (let idSubtipo of tipo.subtipos) {
       let subtipo = Mila.Tipo._tipoConPrototipoSub(idSubtipo, elemento);
       if (subtipo !== null) {
@@ -278,7 +309,15 @@ Mila.Tipo._tipoSinPrototipo = function(elemento, lista=Mila.Tipo._tiposSinProtot
   // PRE: El tipo del elemento dado no está asociado a un prototipo.
   let resultado = Mila.Tipo.Registro;
   for (let nombreTipo of lista) {
-    if (Mila.Tipo._tipos[nombreTipo].es(elemento)) {
+    if (nombreTipo in Mila.Tipo._tiposParametricos) { // Es un tipo parámetrico
+      if (
+        'puedeSer' in Mila.Tipo._tiposParametricos[nombreTipo] &&
+        'tipoPara' in Mila.Tipo._tiposParametricos[nombreTipo] &&
+        Mila.Tipo._tiposParametricos[nombreTipo].puedeSer(elemento)
+      ) {
+        return Mila.Tipo._tiposParametricos[nombreTipo].tipoPara(elemento);
+      }
+    } else if ('es' in Mila.Tipo._tipos[nombreTipo] && Mila.Tipo._tipos[nombreTipo].es(elemento)) {
       if (Mila.Tipo._tipos[nombreTipo].subtipos.length > 0) {
         resultado = Mila.Tipo._tipoSinPrototipo(elemento, Mila.Tipo._tipos[nombreTipo].subtipos);
       }
@@ -424,7 +463,7 @@ Mila.Tipo.Registrar({
     return elemento1.nombre == elemento2.nombre;
   },
   strInstancia: function(elemento) {
-    return elemento.strTipo();
+    return elemento.strTipo(elemento);
   }
 });
 

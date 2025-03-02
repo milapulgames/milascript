@@ -540,3 +540,21 @@ Mila.Lista.fold1 = function(lista, funcion) {
   return Mila.Lista.sinElUltimo(lista).reduce(function(rec, x) { return funcion(x, rec); }, Mila.Lista.ultimo(lista));
 };
 Mila.Lista._Definir_EnPrototipo_('fold1', Array);
+
+Mila.Tipo.Registrar({
+  nombre: "ListaDe_",
+  parametros: ['_sub'],
+  subtipoDe: "Lista",
+  puedeSer: function(elemento) {
+    return Array.isArray(elemento) && elemento.length > 0 && Mila.Lista.todosCumplen_(elemento, (x) => Mila.Tipo.esDelMismoTipoQue_(x, elemento[0]));
+  },
+  tipoPara: function(elemento) {
+    return Mila.Tipo.ListaDe_(Mila.Tipo.tipo(elemento[0]));
+  },
+  es: function(elemento) {
+    return elemento.todosCumplen_(x => this._sub.es(x));
+  },
+  strTipo: function(tipo) {
+    return `Lista de ${tipo._sub.aTexto()}`;
+  }
+});
