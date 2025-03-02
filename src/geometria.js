@@ -89,9 +89,6 @@ Mila.Tipo.Registrar({
   prototipo: Mila.Geometria._Punto,
   es: 'esUnPunto',
   igualdad: ['x', 'y'],
-  strTipo: function() {
-    return "Punto";
-  },
   strInstancia: function(elemento) {
     return `(${elemento.x},${elemento.y})`;
   }
@@ -102,9 +99,7 @@ Mila.Tipo.Registrar({
   prototipo: Mila.Geometria._Rectangulo,
   es: 'esUnRectangulo',
   igualdad: ['x', 'y', 'ancho', 'alto'],
-  strTipo: function() {
-    return "Rectángulo";
-  },
+  strTipo: "Rectángulo",
   strInstancia: function(elemento) {
     return `Rectángulo en (${elemento.x},${elemento.y}) de ${elemento.ancho}x${elemento.alto}`;
   }
@@ -117,9 +112,6 @@ Mila.Tipo.Registrar({
     return elemento.ancho == elemento.alto;
   },
   igualdad: ['x', 'y', 'ancho'],
-  strTipo: function() {
-    return "Cuadrado";
-  },
   strInstancia: function(elemento) {
     return `Cuadrado en (${elemento.x},${elemento.y}) de lado ${elemento.ancho}`;
   }
@@ -130,9 +122,7 @@ Mila.Tipo.Registrar({
   prototipo: Mila.Geometria._Circulo,
   es: 'esUnCirculo',
   igualdad: ['x', 'y', 'radio'],
-  strTipo: function() {
-    return "Círculo";
-  },
+  strTipo: "Círculo",
   strInstancia: function(elemento) {
     return `Círuclo en (${elemento.x},${elemento.y}) de radio ${elemento.radio}`;
   }

@@ -44,16 +44,20 @@ Mila.Tipo.Registrar = function(dataTipo) {
         // (la implementación de la función únicamente verificará que el elemento tenga el prototipo adecuado).
         // Si se incluye el campo subtipoDe, el campo es debe ser una función que tome un elemento del supertipo y devuelva si el elemento
         // es también del tipo que se está registrando.
-        // Si no se incluye el campo prototipo, el campo es debe ser una función que tome un elemento y devuelva si el elemento es del tipo.
+        // Si no se incluye el campo prototipo, el campo es puede ser una función que tome un elemento y devuelva si el elemento es del tipo
+        // o un objeto cuyas claves sean los campos que el elemento debe tener y sus significados los tipos de dichos campos.
       // Puede incluir el campo igualdad que puede ser una función que tome dos elementos del tipo y devuelva si los elementos son
         // observacionalmente iguales o una lista de nombres de campos correspondientes a los campos que deben ser iguales.
         // En caso de no inlcuirse este campo, se asume que el tipo no tiene relación de equivalencia.
       // Puede incluir el campo orden, una función que toma dos elementos del tipo y devuelve si el primero está antes que el segundo en la
         // relación de orden del tipo.
         // En caso de no inlcuirse este campo, se asume que el tipo no tiene relación de orden.
-      // Debe incluir el campo strTipo, una función que devuelve la representación textual del tipo.
-      // Debe incluir el campo strInstancia, una función que toma un elemento del tipo y devuelve su representación textual.
-        // Si se incluye el campo prototipo este campo puede omitirse y se utiliza en su lugar la función toString del prototipo.
+      // Puede incluir el campo strTipo que puede ser un texto correspondiente a la representación textual del tipo o una función
+        // que no tome parámetros y devuelva dicha representación.
+        // En caso de no inlcuirse este campo, se asume que la representación textual del tipo es igual a su nombre.
+      // Puede incluir el campo strInstancia, una función que toma un elemento del tipo y devuelve su representación textual.
+        // En caso de no inlcuirse este campo, si se incluye el campo prototipo (ya sea en este o en alguno de sus supertipos) se utiliza
+        // en su lugar la función toString del prototipo y si no, se utiliza la función strInstancia del tipo Registro.
   // Falla si ya se registró antes un tipo con el mismo nombre.
   // Falla si el nombre colisiona con algún campo ya existente.
   // Falla si se pasa el campo prototipo y ya se registró antes un tipo con ese mismo prototipo.
@@ -142,13 +146,23 @@ Mila.Tipo.Registrar = function(dataTipo) {
           // Este es el tipo por defecto así que no lo incluyo.
           Mila.Tipo._tiposSinPrototipo.push(nuevoTipo.nombre);
         }
-        if (typeof nuevoTipo.es == 'function' && nuevoTipo.es.name.length > 0 && nuevoTipo.es.name != "es") {
+        if (typeof nuevoTipo.es == 'object') {
+          const definicion = nuevoTipo.es;
+          nuevoTipo.es = function(elemento) {
+            return Mila.Objeto.todosCumplen_(definicion, function(clave, valor) {
+              return clave in elemento && Mila.Tipo.esDeTipo_(elemento[clave], valor);
+            });
+          }
+        } else if (typeof nuevoTipo.es == 'function' && nuevoTipo.es.name.length > 0 && nuevoTipo.es.name != "es") {
           Mila.Base.DefinirFuncionDeInstanciaAPartirDe_({
             prototipo: Object,
             nombre: nuevoTipo.es.name,
             funcionAInvocar: `Mila.Tipo._tipos.${nuevoTipo.nombre}.es`
           });
         }
+      }
+      if (!('strInstancia' in nuevoTipo)) {
+        nuevoTipo.strInstancia = function(elemento) { return Mila.Tipo.Registro.strInstancia(elemento); };
       }
     }
     if ('igualdad' in nuevoTipo) {
@@ -165,6 +179,14 @@ Mila.Tipo.Registrar = function(dataTipo) {
     if (!('orden' in nuevoTipo)) {
       nuevoTipo.orden = (elemento1, elemento2) =>
         Mila.Error(`Los elementos de tipo ${nuevoTipo.nombre} no tienen relación de orden.`);
+    }
+    if ('strTipo' in nuevoTipo) {
+      if (typeof nuevoTipo.strTipo == 'string') {
+        const strTipo = nuevoTipo.strTipo;
+        nuevoTipo.strTipo = function() { return strTipo; };
+      }
+    } else {
+      nuevoTipo.strTipo = function() { return nuevoTipo.nombre; };
     }
   }
 };
@@ -401,9 +423,6 @@ Mila.Tipo.Registrar({
   igualdad: function(elemento1, elemento2) {
     return elemento1.nombre == elemento2.nombre;
   },
-  strTipo: function() {
-    return "Tipo";
-  },
   strInstancia: function(elemento) {
     return elemento.strTipo();
   }
@@ -421,9 +440,6 @@ Mila.Tipo.Registrar({
   igualdad: function(elemento1, elemento2) {
     return true;
   },
-  strTipo: function() {
-    return "Nada";
-  },
   strInstancia: function(elemento) {
     return "Nada";
   } 
@@ -437,9 +453,6 @@ Mila.Tipo.Registrar({
   es: "esUnBooleano",
   igualdad: function(elemento1, elemento2) {
     return elemento1 == elemento2;
-  },
-  strTipo: function() {
-    return "Booleano";
   },
   strInstancia: function(elemento) {
     return elemento.valueOf() ? "Cierto" : "Falso";
@@ -460,9 +473,7 @@ Mila.Tipo.Registrar({
   orden: function(elemento1, elemento2) {
     return elemento1 < elemento2;
   },
-  strTipo: function() {
-    return "Número";
-  }
+  strTipo: "Número"
 });
 
 // Tipo Entero: el tipo de los números enteros.
@@ -472,9 +483,6 @@ Mila.Tipo.Registrar({
   subtipoDe: "Numero",
   es: function esUnEntero(numero) {
     return Number.isInteger(numero);
-  },
-  strTipo: function() {
-    return "Entero";
   }
 });
 
@@ -490,9 +498,6 @@ Mila.Tipo.Registrar({
   orden: function(elemento1, elemento2) {
     return elemento1 < elemento2;
   },
-  strTipo: function() {
-    return "Texto";
-  },
   strInstancia: function(elemento) {
     return elemento.valueOf();
   }
@@ -507,9 +512,7 @@ Mila.Tipo.Registrar({
   igualdad: function(elemento1, elemento2) {
     return Mila.Tipo.esIgualA_(Mila.Tipo.aTexto(elemento1), Mila.Tipo.aTexto(elemento2));
   },
-  strTipo: function() {
-    return "Función";
-  }
+  strTipo: "Función"
 });
 
 // Tipo Registro: el tipo de todos los demás objetos que tienen a Object como prototipo.
@@ -526,9 +529,6 @@ Mila.Tipo.Registrar({
       &&
       Mila.Objeto.clavesDefinidas(elemento1).todosCumplen_((clave) => Mila.Tipo.esIgualA_(elemento1[clave], elemento2[clave]))
     );
-  },
-  strTipo: function() {
-    return "Registro";
   },
   strInstancia: function(elemento) {
     return `{${Mila.Objeto.clavesDefinidas(elemento).map(function(k) {

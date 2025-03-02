@@ -163,9 +163,6 @@ Mila.Tipo.Registrar({
   prototipo: Mila.Lienzo._Lienzo,
   es: 'esUnLienzo',
   igualdad: ['_contenido','_dimensiones'],
-  strTipo: function() {
-    return "Lienzo";
-  },
   strInstancia: function(elemento) {
     return `${elemento._dimensiones} {\n${elemento._contentido.transformados(x => `\t${x}`).join('\n')}\n}`;
   }

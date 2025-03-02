@@ -35,9 +35,6 @@ Mila.Tipo.Registrar({
     }
     return true;
   },
-  strTipo: function() {
-    return "Lista";
-  },
   strInstancia: function(elemento) {
     return `[${toStringDeArray.call(elemento)}]`;
   }

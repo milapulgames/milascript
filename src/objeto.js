@@ -125,6 +125,14 @@ Mila.Objeto.transformados = function(objeto, funcion) {
 };
 Mila.Objeto._Definir_EnPrototipo_('transformados', Object);
 
+Mila.Objeto.todosCumplen_ = function(objeto, condicion) {
+  // Indica si todos los pares clave-valor del objeto dado cumplen la condicion dada.
+    // objeto puede ser cualquier dato.
+    // condicion es una función que toma una cadena de texto (correspondiente a la clave) y un elemento (correspondiente al valor) y devuelve un booleano.
+  return Mila.Objeto.fold(objeto, function(clave, valor, rec) { return condicion(clave, valor) && rec; }, true);
+};
+Mila.Objeto._Definir_EnPrototipo_('todosCumplen_', Object);
+
 Mila.Objeto.fold = function(objeto, funcion, casoBase) {
   // Describe el resultado de la recursión estructural sobre el objeto dado con *casoBase* como caso base y la función dada como caso recursivo.
     // objeto puede ser cualquier dato.

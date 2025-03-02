@@ -32,9 +32,7 @@ Mila.Tipo.Registrar({
   prototipo: Mila.Tiempo._Metronomo,
   es: 'esUnMetronomo',
   igualdad: ['_periodo', '_funcion'],
-  strTipo: function() {
-    return "Metronomo";
-  },
+  strTipo: "Metrónomo",
   strInstancia: function(elemento) {
     return `Metrónomo de ${elemento._periodo}ms`;
   }

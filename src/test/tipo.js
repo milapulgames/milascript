@@ -73,14 +73,14 @@ Mila.alIniciar(() => {
   Mila.Tipo.Registrar({
     nombre:'Vehiculo',
     es: function esUnVehiculo(elemento) { return 'puertas' in elemento && 'ruedas' in elemento; },
-    strTipo: () => "Vehículo",
+    strTipo: "Vehículo",
     strInstancia: (elemento) => `Vehículo de ${elemento.puertas} puertas y ${elemento.ruedas} ruedas`
   });
   Mila.Tipo.Registrar({
     nombre:'Avion',
     subtipoDe: 'Vehiculo',
     es: function esUnAvion(elemento) { return 'alas' in elemento; },
-    strTipo: () => "Avión",
+    strTipo: "Avión",
     strInstancia: (elemento) => `Avión de ${elemento.alas} alas, ${elemento.puertas} puertas y ${elemento.ruedas} ruedas`
   });
 
