@@ -16,7 +16,7 @@ Mila.Lienzo.nuevo = function(contentido=[]) {
   return new Mila.Lienzo._Lienzo(contentido);
 };
 
-Mila.Lienzo._Lienzo = function(contentido=[]) {
+Mila.Lienzo._Lienzo = function Lienzo(contentido=[]) {
   this._contenido = contentido;
   this._dimensiones = Mila.Geometria.rectanguloCompleto();
 };

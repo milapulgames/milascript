@@ -21,7 +21,7 @@ Mila.Tiempo.nuevoMetronomo = function(periodo, funcion) {
   return new Mila.Tiempo._Metronomo(periodo, funcion);
 };
 
-Mila.Tiempo._Metronomo = function(periodo, funcion) {
+Mila.Tiempo._Metronomo = function Metronomo(periodo, funcion) {
   this._periodo = periodo;
   this._funcion = funcion;
   this._encendido = false;

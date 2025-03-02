@@ -28,7 +28,7 @@ Mila.Geometria.circuloEn__DeRadio_ = function(x, y, radio) {
   return new Mila.Geometria._Circulo(x, y, radio)
 };
 
-Mila.Geometria._Punto = function(x, y) {
+Mila.Geometria._Punto = function Punto(x, y) {
   this.x = x;
   this.y = y;
 };
@@ -43,7 +43,7 @@ Mila.Geometria._Punto.prototype.Trasladar_En_ = function(cantidad, eje) {
   this[eje] += cantidad;
 };
 
-Mila.Geometria._Rectangulo = function(x, y, ancho, alto) {
+Mila.Geometria._Rectangulo = function Rectangulo(x, y, ancho, alto) {
   this.x = x;
   this.y = y;
   this.ancho = ancho;
@@ -64,7 +64,7 @@ Mila.Geometria._Rectangulo.prototype.Trasladar_En_ = function(cantidad, eje) {
   this[eje] += cantidad;
 };
 
-Mila.Geometria._Circulo = function(x, y, radio) {
+Mila.Geometria._Circulo = function Circulo(x, y, radio) {
   this.x = x;
   this.y = y;
   this.radio = radio;
@@ -112,7 +112,7 @@ Mila.Tipo.Registrar({
 
 Mila.Tipo.Registrar({
   nombre: "Cuadrado",
-  prototipo: Mila.Geometria._Rectangulo,
+  subtipoDe: "Rectangulo",
   es: function esUnCuadrado(elemento) {
     return elemento.ancho == elemento.alto;
   },

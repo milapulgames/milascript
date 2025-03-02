@@ -1,6 +1,7 @@
 Mila.Modulo({usa:['../tipo','../test']});
 
-Mila.alIniciar(() => Mila.Test.Evaluar_([
+Mila.alIniciar(() => {
+  Mila.Test.Evaluar_([
   {i:"Mila.Tipo.esNada(Mila.Nada)", o:true,                           d:"esNada devuelve true con un Nada (1)"},
   {i:"Mila.Nada.esNada()", o:true,                                    d:"esNada devuelve true con un Nada (2)"},
   {i:"Mila.Tipo.esNada(null)", o:true,                                d:"esNada devuelve true con un null"},
@@ -31,13 +32,10 @@ Mila.alIniciar(() => Mila.Test.Evaluar_([
   {i:"Mila.Tipo.tipo(null)", o:Mila.Tipo.Nada,                        d:"tipo devuelve el tipo Nada con null"},
   {i:"Mila.Tipo.tipo(undefined)", o:Mila.Tipo.Nada,                   d:"tipo devuelve el tipo Nada con undefined"},
   {i:"(NaN).tipo()", o:Mila.Tipo.Nada,                                d:"tipo devuelve el tipo Nada con NaN"},
-  {i:"(2).tipo()", o:Mila.Tipo.Numero,                                d:"tipo devuelve el tipo Numero con un entero"},
-  {i:"(1.5).tipo()", o:Mila.Tipo.Numero,                              d:"tipo devuelve el tipo Numero con un flotante"},
-  {i:"(Infinity).tipo()", o:Mila.Tipo.Numero,                         d:"tipo devuelve el tipo Numero con infinito"},
   {i:"(true).tipo()", o:Mila.Tipo.Booleano,                           d:"tipo devuelve el tipo Booleano con un booleano"},
   {i:"('hola').tipo()", o:Mila.Tipo.Texto,                            d:"tipo devuelve el tipo Texto con un texto"},
   {i:"(x=>true).tipo()", o:Mila.Tipo.Funcion,                         d:"tipo devuelve el tipo Funcion con una función"},
-  // {i:"({}).tipo()", o:Mila.Tipo.Registro,                             d:"tipo devuelve el tipo Registro con un objeto"},
+  {i:"({}).tipo()", o:Mila.Tipo.Registro,                             d:"tipo devuelve el tipo Registro con un objeto"},
   {i:"(Mila.Tipo.Booleano).tipo()", o:Mila.Tipo.Tipo,                 d:"tipo devuelve el tipo Tipo con un tipo"},
   {i:"(Mila.Nada).esUnTipo()", o:false,                               d:"esUnTipo devuelve false con Nada"},
   {i:"Mila.Tipo.esUnTipo(null)", o:false,                             d:"esUnTipo devuelve false con null"},
@@ -58,5 +56,63 @@ Mila.alIniciar(() => Mila.Test.Evaluar_([
   {i:"(2).esDeTipo_(Mila.Tipo.Booleano)", o:false,                    d:"esDeTipo_ devuelve false al pasar el tipo incorrecto (1)"},
   {i:"(true).esDeTipo_(Mila.Tipo.Numero)", o:false,                   d:"esDeTipo_ devuelve false al pasar el tipo incorrecto (2)"},
   {i:"(true).aTexto()", o:"Cierto",                                   d:"aTexto devuelve 'Cierto' con true"},
-  {i:"(false).aTexto()", o:"Falso",                                   d:"aTexto devuelve 'Falso' con false"}
-]));
+  {i:"(false).aTexto()", o:"Falso",                                   d:"aTexto devuelve 'Falso' con false"},
+  {i:"(2).tipo()", o:Mila.Tipo.Entero,                                d:"tipo devuelve el tipo Entero con un entero"},
+  {i:"(1.5).tipo()", o:Mila.Tipo.Numero,                              d:"tipo devuelve el tipo Numero con un flotante"},
+  {i:"(Infinity).tipo()", o:Mila.Tipo.Numero,                         d:"tipo devuelve el tipo Numero con infinito"},
+  {i:"(2).esDeTipo_('Numero')", o:true,                               d:"esDeTipo_ devuelve true al pasar el tipo correcto como texto aunque sea un supertipo"},
+  {i:"(2).esDeTipo_(Mila.Tipo.Numero)", o:true,                       d:"esDeTipo_ devuelve true al pasar el tipo correcto como tipo aunque sea un supertipo"},
+  {i:"(2).esDeTipo_('Entero')", o:true,                               d:"esDeTipo_ devuelve true al pasar el tipo correcto como texto en el caso del subtipo"},
+  {i:"(2).esDeTipo_(Mila.Tipo.Entero)", o:true,                       d:"esDeTipo_ devuelve true al pasar el tipo correcto como tipo en el caso del subtipo"},
+  {i:"(2).esUnNumero()", o:true,                                      d:"esUnNumero devuelve true con un número entero"},
+  {i:"(2.5).esUnNumero()", o:true,                                    d:"esUnNumero devuelve true con un número decimal"},
+  {i:"(2).esUnEntero()", o:true,                                      d:"esUnEntero devuelve true con un número entero"},
+  {i:"(2.5).esUnEntero()", o:false,                                   d:"esUnEntero devuelve false con un número decimal"}
+  ]);
+
+  Mila.Tipo.Registrar({
+    nombre:'Vehiculo',
+    es: function esUnVehiculo(elemento) { return 'puertas' in elemento && 'ruedas' in elemento; },
+    strTipo: () => "Vehículo",
+    strInstancia: (elemento) => `Vehículo de ${elemento.puertas} puertas y ${elemento.ruedas} ruedas`
+  });
+  Mila.Tipo.Registrar({
+    nombre:'Avion',
+    subtipoDe: 'Vehiculo',
+    es: function esUnAvion(elemento) { return 'alas' in elemento; },
+    strTipo: () => "Avión",
+    strInstancia: (elemento) => `Avión de ${elemento.alas} alas, ${elemento.puertas} puertas y ${elemento.ruedas} ruedas`
+  });
+
+  const v = "{puertas:2,ruedas:4}"; // Vehículo correcto
+  const a = "{alas:3,puertas:1,ruedas:2}"; // Avión correcto
+  const vMas = "{puertas:2,ruedas:4,asientos:1}"; // Vehículo correcto (y con campos adicionales)
+  const noV = "{puertas:2,asientos:1}"; // Vehículo incorrecto (falta el campo 'ruedas')
+  const noA = "{alas:3,puertas:1,asientos:4}"; // Avión incorrecto (falta el campo 'ruedas')
+
+  Mila.Test.Evaluar_([
+  {i:`let a=${v};Mila.Tipo.Vehiculo.es(a)`, o:true,                   d:"La función es de un tipo sin prototipo devuelve true (1)"},
+  {i:`let a=${v};a.esUnVehiculo()`, o:true,                           d:"La función es de un tipo sin prototipo devuelve true (2)"},
+  {i:`let a=${v};a.esDeTipo_("Vehiculo")`, o:true,                    d:"La función esDeTipo_ de un tipo sin prototipo devuelve true"},
+  {i:`let a=${noV};Mila.Tipo.Vehiculo.es(a)`, o:false,                d:"La función es de un tipo sin prototipo devuelve false (1)"},
+  {i:`let a=${noV};a.esUnVehiculo()`, o:false,                        d:"La función es de un tipo sin prototipo devuelve false (2)"},
+  {i:`let a=${noV};a.esDeTipo_("Vehiculo")`, o:false,                 d:"La función esDeTipo_ de un tipo sin prototipo devuelve false"},
+  {i:`let a=${vMas};Mila.Tipo.Vehiculo.es(a)`, o:true,                d:"La función es de un tipo sin prototipo devuelve true aunque sobren campos (1)"},
+  {i:`let a=${vMas};a.esUnVehiculo()`, o:true,                        d:"La función es de un tipo sin prototipo devuelve true aunque sobren campos (2)"},
+  {i:`let a=${vMas};a.esDeTipo_("Vehiculo")`, o:true,                 d:"La función esDeTipo_ de un tipo sin prototipo devuelve true aunque sobren campos"},
+  {i:`let a=${a};Mila.Tipo.Vehiculo.es(a)`, o:true,                   d:"La función es de un tipo sin prototipo devuelve true con un subtipo (1)"},
+  {i:`let a=${a};a.esUnVehiculo()`, o:true,                           d:"La función es de un tipo sin prototipo devuelve true con un subtipo (2)"},
+  {i:`let a=${a};a.esDeTipo_("Vehiculo")`, o:true,                    d:"La función esDeTipo_ de un tipo sin prototipo devuelve true con un subtipo"},
+  {i:`let a=${v};a.tipo()`, o:Mila.Tipo.Vehiculo,                     d:"La función tipo de un tipo sin prototipo devuelve el tipo correcto"},
+  {i:`let a=${a};Mila.Tipo.Avion.es(a)`, o:true,                      d:"La función es de un subtipo sin prototipo devuelve true (1)"},
+  {i:`let a=${a};a.esUnAvion()`, o:true,                              d:"La función es de un subtipo sin prototipo devuelve true (2)"},
+  {i:`let a=${a};a.esDeTipo_("Avion")`, o:true,                       d:"La función esDeTipo_ de un subtipo sin prototipo devuelve true"},
+  {i:`let a=${noA};Mila.Tipo.Avion.es(a)`, o:false,                   d:"La función es de un subtipo sin prototipo devuelve false (1)"},
+  {i:`let a=${noA};a.esUnAvion()`, o:false,                           d:"La función es de un subtipo sin prototipo devuelve false (2)"},
+  {i:`let a=${noA};a.esDeTipo_("Avion")`, o:false,                    d:"La función esDeTipo_ de un subtipo sin prototipo devuelve false"},
+  {i:`let a=${a};a.tipo()`, o:Mila.Tipo.Avion,                        d:"La función tipo de un subtipo sin prototipo devuelve el tipo correcto"},
+  {i:`let a=${v};Mila.Tipo.Avion.es(a)`, o:false,                     d:"La función es de un subtipo sin prototipo devuelve false con el supertipo (1)"},
+  {i:`let a=${v};a.esUnAvion()`, o:false,                             d:"La función es de un subtipo sin prototipo devuelve false con el supertipo (2)"},
+  {i:`let a=${v};a.esDeTipo_("Avion")`, o:false,                      d:"La función esDeTipo_ de un subtipo sin prototipo devuelve false con el supertipo"}
+  ]);
+});
