@@ -548,11 +548,15 @@ Mila.Tipo.Registrar({
   nombre: "ListaDe_",
   parametros: ['_sub'],
   subtipoDe: "Lista",
+  esSubtipoDe_: function(otroTipo) {
+    return Mila.Tipo.esIgualA_(otroTipo, Mila.Tipo.Lista) ||
+      (Mila.Tipo.esIgualA_(otroTipo.nombre, "ListaDe_") && Mila.Tipo.esSubtipoDe_(this._sub, otroTipo._sub));
+  },
   puedeSer: function(elemento) {
-    return Array.isArray(elemento) && elemento.length > 0 && Mila.Lista.todosCumplen_(elemento, (x) => Mila.Tipo.esDelMismoTipoQue_(x, elemento[0]));
+    return elemento.length > 0 && Mila.Tipo.hayTipoUnificableEn_(elemento);
   },
   tipoPara: function(elemento) {
-    return Mila.Tipo.ListaDe_(Mila.Tipo.tipo(elemento[0]));
+    return Mila.Tipo.ListaDe_(Mila.Tipo.tipoUnificadoEn_(elemento));
   },
   es: function(elemento) {
     return elemento.todosCumplen_(x => this._sub.es(x));

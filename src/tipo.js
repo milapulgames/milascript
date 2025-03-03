@@ -41,6 +41,8 @@ Mila.Tipo.Registrar = function(dataTipo) {
         // En caso de no inlcuirse este campo, el tipo no se asocia a ningún prototipo.
       // Puede incluir el campo subtipoDe, un tipo o un identificador de tipo correspondiente al tipo del cual el tipo que se está registrando
         // es subtipo. Los campos que no se declaren se heredan de él (excepto prototipo).
+      // Puede incluir el campo esSubtipoDe_, una función que tome un tipo y devuelva si el tipo que se está registrando es subtipo de él.
+        // En caso de no inlcuirse este campo, la función simplemente verifica que el tipo dado pertenezca a la lista de subtipos de este.
       // Debe incluir el campo es que permita determinar si un elemento es del tipo.
         // Si se incluye el campo prototipo, el campo es puede ser una función que tome un elemento del prototipo y devuelva si el elemento
         // es del tipo o puede ser una cadena de texto correspondiente al nombre de la función que determina si un elemento es del tipo
@@ -79,6 +81,7 @@ Mila.Tipo.Registrar = function(dataTipo) {
     }
     const nuevoTipo = Object.assign({}, dataTipo);
     nuevoTipo.subtipos = [];
+    nuevoTipo.supertipos = [];
     let supertipo = null;
     if ('subtipoDe' in nuevoTipo) {
       supertipo = Mila.Tipo.esUnTipo(nuevoTipo.subtipoDe) ? nuevoTipo.subtipoDe : Mila.Tipo._tipos[nuevoTipo.subtipoDe];
@@ -220,7 +223,7 @@ Mila.Tipo._Registrar_ComoSubtipoDe_ = function(nuevoTipo, supertipo) {
     const prototipo = supertipo.prototipo;
     nuevoTipo.prototipo = prototipo;
     nuevoTipo.validacionAdicionalPrototipo = function(elemento) {
-      return supertipo.es(elemento) && nuevoTipo.validacionAdicionalTipo(elemento.valueOf());
+      return supertipo.es(elemento) && nuevoTipo.validacionAdicionalTipo.call(this, elemento.valueOf());
     };
     if (nuevoTipo.es.name.length > 0 && nuevoTipo.es.name != "es") {
       Mila.Base.DefinirFuncionDeInstanciaAPartirDe_({
@@ -235,7 +238,7 @@ Mila.Tipo._Registrar_ComoSubtipoDe_ = function(nuevoTipo, supertipo) {
       });
     }
     nuevoTipo.es = function(elemento) {
-      return Object.getPrototypeOf(elemento) === prototipo.prototype && nuevoTipo.validacionAdicionalPrototipo(elemento);
+      return Object.getPrototypeOf(elemento) === prototipo.prototype && nuevoTipo.validacionAdicionalPrototipo.call(this, elemento);
     };
   } else {
     if (nuevoTipo.es.name.length > 0 && nuevoTipo.es.name != "es") {
@@ -250,6 +253,7 @@ Mila.Tipo._Registrar_ComoSubtipoDe_ = function(nuevoTipo, supertipo) {
     };
   }
   supertipo.subtipos.push(nuevoTipo.nombre);
+  nuevoTipo.supertipos.push(supertipo.nombre);
 };
 
 // Observadores de tipos
@@ -262,7 +266,7 @@ Mila.Tipo.tipo = function(elemento) {
   }
   let prototipo = Object.getPrototypeOf(elemento);
   if (prototipo !== null && prototipo.constructor.name in Mila.Tipo._tiposPorPrototipo) {
-    return Mila.Tipo._tipos[Mila.Tipo._tiposPorPrototipo[prototipo.constructor.name]];
+    return Mila.Tipo._tipoConPrototipo(Mila.Tipo._tiposPorPrototipo[prototipo.constructor.name], elemento);
   }
   return Mila.Tipo._tipoSinPrototipo(elemento);
 };
@@ -408,6 +412,75 @@ Mila.Tipo.esDeOtroTipoQue_ = function(elemento1, elemento2) {
 };
 Mila.Tipo._Definir_EnPrototipo_('esDeOtroTipoQue_', Object);
 
+Mila.Tipo.esSubtipoDe_ = function(tipo1, tipo2) {
+  // Indica si el primer tipo dado es subtipo del segundo.
+    // tipo1 y tipo2 son tipos.
+  return tipo2.subtipos.includes(tipo1.nombre) ||
+    Mila.Lista.algunoCumple_(tipo2.subtipos, x => Mila.Tipo.esSubtipoDe_(tipo1, Mila.Tipo[x])) ||
+    (tipo1.hasOwnProperty('esSubtipoDe_') && tipo1.esSubtipoDe_(tipo2));
+};
+Mila.Tipo._Definir_EnPrototipo_('esSubtipoDe_', Mila.Tipo._Tipo);
+
+Mila.Tipo.esSupertipoDe_ = function(tipo1, tipo2) {
+  // Indica si el primer tipo dado es supertipo del segundo.
+    // tipo1 y tipo2 son tipos.
+  return Mila.Tipo.esSubtipoDe_(tipo2, tipo1);
+};
+Mila.Tipo._Definir_EnPrototipo_('esSupertipoDe_', Mila.Tipo._Tipo);
+
+Mila.Tipo.unificaCon_ = function(tipo1, tipo2) {
+  // Indica si el primer tipo dado unifica con el segundo.
+    // tipo1 y tipo2 son tipos.
+  return Mila.Tipo.esIgualA_(tipo1, tipo2) || Mila.Tipo.esSubtipoDe_(tipo1, tipo2) || Mila.Tipo.esSubtipoDe_(tipo2, tipo1) ||
+    Mila.Lista.algunoCumple_(tipo1.supertipos, x => Mila.Tipo.unificaCon_(Mila.Tipo[x], tipo2));
+};
+Mila.Tipo._Definir_EnPrototipo_('unificaCon_', Mila.Tipo._Tipo);
+
+Mila.Tipo.tipoUnificadoEntre_Y_ = function(tipo1, tipo2) {
+  // Describe el tipo más específico resultante de la unificación de los dos tipos dados.
+    // tipo1 y tipo2 son tipos.
+  // PRE: tipo1 y tipo2 unifican entre sí.
+  if (Mila.Tipo.esIgualA_(tipo1, tipo2) || Mila.Tipo.esSubtipoDe_(tipo2, tipo1)) {
+    return tipo1;
+  };
+  if (Mila.Tipo.esSubtipoDe_(tipo1, tipo2)) {
+    return tipo2;
+  }
+  return Mila.Tipo[Mila.Lista.elQueCumple_(tipo1.supertipos, x => Mila.Tipo.unificaCon_(x, tipo2))];
+};
+
+Mila.Tipo.hayTipoUnificableEn_ = function(lista) {
+  // Indica si hay un tipo tal que todos los elementos de la lista dada sean de ese tipo.
+    // lista es una lista de elementos cualesquiera.
+  if (lista.length == 0) {
+    return true;
+  }
+  let tipoPorAhora = Mila.Tipo.tipo(lista[0]);
+  for (let x of Mila.Lista.sinElPrimero(lista)) {
+    const nuevoTipo = Mila.Tipo.tipo(x);
+    if (!Mila.Tipo.unificaCon_(nuevoTipo, tipoPorAhora)) {
+      return false;
+    }
+    tipoPorAhora = Mila.Tipo.tipoUnificadoEntre_Y_(tipoPorAhora, nuevoTipo);
+  }
+  return true;
+};
+
+Mila.Tipo.tipoUnificadoEn_ = function(lista) {
+  // Describe el tipo más específico tal que todos los elementos de la lista dada sean de ese tipo.
+    // lista es una lista de elementos cualesquiera.
+  // PRE: existe un tipo tal que todos los elementos de la lista dada sean de ese tipo.
+  if (lista.length == 0) {
+    return Mila.Tipo.Registro;
+  }
+  let tipoPorAhora = Mila.Tipo.tipo(lista[0]);
+  for (let x of Mila.Lista.sinElPrimero(lista)) {
+    const nuevoTipo = Mila.Tipo.tipo(x);
+    tipoPorAhora = Mila.Tipo.tipoUnificadoEntre_Y_(tipoPorAhora, nuevoTipo);
+  }
+  return tipoPorAhora;
+};
+
 Mila.Tipo.esMenorA_ = function(elemento1, elemento2) {
   // Indica si el primer elemento dado es menor al segundo según la relación de orden del tipo.
     // elemento1 y elemento2 pueden ser datos cualesquiera pero del mismo tipo.
@@ -460,7 +533,8 @@ Mila.Tipo.Registrar({
   prototipo: Mila.Tipo._Tipo,
   es: Mila.Tipo.esUnTipo,
   igualdad: function(elemento1, elemento2) {
-    return elemento1.nombre == elemento2.nombre;
+    return elemento1.nombre == elemento2.nombre &&
+      Mila.Lista.todosCumplen_(elemento1.parametros || [], x => Mila.Tipo.esIgualA_(elemento1[x], elemento2[x]));
   },
   strInstancia: function(elemento) {
     return elemento.strTipo(elemento);

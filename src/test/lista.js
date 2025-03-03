@@ -1,6 +1,7 @@
 Mila.Modulo({usa:['../lista','../test']});
 
-Mila.alIniciar(() => Mila.Test.Evaluar_([
+Mila.alIniciar(() => {
+  Mila.Test.Evaluar_([
   {i:"let a=[1,2,3,4,5];a.esVacia()", o:false,                            d:"esVacia devuelve falso con una lista no vacía"},
   {i:"let a=[];a.esVacia()", o:true,                                      d:"esVacia devuelve verdadero con una lista vacía"},
   {i:"let a=[1,2,3,4,5];a.primero()", o:1,                                d:"primero devuelve el primer elemento"},
@@ -118,5 +119,33 @@ Mila.alIniciar(() => Mila.Test.Evaluar_([
   {i:"let a=[2,6,2];a.maximo()", o:6,                                     d:"maximo devuelve el máximo de la lista"},
   {i:"let a=[2,6,2];a.maximo();a", o:[2,6,2],                             d:"maximo no modifica la lista"},
   {i:"let a=[2,6,2];a.mejorSegun_(maximoEntre_Y_)", o:6,                  d:"mejorSegun_ devuelve el máximo de la lista"},
-  {i:"let a=[2,6,2];a.mejorSegun_(maximoEntre_Y_);a", o:[2,6,2],          d:"mejorSegun_ no modifica la lista"}
-]));
+  {i:"let a=[2,6,2];a.mejorSegun_(maximoEntre_Y_);a", o:[2,6,2],          d:"mejorSegun_ no modifica la lista"},
+  ]);
+
+  const tipoLista = "Mila.Tipo.Lista";
+  const tipoListaDeEntero = "Mila.Tipo.ListaDe_(Mila.Tipo.Entero)";
+  const tipoListaDeNumero = "Mila.Tipo.ListaDe_(Mila.Tipo.Numero)";
+  const tipoListaDeLista = `Mila.Tipo.ListaDe_(${tipoLista})`;
+  const tipoListaDeListaDeEntero = `Mila.Tipo.ListaDe_(${tipoListaDeEntero})`;
+  const tipoListaDeListaDeNumero = `Mila.Tipo.ListaDe_(${tipoListaDeNumero})`;
+
+  Mila.Test.Evaluar_([
+  {i:`([]).esDeTipo_(${tipoLista})`, o:true,                    d:"esDeTipo_ devuelve true para Lista con una lista vacía"},
+  {i:`([]).esDeTipo_(${tipoListaDeEntero})`, o:true,            d:"esDeTipo_ devuelve true para Lista de Entero con una lista vacía"},
+  {i:`([]).esDeTipo_(${tipoListaDeNumero})`, o:true,            d:"esDeTipo_ devuelve true para Lista de Numero con una lista vacía"},
+  {i:`([2]).esDeTipo_(${tipoLista})`, o:true,                   d:"esDeTipo_ devuelve true para Lista con una lista de un entero"},
+  {i:`([2]).esDeTipo_(${tipoListaDeEntero})`, o:true,           d:"esDeTipo_ devuelve true para Lista de Entero con una lista de un entero"},
+  {i:`([2]).esDeTipo_(${tipoListaDeNumero})`, o:true,           d:"esDeTipo_ devuelve true para Lista de Numero con una lista de un entero"},
+  {i:`([true]).esDeTipo_(${tipoLista})`, o:true,                d:"esDeTipo_ devuelve true para Lista con una lista de un booleano"},
+  {i:`([true]).esDeTipo_(${tipoListaDeEntero})`, o:false,       d:"esDeTipo_ devuelve false para Lista de Entero con una lista de un booleano"},
+  {i:`([true]).esDeTipo_(${tipoListaDeNumero})`, o:false,       d:"esDeTipo_ devuelve false para Lista de Numero con una lista de un booleano"},
+  {i:"([]).tipo()", oX:tipoLista,                               d:"tipo devuelve Lista con una lista vacía"},
+  {i:"([1,true,3]).tipo()", oX:tipoLista,                       d:"tipo devuelve Lista si los tipos de los elementos no unifican"},
+  {i:"([1,2,3]).tipo()", oX:tipoListaDeEntero,                  d:"tipo devuelve Lista de Entero si son todos enteros"},
+  {i:"([1,2.5,3]).tipo()", oX:tipoListaDeNumero,                d:"tipo devuelve Lista de Numero si son todos números pero no todos enteros"},
+  {i:"([[],[]]).tipo()", oX:tipoListaDeLista,                   d:"tipo devuelve Lista de Lista con una lista de listas vacías"},
+  {i:"([[2],[true]]).tipo()", oX:tipoListaDeLista,              d:"tipo devuelve Lista de Lista si los tipos de los elementos no unifican"},
+  {i:"([[2],[3]]).tipo()", oX:tipoListaDeListaDeEntero,         d:"tipo devuelve Lista de Lista de Entero si si son todos enteros"},
+  {i:"([[2],[2.5]]).tipo()", oX:tipoListaDeListaDeNumero,       d:"tipo devuelve Lista de Lista de Numero si si son todos números pero no todos enteros"}
+  ]);
+});
