@@ -68,6 +68,8 @@ Mila.Tipo.Registrar = function(dataTipo) {
         // y devuelve un booleano correspondiente a si el elemento puede ser del tipo paramétrico, para alguna combinación de parámetros)
         // y tipoPara (una función que toma un elemento y, asumiendo que el resultado de puedeSer con dicho elemento es verdadero, devuelve
         // una instanciación del tipo paramétrico para tal elemento).
+      // Si incluye el campo parametros puede incluir también el campo inicializacion, un texto que se agregará como código a la función de
+        // inicialización del tipo cuando se parametrice.
       // Puede incluir el campo inferible, un booleano que indique si este tipo se debe tener en cuenta al inferir el tipo de una expresión.
         // En caso de no inlcuirse este campo, se asume que sí.
   // Falla si ya se registró antes un tipo con el mismo nombre.
