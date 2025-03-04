@@ -115,6 +115,13 @@ Mila.Objeto.defineLasMismasClavesQue_YConLosMismosTipos = function(objeto1, obje
 };
 Mila.Objeto._Definir_EnPrototipo_('defineLasMismasClavesQue_YConLosMismosTipos', Object);
 
+Mila.Objeto.cantidadDeClaves = function(objeto) {
+  // Describe la cantidad de calves definidas por el objeto dado.
+    // objeto puede ser cualquier dato.
+  return Mila.Lista.longitud(Mila.Objeto.clavesDefinidas(objeto));
+};
+Mila.Objeto._Definir_EnPrototipo_('cantidadDeClaves', Object);
+
 Mila.Objeto.transformados = function(objeto, funcion) {
   // Describe el resultado de aplicarle la función dada a cada valor del objeto dado.
     // objeto puede ser cualquier dato.

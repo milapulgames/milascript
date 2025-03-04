@@ -33,8 +33,12 @@ Mila.Geometria._Punto = function Punto(x, y) {
   this.y = y;
 };
 
+Mila.Geometria._Punto.prototype.copia = function() {
+  return Mila.Geometria.puntoEn__(this.x,this.y);
+};
+
 Mila.Geometria._Punto.prototype.trasladado_En_ = function(cantidad, eje) {
-  const nuevoPunto = Mila.Geometria.puntoEn__(this.x,this.y);
+  const nuevoPunto = this.copia()
   nuevoPunto.Trasladar_En_(cantidad, eje);
   return nuevoPunto;
 };
@@ -50,12 +54,16 @@ Mila.Geometria._Rectangulo = function Rectangulo(x, y, ancho, alto) {
   this.alto = alto;
 };
 
+Mila.Geometria._Rectangulo.prototype.copia = function() {
+  return Mila.Geometria.rectanguloEn__De_x_(this.x, this.y, this.ancho, this.alto);
+};
+
 Mila.Geometria._Rectangulo.prototype.centro = function() {
   return Mila.Geometria.puntoEn__(this.x + this.ancho/2, this.y + this.alto/2);
 };
 
 Mila.Geometria._Rectangulo.prototype.trasladado_En_ = function(cantidad, eje) {
-  const nuevoRectangulo = Mila.Geometria.rectanguloEn__De_x_(this.x, this.y, this.ancho, this.alto);
+  const nuevoRectangulo = this.copia();
   nuevoRectangulo.Trasladar_En_(cantidad, eje);
   return nuevoRectangulo;
 };
@@ -70,12 +78,16 @@ Mila.Geometria._Circulo = function Circulo(x, y, radio) {
   this.radio = radio;
 };
 
+Mila.Geometria._Circulo.prototype.copia = function() {
+  return Mila.Geometria.circuloEn__DeRadio_(this.x,this.y,this.radio);
+};
+
 Mila.Geometria._Circulo.prototype.centro = function() {
   return Mila.Geometria.puntoEn__(this.x, this.y);
 };
 
 Mila.Geometria._Circulo.prototype.trasladado_En_ = function(cantidad, eje) {
-  const nuevoCirculo = Mila.Geometria.circuloEn__DeRadio_(this.x,this.y,this.radio);
+  const nuevoCirculo = this.copia();
   nuevoCirculo.Trasladar_En_(cantidad, eje);
   return nuevoCirculo;
 };
@@ -127,3 +139,8 @@ Mila.Tipo.Registrar({
     return `Círuclo en (${elemento.x},${elemento.y}) de radio ${elemento.radio}`;
   }
 });
+
+Mila.Geometria.areaDom_ = function(dom) {
+  let rectanguloDom = dom.getBoundingClientRect();
+  return Mila.Geometria.rectanguloEn__De_x_(rectanguloDom.left, rectanguloDom.top, Math.floor(rectanguloDom.width), Math.floor(rectanguloDom.height));
+};
