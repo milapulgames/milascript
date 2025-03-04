@@ -68,6 +68,8 @@ Mila.Tipo.Registrar = function(dataTipo) {
         // y devuelve un booleano correspondiente a si el elemento puede ser del tipo paramétrico, para alguna combinación de parámetros)
         // y tipoPara (una función que toma un elemento y, asumiendo que el resultado de puedeSer con dicho elemento es verdadero, devuelve
         // una instanciación del tipo paramétrico para tal elemento).
+      // Puede incluir el campo inferible, un booleano que indique si este tipo se debe tener en cuenta al inferir el tipo de una expresión.
+        // En caso de no inlcuirse este campo, se asume que sí.
   // Falla si ya se registró antes un tipo con el mismo nombre.
   // Falla si el nombre colisiona con algún campo ya existente.
   // Falla si se pasa el campo prototipo y ya se registró antes un tipo con ese mismo prototipo.
@@ -158,7 +160,7 @@ Mila.Tipo.Registrar = function(dataTipo) {
           const definicion = nuevoTipo.es;
           nuevoTipo.es = function(elemento) {
             return Mila.Objeto.todosCumplen_(definicion, function(clave, valor) {
-              return clave in elemento && Mila.Tipo.esDeTipo_(elemento[clave], valor);
+              return clave.startsWith("?") || (clave.substr(1) in elemento && Mila.Tipo.esDeTipo_(elemento[clave.substr(1)], valor));
             });
           }
         } else if (typeof nuevoTipo.es == 'function' && nuevoTipo.es.name.length > 0 && nuevoTipo.es.name != "es") {
@@ -195,6 +197,9 @@ Mila.Tipo.Registrar = function(dataTipo) {
       }
     } else {
       nuevoTipo.strTipo = function(tipo) { return nuevoTipo.nombre; };
+    }
+    if (!('inferible' in nuevoTipo)) {
+      nuevoTipo.inferible = true;
     }
     let definicionTipo;
     if ('parametros' in nuevoTipo) {
@@ -265,7 +270,10 @@ Mila.Tipo.tipo = function(elemento) {
     return Mila.Tipo.Nada;
   }
   let prototipo = Object.getPrototypeOf(elemento);
-  if (prototipo !== null && prototipo.constructor.name in Mila.Tipo._tiposPorPrototipo) {
+  if (prototipo !== null &&
+    prototipo.constructor.name in Mila.Tipo._tiposPorPrototipo &&
+    Mila.Tipo.esInferible(Mila.Tipo._tiposPorPrototipo[prototipo.constructor.name])
+  ) {
     return Mila.Tipo._tipoConPrototipo(Mila.Tipo._tiposPorPrototipo[prototipo.constructor.name], elemento);
   }
   return Mila.Tipo._tipoSinPrototipo(elemento);
@@ -274,7 +282,7 @@ Mila.Tipo.tipo = function(elemento) {
 Mila.Tipo._tipoConPrototipo = function(idTipo, elemento) {
   const tipo = Mila.Tipo._tipos[idTipo];
   if (tipo.validacionAdicionalPrototipo(elemento.valueOf())) {
-    for (let idSubtipo of tipo.subtipos) {
+    for (let idSubtipo of Mila.Lista.losQueCumplen(tipo.subtipos, Mila.Tipo.esInferible)) {
       let subtipo = Mila.Tipo._tipoConPrototipoSub(idSubtipo, elemento.valueOf());
       if (subtipo !== null) {
         return subtipo;
@@ -296,7 +304,7 @@ Mila.Tipo._tipoConPrototipoSub = function(idSubtipo, elemento) {
       return Mila.Tipo._tiposParametricos[idSubtipo].tipoPara(elemento);
     }
   } else if ('validacionAdicionalTipo' in tipo && tipo.validacionAdicionalTipo(elemento)) {
-    for (let idSubtipo of tipo.subtipos) {
+    for (let idSubtipo of Mila.Lista.losQueCumplen(tipo.subtipos, Mila.Tipo.esInferible)) {
       let subtipo = Mila.Tipo._tipoConPrototipoSub(idSubtipo, elemento);
       if (subtipo !== null) {
         return subtipo;
@@ -310,9 +318,10 @@ Mila.Tipo._tipoConPrototipoSub = function(idSubtipo, elemento) {
 Mila.Tipo._tipoSinPrototipo = function(elemento, lista=Mila.Tipo._tiposSinPrototipo) {
   // Describe el tipo del elemento dado, que no está asociado a ningún prototipo.
     // elemento puede ser cualquier dato.
+    // lista es una lista de textos, correspondientes a los ids de los tipos entre los cuales buscar.
   // PRE: El tipo del elemento dado no está asociado a un prototipo.
   let resultado = Mila.Tipo.Registro;
-  for (let nombreTipo of lista) {
+  for (let nombreTipo of Mila.Lista.losQueCumplen(lista, Mila.Tipo.esInferible)) {
     if (nombreTipo in Mila.Tipo._tiposParametricos) { // Es un tipo parámetrico
       if (
         'puedeSer' in Mila.Tipo._tiposParametricos[nombreTipo] &&
@@ -335,6 +344,18 @@ Mila.Base.DefinirFuncionDeInstanciaAPartirDe_({
   nombre: 'tipo',
   funcionAInvocar: `Mila.Tipo._tipoSinPrototipo`
 });
+
+Mila.Tipo.esInferible = function(tipoOIdentificadorDeTipo) {
+  // Indica si el tipo dado se debe tener en cuenta al inferir el tipo de una expresión.
+    // tipoOIdentificadorDeTipo puede ser un tipo o un indentificador de tipo (una cadena de texto correspondiente al nombre del tipo).
+  const tipo = Mila.Tipo.esElIdentificadorDeUnTipo(tipoOIdentificadorDeTipo)
+    ? (tipoOIdentificadorDeTipo in Mila.Tipo._tiposParametricos
+        ? Mila.Tipo._tiposParametricos[tipoOIdentificadorDeTipo]
+        : Mila.Tipo._tipos[tipoOIdentificadorDeTipo]
+    )
+    : tipoOIdentificadorDeTipo;
+  return tipo.inferible;
+};
 
 Mila.Tipo.esUnTipo = function(elemento) {
   // Indica si el elemento dado es un tipo.
