@@ -115,4 +115,32 @@ Mila.alIniciar(() => {
   {i:`let a=${v};a.esUnAvion()`, o:false,                             d:"La función es de un subtipo sin prototipo devuelve false con el supertipo (2)"},
   {i:`let a=${v};a.esDeTipo_("Avion")`, o:false,                      d:"La función esDeTipo_ de un subtipo sin prototipo devuelve false con el supertipo"}
   ]);
+
+  const Numero = "Mila.Tipo.Numero";
+  const Entero = "Mila.Tipo.Entero";
+  const Booleano = "Mila.Tipo.Booleano";
+  const Vehiculo = "Mila.Tipo.Vehiculo";
+  const Avion = "Mila.Tipo.Avion";
+
+  Mila.Test.Evaluar_([
+  {i:`Mila.Tipo.unificaCon_(${Numero},${Entero})`, o:true,                      d:"Los tipos Numero y Entero unifican entre sí (1)"},
+  {i:`Mila.Tipo.unificaCon_(${Entero},${Numero})`, o:true,                      d:"Los tipos Numero y Entero unifican entre sí (2)"},
+  {i:`${Entero}.unificaCon_(${Numero})`, o:true,                                d:"Los tipos Numero y Entero unifican entre sí (3)"},
+  {i:`${Numero}.unificaCon_(${Entero})`, o:true,                                d:"Los tipos Numero y Entero unifican entre sí (4)"},
+  {i:`Mila.Tipo.unificaCon_(${Numero},${Booleano})`, o:false,                   d:"Los tipos Numero y Booleano no unifican entre sí (1)"},
+  {i:`Mila.Tipo.unificaCon_(${Booleano},${Numero})`, o:false,                   d:"Los tipos Numero y Booleano no unifican entre sí (2)"},
+  {i:`${Booleano}.unificaCon_(${Numero})`, o:false,                             d:"Los tipos Numero y Booleano no unifican entre sí (3)"},
+  {i:`${Numero}.unificaCon_(${Booleano})`, o:false,                             d:"Los tipos Numero y Booleano no unifican entre sí (4)"},
+  {i:`Mila.Tipo.tipoUnificadoEntre_Y_(${Booleano},${Booleano})`, oX:Booleano,   d:"La unificación de Booleano con sigo mismo es Booleano"},
+  {i:`Mila.Tipo.tipoUnificadoEntre_Y_(${Numero},${Numero})`, oX:Numero,         d:"La unificación de Numero con sigo mismo es Numero"},
+  {i:`Mila.Tipo.tipoUnificadoEntre_Y_(${Entero},${Entero})`, oX:Entero,         d:"La unificación de Entero con sigo mismo es Entero"},
+  {i:`Mila.Tipo.tipoUnificadoEntre_Y_(${Entero},${Numero})`, oX:Numero,         d:"La unificación entre Numero y Entero es Numero (1)"},
+  {i:`Mila.Tipo.tipoUnificadoEntre_Y_(${Numero},${Entero})`, oX:Numero,         d:"La unificación entre Numero y Entero es Numero (2)"},
+  {i:`Mila.Tipo.unificaCon_(${Vehiculo},${Avion})`, o:true,                     d:"Los tipos Vehiculo y Avion unifican entre sí (1)"},
+  {i:`Mila.Tipo.unificaCon_(${Avion},${Vehiculo})`, o:true,                     d:"Los tipos Vehiculo y Avion unifican entre sí (2)"},
+  {i:`Mila.Tipo.tipoUnificadoEntre_Y_(${Vehiculo},${Vehiculo})`, oX:Vehiculo,   d:"La unificación de Vehiculo con sigo mismo es Vehiculo"},
+  {i:`Mila.Tipo.tipoUnificadoEntre_Y_(${Avion},${Avion})`, oX:Avion,            d:"La unificación de Avion con sigo mismo es Avion"},
+  {i:`Mila.Tipo.tipoUnificadoEntre_Y_(${Vehiculo},${Avion})`, oX:Vehiculo,      d:"La unificación entre Vehiculo y Avion es Numero (1)"},
+  {i:`Mila.Tipo.tipoUnificadoEntre_Y_(${Avion},${Vehiculo})`, oX:Vehiculo,      d:"La unificación entre Vehiculo y Avion es Numero (2)"}
+  ]);
 });

@@ -122,30 +122,60 @@ Mila.alIniciar(() => {
   {i:"let a=[2,6,2];a.mejorSegun_(maximoEntre_Y_);a", o:[2,6,2],          d:"mejorSegun_ no modifica la lista"},
   ]);
 
-  const tipoLista = "Mila.Tipo.Lista";
-  const tipoListaDeEntero = "Mila.Tipo.ListaDe_(Mila.Tipo.Entero)";
-  const tipoListaDeNumero = "Mila.Tipo.ListaDe_(Mila.Tipo.Numero)";
-  const tipoListaDeLista = `Mila.Tipo.ListaDe_(${tipoLista})`;
-  const tipoListaDeListaDeEntero = `Mila.Tipo.ListaDe_(${tipoListaDeEntero})`;
-  const tipoListaDeListaDeNumero = `Mila.Tipo.ListaDe_(${tipoListaDeNumero})`;
+  const Lista = "Mila.Tipo.Lista";
+  const ListaEntero = "Mila.Tipo.ListaDe_(Mila.Tipo.Entero)";
+  const ListaNumero = "Mila.Tipo.ListaDe_(Mila.Tipo.Numero)";
+  const ListaBooleano = "Mila.Tipo.ListaDe_(Mila.Tipo.Booleano)";
+  const ListaLista = `Mila.Tipo.ListaDe_(${Lista})`;
+  const ListaListaEntero = `Mila.Tipo.ListaDe_(${ListaEntero})`;
+  const ListaListaNumero = `Mila.Tipo.ListaDe_(${ListaNumero})`;
 
   Mila.Test.Evaluar_([
-  {i:`([]).esDeTipo_(${tipoLista})`, o:true,                    d:"esDeTipo_ devuelve true para Lista con una lista vacía"},
-  {i:`([]).esDeTipo_(${tipoListaDeEntero})`, o:true,            d:"esDeTipo_ devuelve true para Lista de Entero con una lista vacía"},
-  {i:`([]).esDeTipo_(${tipoListaDeNumero})`, o:true,            d:"esDeTipo_ devuelve true para Lista de Numero con una lista vacía"},
-  {i:`([2]).esDeTipo_(${tipoLista})`, o:true,                   d:"esDeTipo_ devuelve true para Lista con una lista de un entero"},
-  {i:`([2]).esDeTipo_(${tipoListaDeEntero})`, o:true,           d:"esDeTipo_ devuelve true para Lista de Entero con una lista de un entero"},
-  {i:`([2]).esDeTipo_(${tipoListaDeNumero})`, o:true,           d:"esDeTipo_ devuelve true para Lista de Numero con una lista de un entero"},
-  {i:`([true]).esDeTipo_(${tipoLista})`, o:true,                d:"esDeTipo_ devuelve true para Lista con una lista de un booleano"},
-  {i:`([true]).esDeTipo_(${tipoListaDeEntero})`, o:false,       d:"esDeTipo_ devuelve false para Lista de Entero con una lista de un booleano"},
-  {i:`([true]).esDeTipo_(${tipoListaDeNumero})`, o:false,       d:"esDeTipo_ devuelve false para Lista de Numero con una lista de un booleano"},
-  {i:"([]).tipo()", oX:tipoLista,                               d:"tipo devuelve Lista con una lista vacía"},
-  {i:"([1,true,3]).tipo()", oX:tipoLista,                       d:"tipo devuelve Lista si los tipos de los elementos no unifican"},
-  {i:"([1,2,3]).tipo()", oX:tipoListaDeEntero,                  d:"tipo devuelve Lista de Entero si son todos enteros"},
-  {i:"([1,2.5,3]).tipo()", oX:tipoListaDeNumero,                d:"tipo devuelve Lista de Numero si son todos números pero no todos enteros"},
-  {i:"([[],[]]).tipo()", oX:tipoListaDeLista,                   d:"tipo devuelve Lista de Lista con una lista de listas vacías"},
-  {i:"([[2],[true]]).tipo()", oX:tipoListaDeLista,              d:"tipo devuelve Lista de Lista si los tipos de los elementos no unifican"},
-  {i:"([[2],[3]]).tipo()", oX:tipoListaDeListaDeEntero,         d:"tipo devuelve Lista de Lista de Entero si si son todos enteros"},
-  {i:"([[2],[2.5]]).tipo()", oX:tipoListaDeListaDeNumero,       d:"tipo devuelve Lista de Lista de Numero si si son todos números pero no todos enteros"}
+  {i:`([]).esDeTipo_(${Lista})`, o:true,                                    d:"esDeTipo_ devuelve true para Lista con una lista vacía"},
+  {i:`([]).esDeTipo_(${ListaEntero})`, o:true,                              d:"esDeTipo_ devuelve true para Lista de Entero con una lista vacía"},
+  {i:`([]).esDeTipo_(${ListaNumero})`, o:true,                              d:"esDeTipo_ devuelve true para Lista de Numero con una lista vacía"},
+  {i:`([2]).esDeTipo_(${Lista})`, o:true,                                   d:"esDeTipo_ devuelve true para Lista con una lista de un entero"},
+  {i:`([2]).esDeTipo_(${ListaEntero})`, o:true,                             d:"esDeTipo_ devuelve true para Lista de Entero con una lista de un entero"},
+  {i:`([2]).esDeTipo_(${ListaNumero})`, o:true,                             d:"esDeTipo_ devuelve true para Lista de Numero con una lista de un entero"},
+  {i:`([true]).esDeTipo_(${Lista})`, o:true,                                d:"esDeTipo_ devuelve true para Lista con una lista de un booleano"},
+  {i:`([true]).esDeTipo_(${ListaEntero})`, o:false,                         d:"esDeTipo_ devuelve false para Lista de Entero con una lista de un booleano"},
+  {i:`([true]).esDeTipo_(${ListaNumero})`, o:false,                         d:"esDeTipo_ devuelve false para Lista de Numero con una lista de un booleano"},
+  {i:"([]).tipo()", oX:Lista,                                               d:"tipo devuelve Lista con una lista vacía"},
+  {i:"([1,true,3]).tipo()", oX:Lista,                                       d:"tipo devuelve Lista si los tipos de los elementos no unifican"},
+  {i:"([1,2,3]).tipo()", oX:ListaEntero,                                    d:"tipo devuelve Lista de Entero si son todos enteros"},
+  {i:"([1,2.5,3]).tipo()", oX:ListaNumero,                                  d:"tipo devuelve Lista de Numero si son todos números pero no todos enteros"},
+  {i:"([[],[]]).tipo()", oX:ListaLista,                                     d:"tipo devuelve Lista de Lista con una lista de listas vacías"},
+  {i:"([[2],[true]]).tipo()", oX:ListaLista,                                d:"tipo devuelve Lista de Lista si los tipos de los elementos no unifican"},
+  {i:"([[2],[3]]).tipo()", oX:ListaListaEntero,                             d:"tipo devuelve Lista de Lista de Entero si si son todos enteros"},
+  {i:"([[2],[2.5]]).tipo()", oX:ListaListaNumero,                           d:"tipo devuelve Lista de Lista de Numero si si son todos números pero no todos enteros"},
+  {i:`Mila.Tipo.unificaCon_(${Lista},${ListaEntero})`, o:true,              d:"Los tipos Lista y Lista de Entero unifican entre sí (1)"},
+  {i:`Mila.Tipo.unificaCon_(${ListaEntero},${Lista})`, o:true,              d:"Los tipos Lista y Lista de Entero unifican entre sí (2)"},
+  {i:`Mila.Tipo.unificaCon_(${Lista},${ListaNumero})`, o:true,              d:"Los tipos Lista y Lista de Numero unifican entre sí (1)"},
+  {i:`Mila.Tipo.unificaCon_(${ListaNumero},${Lista})`, o:true,              d:"Los tipos Lista y Lista de Numero unifican entre sí (2)"},
+  {i:`Mila.Tipo.unificaCon_(${ListaNumero},${ListaEntero})`, o:true,        d:"Los tipos Lista de Numero y Lista de Entero unifican entre sí (1)"},
+  {i:`Mila.Tipo.unificaCon_(${ListaEntero},${ListaNumero})`, o:true,        d:"Los tipos Lista de Numero y Lista de Entero unifican entre sí (2)"},
+  {i:`Mila.Tipo.unificaCon_(${ListaEntero},${ListaBooleano})`, o:true,      d:"Los tipos Lista de Entero y Lista de Booleano unifican entre sí (1)"},
+  {i:`Mila.Tipo.unificaCon_(${ListaBooleano},${ListaEntero})`, o:true,      d:"Los tipos Lista de Entero y Lista de Booleano unifican entre sí (2)"},
+  {i:`Mila.Tipo.tipoUnificadoEntre_Y_(${Lista},${Lista})`, oX:Lista,        d:"La unificación de Lista con sigo mismo es Lista"},
+  {i:`Mila.Tipo.tipoUnificadoEntre_Y_(${ListaEntero},${ListaEntero})`,      d:"La unificación de ListaEntero con sigo mismo es ListaEntero",
+    oX:ListaEntero},
+  {i:`Mila.Tipo.tipoUnificadoEntre_Y_(${ListaNumero},${ListaNumero})`,      d:"La unificación de ListaNumero con sigo mismo es ListaNumero",
+    oX:ListaNumero},
+  {i:`Mila.Tipo.tipoUnificadoEntre_Y_(${Lista},${ListaNumero})`,            d:"La unificación entre Lista y Lista de Numero es Lista (1)",
+    oX:Lista},
+  {i:`Mila.Tipo.tipoUnificadoEntre_Y_(${ListaNumero},${Lista})`,            d:"La unificación entre Lista y Lista de Numero es Lista (2)",
+    oX:Lista},
+  {i:`Mila.Tipo.tipoUnificadoEntre_Y_(${Lista},${ListaEntero})`,            d:"La unificación entre Lista y Lista de Entero es Lista (1)",
+    oX:Lista},
+  {i:`Mila.Tipo.tipoUnificadoEntre_Y_(${ListaEntero},${Lista})`,            d:"La unificación entre Lista y Lista de Entero es Lista (2)",
+    oX:Lista},
+  {i:`Mila.Tipo.tipoUnificadoEntre_Y_(${ListaEntero},${ListaNumero})`,      d:"La unificación entre Lista de Entero y Lista de Numero es Lista de Numero (1)",
+    oX:ListaNumero},
+  {i:`Mila.Tipo.tipoUnificadoEntre_Y_(${ListaNumero},${ListaEntero})`,      d:"La unificación entre Lista de Entero y Lista de Numero es Lista de Numero (2)",
+    oX:ListaNumero},
+  {i:`Mila.Tipo.tipoUnificadoEntre_Y_(${ListaBooleano},${ListaEntero})`,    d:"La unificación entre Lista de Entero y Lista de Booleano es Lista (1)",
+    oX:Lista},
+  {i:`Mila.Tipo.tipoUnificadoEntre_Y_(${ListaEntero},${ListaBooleano})`,    d:"La unificación entre Lista de Entero y Lista de Booleano es Lista (2)",
+    oX:Lista}
   ]);
 });
