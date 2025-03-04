@@ -209,6 +209,7 @@ Mila.Tipo.Registrar = function(dataTipo) {
     }
     Mila.Tipo._tipos[nuevoTipo.nombre] = definicionTipo;
     Mila.Tipo[nuevoTipo.nombre] = definicionTipo;
+    return definicionTipo;
   }
 };
 
@@ -217,6 +218,9 @@ Mila.Tipo._tipoParametrico = function(nuevoTipo) {
   let codigo = `const resultado = new Mila.Tipo._Tipo(Mila.Tipo._tiposParametricos.${nuevoTipo.nombre});`;
   for (let parametro of nuevoTipo.parametros) {
     codigo += `\nresultado.${parametro} = ${parametro};`
+  }
+  if ('inicializacion' in nuevoTipo) {
+    codigo += `\n${nuevoTipo.inicializacion}`;
   }
   codigo += `\nreturn resultado;`
   return Function.apply(this, nuevoTipo.parametros.concat([codigo]));
@@ -275,6 +279,9 @@ Mila.Tipo.tipo = function(elemento) {
     Mila.Tipo.esInferible(Mila.Tipo._tiposPorPrototipo[prototipo.constructor.name])
   ) {
     return Mila.Tipo._tipoConPrototipo(Mila.Tipo._tiposPorPrototipo[prototipo.constructor.name], elemento);
+  }
+  if ('tipo' in elemento) {
+    return elemento.tipo();
   }
   return Mila.Tipo._tipoSinPrototipo(elemento);
 };
@@ -670,3 +677,72 @@ Mila.Tipo.Registrar({
     }).join(', ')}}`;
   }
 });
+
+// Tipo Disyunción: la forma de representar un tipo que puede ser alguno de una lista de tipos.
+
+Mila.Tipo.Registrar({
+  nombre: "O",
+  parametros: ['_subs'],
+  es: function(elemento) {
+    return Mila.Lista.algunoCumple_(this._subs, x => Mila.Tipo.esDeTipo_(elemento, x));
+  },
+  strTipo: function(tipo) {
+    return Mila.Lista.transformados(tipo._subs, Mila.Tipo.aTexto).join(" | ");
+  },
+  strInstancia: function(elemento) {
+    return Mila.Tipo.tipo(elemento).strInstancia(elemento);
+  },
+  inferible: false
+});
+
+// Tipo Alias: la forma de representar un tipo que puede ser alguno de una lista de tipos.
+
+Mila.Tipo.Registrar({
+  nombre: "Alias",
+  parametros: ['_nombre','_tipo'],
+  es: function(elemento) {
+    return Mila.Tipo.esDeTipo_(elemento, this._tipo);
+  },
+  strTipo: function(tipo) {
+    return tipo._nombre;
+  },
+  strInstancia: function(elemento) {
+    return this._tipo.strInstancia(elemento);
+  },
+  inferible: false
+});
+
+// Tipo Variante: la forma de representar un tipo variante (un enumerado).
+
+Mila.Tipo.Registrar({
+  nombre: "Variante",
+  parametros: ['_nombre','_casos'],
+  es: function(elemento) {
+    return Mila.Lista.algunoCumple_(this._casos, x => Mila.Tipo.esIgualA_(elemento, this[x]));
+  },
+  inicializacion: "Mila.Tipo._GenerarVariantes(resultado, _casos, _nombre);",
+  igualdad: function(elemento1, elemento2) {
+    return elemento1 === elemento2;
+  },
+  strTipo: function(tipo) {
+    return tipo._nombre;
+  },
+  strInstancia: function(elemento) {
+    return this._tipo.strInstancia(elemento);
+  }
+});
+
+Mila.Tipo._GenerarVariantes = function(tipo, casos, nombre) {
+  for (let caso of casos) {
+    tipo[caso] = {
+      tipo:function() { return tipo; },
+      aTexto:function() { return caso; }
+    };
+  }
+  if (!(nombre in Mila.Tipo)) {
+    Mila.Tipo[nombre] = tipo;
+  }
+  if (!(nombre in Mila.Tipo._tipos)) {
+    Mila.Tipo._tipos[nombre] = tipo;
+  }
+};
