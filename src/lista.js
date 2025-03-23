@@ -240,6 +240,17 @@ Mila.Lista.Agregar_AlFinal = function(lista, elemento) {
 };
 Mila.Lista._Definir_EnPrototipo_('Agregar_AlFinal', Array);
 
+Mila.Lista.Insertar_EnPosicion_ = function(lista, elemento, posicion) {
+  // Inserta el elemento dado en la posición dada de la lista dada.
+    // lista es una lista de elementos, aquella en la cual se inserta el elemento.
+    // elemento puede ser cualquier dato.
+    // posición es un entero, correspondiente a la posición en la que insertar el elemento.
+  // PRE: *posicion* es mayor o igual a 0.
+  // PRE: La lista dada contiene al menos *posicion*-1 elementos.
+  lista.splice(posicion, 0, elemento);
+};
+Mila.Lista._Definir_EnPrototipo_('Insertar_EnPosicion_', Array);
+
 Mila.Lista.concatenadaCon_ = function(lista1, lista2) {
   // Describe la concatenación entre las listas dadas.
     // Tanto lista1 como lista2 son listas de elementos.

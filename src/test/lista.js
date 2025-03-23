@@ -48,10 +48,11 @@ Mila.alIniciar(() => {
   {i:"let a=[1,2,3,4,5];a.snoc(6);a", o:[1,2,3,4,5],                      d:"snoc no modifica la lista"},
   {i:"let a=[1,2,3,4,5];a.Agregar_AlPrincipio(6);a", o:[6,1,2,3,4,5],     d:"Agregar_AlPrincipio agrega el elemento al principio de la lista"},
   {i:"let a=[1,2,3,4,5];a.Agregar_AlFinal(6);a", o:[1,2,3,4,5,6],         d:"Agregar_AlFinal agrega el elemento al final de la lista"},
+  // Insertar_EnPosicion_
   {i:"let a=[1,2,3];a.concatenadaCon_([4,5,6])", o:[1,2,3,4,5,6],         d:"concatenadaCon_ devuelve la lista concatenada con otra lista"},
   {i:"let a=[1,2,3];a.concatenadaCon_([4,5,6]);a", o:[1,2,3],             d:"concatenadaCon_ no modifica la lista"},
   {i:"let a=[1,2,3];a.ConcatenarCon_([4,5,6]);a", o:[1,2,3,4,5,6],        d:"ConcatenarCon_ concatena la segunda lista a la primera lista"},
-  {i:"let a=[1,2,3];let b=[4,5,6];a.ConcatenarCon_(b);b", o:[4,5,6],          d:"ConcatenarCon_ no modifica la segunda lista"},
+  {i:"let a=[1,2,3];let b=[4,5,6];a.ConcatenarCon_(b);b", o:[4,5,6],      d:"ConcatenarCon_ no modifica la segunda lista"},
   // mismosElementosQue_
   {i:"let a=[1,2,3];a.sinLaPrimeraAparicionDe_(2)", o:[1,3],              d:"sinLaPrimeraAparicionDe_ devuelve la lista sin la primera aparición del elemento"},
   {i:"let a=[1,2,1];a.sinLaPrimeraAparicionDe_(1)", o:[2,1],              d:"sinLaPrimeraAparicionDe_ no quita otras apariciones del elemento"},
