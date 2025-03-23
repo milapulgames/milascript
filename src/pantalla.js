@@ -1,6 +1,6 @@
 Mila.Modulo({
   define:"Mila.Pantalla",
-  usa:["geometria","base"],
+  usa:["geometria","base","pantalla/panel"],
   necesita:["tipo"]
 });
 
@@ -55,244 +55,44 @@ Mila.Pantalla.ClaveDisposicion = Mila.Tipo.Registrar({
   inferible: false
 });
 
-Mila.Tipo.Registrar({
-  nombre:'AtributosEtiqueta',
-  es: {
-    "?texto":Mila.Tipo.Texto
-  },
-  inferible: false
-});
+Mila.Pantalla._ElementoVisual = function ElementoVisual() {};
 
-Mila.Tipo.Registrar({
-  nombre:'AtributosBoton',
-  es: {
-    "?texto":Mila.Tipo.Texto,
-    "?funcion":Mila.Tipo.Funcion
-  },
-  inferible: false
-});
-
-Mila.Tipo.Registrar({
-  nombre:'AtributosPanel',
-  es: {
-    "?elementos":Mila.Tipo.Lista,
-    "?disposicion":Mila.Tipo.O([Mila.Pantalla.Disposicion,Mila.Pantalla.ClaveDisposicion]),
-    "?ancho":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio]),
-    "?alto":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio])
-  },
-  inferible: false
-});
-
-Mila.Pantalla.nuevaEtiqueta = function(atributos={}) {
-  Mila.Contrato({
-    Proposito: [
-      "Describe una nueva etiqueta a partir de los atributos dados",
-      Mila.Tipo.Etiqueta
-    ],
-    Parametros: [
-      [atributos, Mila.Tipo.AtributosEtiqueta]
-    ]
-  });
-  let nuevaEtiqueta = new Mila.Pantalla._Etiqueta();
-  nuevaEtiqueta.CambiarTextoA_('texto' in atributos
-    ? atributos.texto
-    : ''
-  );
-  return nuevaEtiqueta;
-};
-
-Mila.Pantalla.nuevoBoton = function(atributos={}) {
-  Mila.Contrato({
-    Proposito: [
-      "Describe un nuevo botón a partir de los atributos dados",
-      Mila.Tipo.Boton
-    ],
-    Parametros: [
-      [atributos, Mila.Tipo.AtributosBoton]
-    ]
-  });
-  let nuevoBoton = new Mila.Pantalla._Boton();
-  nuevoBoton.CambiarTextoA_('texto' in atributos
-    ? atributos.texto
-    : ''
-  );
-  if ('funcion' in atributos) {
-    nuevoBoton.CambiarFuncionA_(atributos.funcion);
-  }
-  return nuevoBoton;
-};
-
-Mila.Pantalla.nuevoPanel = function(atributos={}) {
-  Mila.Contrato({
-    Proposito: [
-      "Describe un nuevo panel a partir de los atributos dados",
-      Mila.Tipo.Panel
-    ],
-    Parametros: [
-      [atributos, Mila.Tipo.AtributosPanel]
-    ]
-  });
-  let nuevoPanel = new Mila.Pantalla._Panel();
-  nuevoPanel.CambiarElementosA_('elementos' in atributos
-    ? atributos.elementos
-    : []
-  );
-  nuevoPanel.CambiarDisposicionA_('disposicion' in atributos
-    ? (atributos.disposicion.esDeTipo_(Mila.Pantalla.ClaveDisposicion)
-      ? Mila.Pantalla[`Disposicion${atributos.disposicion}`]
-      : atributos.disposicion
-    )
-    : Mila.Pantalla.DisposicionVertical
-  );
-  nuevoPanel.CambiarAnchoA_('ancho' in atributos
+Mila.Pantalla._ElementoVisual.prototype.Inicializar = function(atributos, porDefecto=Mila.Pantalla.ComportamientoEspacio.Minimizar) {
+  this.CambiarAnchoA_('ancho' in atributos
     ? (atributos.ancho.esDeTipo_(Mila.Pantalla.ClaveComportamientoEspacio)
       ? Mila.Pantalla.ComportamientoEspacio[atributos.ancho]
       : atributos.ancho
     )
-    : Mila.Pantalla.ComportamientoEspacio.Maximizar
+    : porDefecto
   );
-  nuevoPanel.CambiarAltoA_('alto' in atributos
+  this.CambiarAltoA_('alto' in atributos
     ? (atributos.alto.esDeTipo_(Mila.Pantalla.ClaveComportamientoEspacio)
       ? Mila.Pantalla.ComportamientoEspacio[atributos.alto]
       : atributos.alto
     )
-    : Mila.Pantalla.ComportamientoEspacio.Maximizar
+    : porDefecto
   );
-  return nuevoPanel;
 };
 
-Mila.Pantalla._ElementoVisual = function ElementoVisual() {};
-
-Mila.Pantalla._ElementoVisual.prototype.Redimensionar = function(rectangulo) {
-  return rectangulo;
-};
-
-Mila.Pantalla._ElementoVisual.prototype.ancho = function() {
-  if ('_ancho' in this) {
-    return this._ancho;
-  }
-  return Mila.Nada;
-};
-
-Mila.Pantalla._ElementoVisual.prototype.alto = function() {
-  if ('_alto' in this) {
-    return this._alto;
-  }
-  return Mila.Nada;
-};
-
-Mila.Pantalla._ElementoVisual.prototype.CambiarAnchoA_ = function(nuevoAncho) {
-  this._ancho = nuevoAncho;
-};
-
-Mila.Pantalla._ElementoVisual.prototype.CambiarAltoA_ = function(nuevoAlto) {
-  this._alto = nuevoAlto;
-};
-
-Mila.Pantalla._Etiqueta = function Etiqueta() {};
-Object.setPrototypeOf(Mila.Pantalla._Etiqueta.prototype, Mila.Pantalla._ElementoVisual.prototype);
-
-Mila.Pantalla._Etiqueta.prototype.CambiarTextoA_ = function(nuevoTexto) {
-  this._texto = nuevoTexto;
-  if ('_nodoHtml' in this) {
-    this._nodoHtml.innerHTML = this._texto;
-  }
-};
-
-Mila.Pantalla._Etiqueta.prototype.PlasmarEnHtml = function(nodoMadre) {
-  if (!('_nodoHtml' in this)) {
-    this._nodoHtml = document.createElement('span');
-    this._nodoHtml.innerHTML = this._texto;
-    nodoMadre.appendChild(this._nodoHtml);
-  }
-};
-
-Mila.Pantalla._Etiqueta.prototype.QuitarDelHtml = function() {
-  if ('_nodoHtml' in this) {
-    this._nodoHtml.remove();
-    delete this._nodoHtml;
-  }
-};
-
-Mila.Pantalla._Boton = function Boton() {};
-Object.setPrototypeOf(Mila.Pantalla._Boton.prototype, Mila.Pantalla._ElementoVisual.prototype);
-
-Mila.Pantalla._Boton.prototype.CambiarTextoA_ = function(nuevoTexto) {
-  this._texto = nuevoTexto;
-  if ('_nodoHtml' in this) {
-    this._nodoHtml.innerHTML = this._texto;
-  }
-};
-
-Mila.Pantalla._Boton.prototype.CambiarFuncionA_ = function(nuevaFuncion) {
-  this._funcion = nuevaFuncion;
-  if ('_nodoHtml' in this) {
-    this._nodoHtml.addEventListener('click', funcion);
-  }
-};
-
-Mila.Pantalla._Boton.prototype.PlasmarEnHtml = function(nodoMadre) {
-  if (!('_nodoHtml' in this)) {
-    this._nodoHtml = document.createElement('button');
-    this._nodoHtml.innerHTML = this._texto;
-    if ('_funcion' in this) {
-      this._nodoHtml.addEventListener('click', this._funcion);
-    }
-    nodoMadre.appendChild(this._nodoHtml);
-  }
-};
-
-Mila.Pantalla._Boton.prototype.QuitarDelHtml = function() {
-  if ('_nodoHtml' in this) {
-    this._nodoHtml.remove();
-    delete this._nodoHtml;
-  }
-};
-
-Mila.Pantalla._Panel = function Panel() {};
-Object.setPrototypeOf(Mila.Pantalla._Panel.prototype, Mila.Pantalla._ElementoVisual.prototype);
-
-Mila.Pantalla._Panel.prototype.AgregarElemento_ = function(nuevoElemento) {
-  this._elementos.push(nuevoElemento);
-};
-
-Mila.Pantalla._Panel.prototype.CambiarElementosA_ = function(nuevosElementos) {
-  this._elementos = nuevosElementos.esUnaLista() ? nuevosElementos : [nuevosElementos];
-};
-
-Mila.Pantalla._Panel.prototype.CambiarDisposicionA_ = function(nuevaDisposicion) {
-  this._disposicion = nuevaDisposicion;
-};
-
-Mila.Pantalla._Panel.prototype.PlasmarEnHtml = function(nodoMadre) {
-  if (!('_nodoHtml' in this)) {
-    this._nodoHtml = document.createElement('div');
-    this._nodoHtml.style.border = 'solid 1px green';
-    this._nodoHtml.style.margin = '0';
-    this._nodoHtml.style.padding = '0';
-    this._nodoHtml.style.position = 'fixed';
-    nodoMadre.appendChild(this._nodoHtml);
-    for (let elemento of this._elementos) {
-      elemento.PlasmarEnHtml(this._nodoHtml);
+Mila.Pantalla._ElementoVisual.prototype.rectanguloInterno = function(rectanguloCompleto) {
+  let rectangulo = rectanguloCompleto.copia();
+  if (this.ancho().esUnNumero()) {
+    if (rectangulo.ancho < 0) {
+      rectangulo.ancho = maximoEntre_Y_(-this.ancho(), rectangulo.ancho);
+    } else {
+      rectangulo.ancho = minimoEntre_Y_(this.ancho(), rectangulo.ancho);
     }
   }
-};
-
-Mila.Pantalla._Panel.prototype.QuitarDelHtml = function() {
-  for (let elemento of this._elementos) {
-    elemento.QuitarDelHtml();
+  if (this.alto().esUnNumero()) {
+    if (rectangulo.alto < 0) {
+      rectangulo.alto = maximoEntre_Y_(-this.alto(), rectangulo.alto);
+    } else {
+      rectangulo.alto = minimoEntre_Y_(this.alto(), rectangulo.alto);
+    }
   }
-  if ('_nodoHtml' in this) {
-    this._nodoHtml.remove();
-    delete this._nodoHtml;
-  }
-};
-
-Mila.Pantalla._Panel.prototype.Redimensionar = function(rectangulo) {
   let resultado = rectangulo;
   if ('_nodoHtml' in this) {
     let xInterno, yInterno;
-    // Primero intento llenar todo
     if (rectangulo.ancho < 0) {
       this._nodoHtml.style.left = '';
       this._nodoHtml.style.right = `${Mila.Pantalla.ancho() - rectangulo.x}px`;
@@ -311,30 +111,94 @@ Mila.Pantalla._Panel.prototype.Redimensionar = function(rectangulo) {
       this._nodoHtml.style.top = `${rectangulo.y}px`;
       yInterno = rectangulo.y;
     };
-    this._nodoHtml.style.width = `${Math.abs(rectangulo.ancho)}px`;
-    this._nodoHtml.style.height = `${Math.abs(rectangulo.alto)}px`;
-    let rectanguloInterno = Mila.Geometria.rectanguloEn__De_x_(
+    resultado = Mila.Geometria.rectanguloEn__De_x_(
       xInterno,
       yInterno,
       Math.abs(rectangulo.ancho),
       Math.abs(rectangulo.alto)
     );
-    this._disposicion.OrganizarElementos_En_(this._elementos, rectanguloInterno);
-    resultado = rectanguloInterno;
-    // Después me fijo si sobra espacio
-    if (this._ancho.esIgualA_(Mila.Pantalla.ComportamientoEspacio.Minimizar)) {
-      this._nodoHtml.style.width = '';
-    } else if (this._ancho.esUnNumero()) {
-      this._nodoHtml.style.width = `${this._ancho}px`;
-    }
-    if (this._alto.esIgualA_(Mila.Pantalla.ComportamientoEspacio.Minimizar)) {
-      this._nodoHtml.style.height = '';
-    } else if (this._alto.esUnNumero()) {
-      this._nodoHtml.style.height = `${this._alto}px`;
-    }
-    resultado = Mila.Geometria.areaDom_(this._nodoHtml);
   }
   return resultado;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.rectanguloMinimo = function(resultado) {
+  // PRE: existe _nodoHtml
+  if (this.ancho().esIgualA_(Mila.Pantalla.ComportamientoEspacio.Maximizar)) {
+    this._nodoHtml.style.width = `${resultado.ancho}px`;
+  } else if (this.ancho().esIgualA_(Mila.Pantalla.ComportamientoEspacio.Minimizar)) {
+    this.MinimizarAncho();
+  } else if (this.ancho().esUnNumero()) {
+    this._nodoHtml.style.width = `${this.ancho()}px`;
+  }
+  if (this.alto().esIgualA_(Mila.Pantalla.ComportamientoEspacio.Maximizar)) {
+    this._nodoHtml.style.height = `${resultado.alto}px`;
+  } else if (this.alto().esIgualA_(Mila.Pantalla.ComportamientoEspacio.Minimizar)) {
+    this.MinimizarAlto();
+  } else if (this.alto().esUnNumero()) {
+    this._nodoHtml.style.height = `${this.alto()}px`;
+  }
+  return Mila.Geometria.areaDom_(this._nodoHtml);
+};
+
+Mila.Pantalla._ElementoVisual.prototype.Redimensionar = function(rectanguloCompleto) {
+  let resultado = this.rectanguloInterno(rectanguloCompleto);
+  if ('_nodoHtml' in this) {
+    resultado = this.rectanguloMinimo(resultado);
+  }
+  return resultado;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.ancho = function() {
+  if ('_ancho' in this) {
+    return this._ancho;
+  } else if ('_nodoHtml' in this) {
+    return this.anchoHtml();
+  }
+  return Mila.Nada;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.anchoHtml = function() {
+  // PRE: existe _nodoHtml
+  return Mila.Geometria.areaDom_(this._nodoHtml).ancho;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.MinimizarAncho = function() {
+  // PRE: existe _nodoHtml
+  this._nodoHtml.style.width = '';
+};
+
+Mila.Pantalla._ElementoVisual.prototype.alto = function() {
+  if ('_alto' in this) {
+    return this._alto;
+  } else if ('_nodoHtml' in this) {
+    return this.altoHtml();
+  }
+  return Mila.Nada;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.altoHtml = function() {
+  // PRE: existe _nodoHtml
+  return Mila.Geometria.areaDom_(this._nodoHtml).alto;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.MinimizarAlto = function() {
+  // PRE: existe _nodoHtml
+  this._nodoHtml.style.height = '';
+};
+
+Mila.Pantalla._ElementoVisual.prototype.CambiarAnchoA_ = function(nuevoAncho) {
+  this._ancho = nuevoAncho;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.CambiarAltoA_ = function(nuevoAlto) {
+  this._alto = nuevoAlto;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.QuitarDelHtml = function() {
+  if ('_nodoHtml' in this) {
+    this._nodoHtml.remove();
+    delete this._nodoHtml;
+  }
 };
 
 Mila.Pantalla._Redimensionar = function() {
@@ -448,19 +312,4 @@ Mila.Tipo.Registrar({
 Mila.Tipo.Registrar({
   nombre:'ElementoVisual',
   prototipo: Mila.Pantalla._ElementoVisual
-});
-
-Mila.Tipo.Registrar({
-  nombre:'Panel',
-  prototipo: Mila.Pantalla._Panel
-});
-
-Mila.Tipo.Registrar({
-  nombre:'Boton',
-  prototipo: Mila.Pantalla._Boton
-});
-
-Mila.Tipo.Registrar({
-  nombre:'Etiqueta',
-  prototipo: Mila.Pantalla._Etiqueta
 });
