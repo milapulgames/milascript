@@ -130,6 +130,7 @@ if (entorno.enNodeJs()) {
 
 // Archivos
 
+Mila._proyectos = {}; // Mapa de otros proyectos importados
 Mila._archivos = {}; // Mapa de archivos incluidos.
 Mila._archivosPendientes = {
   cargandoAhora: [], // Lista de rutas de archivos que están siendo cargados ahora.
@@ -216,9 +217,35 @@ Mila._PedirContenidoArchivo_ = function(rutaArchivo) {
   // PRE: El archivo dado no fue solicitado antes.
   // Falla si el entorno no es capaz de acceder al archivo (por ejemplo si el archivo no existe o no se tiene acceso de lectura a él).
   Mila._archivos[rutaArchivo].estado = ESTADO_ESPERANDO_CONTENIDO;
-  Mila._accesoArchivo(`${rutaArchivo}.js`, function(resultado) {
+  let nombreProyecto = null;
+  let rutaReal = rutaArchivo;
+  if (rutaArchivo.startsWith('$')) {
+    let iDiagonal = rutaArchivo.indexOf("/");
+    if (iDiagonal < 0) {
+      Mila.Error(`Ruta inválida: ${rutaArchivo}`); // Aunque podría ser una forma de cargar un proyecto entero o su archivo principal...
+    } else {
+      nombreProyecto = rutaArchivo.substring(1,iDiagonal);
+      rutaReal = Mila._proyectos[nombreProyecto] + rutaArchivo.substring(iDiagonal + 1);
+    }
+  }
+  Mila._accesoArchivo(`${rutaReal}.js`, function(resultado) {
     if ('contenido' in resultado) {
-      Mila._RecibirContenidoArchivo_(rutaArchivo, resultado.contenido);
+      Mila._RecibirContenidoArchivo_(rutaReal, resultado.contenido);
+    } else if (
+      nombreProyecto !== null &&
+      rutaReal.includes(nombreProyecto) &&
+      !(rutaReal.includes(`${nombreProyecto}/src`))
+    ) {
+      rutaReal = rutaReal.replace(nombreProyecto,`${nombreProyecto}/src`);
+      Mila._accesoArchivo(`${rutaReal}.js`, function(resultado) {
+        if ('contenido' in resultado) {
+          Mila._archivos[rutaArchivo].rutaReal = rutaReal;
+          Mila._RecibirContenidoArchivo_(rutaArchivo, resultado.contenido);
+        } else {
+          Mila.Error(`No se pudo cargar el archivo ${rutaArchivo}.`);
+          Mila.MostrarError(resultado.error);
+        }
+      });
     } else {
       Mila.Error(`No se pudo cargar el archivo ${rutaArchivo}.`);
       Mila.MostrarError(resultado.error);
@@ -407,7 +434,9 @@ Mila._rutaCompletaA_Desde_ = function(rutaArchivo, ubicacion) {
   if (resultado.startsWith('/')) {
     resultado = `.${resultado}`;
   }
-  if (!resultado.startsWith('./')) {
+  if (resultado.startsWith('$')) {
+    Mila._RegistrarRutaProyecto(rutaArchivo, ubicacion);
+  } else if (!resultado.startsWith('./')) {
     resultado = `${ubicacion}${resultado}`;
   }
   while (resultado.includes("/../") && !resultado.startsWith("./../")) {
@@ -419,6 +448,22 @@ Mila._rutaCompletaA_Desde_ = function(rutaArchivo, ubicacion) {
     resultado = (Mila._raizProyecto) + resultado.slice(2);
   }
   return resultado;
+};
+
+Mila._RegistrarRutaProyecto = function(rutaArchivo, ubicacion) {
+  // Registra el proyecto definido en la ruta dada a partir de la ubicación dada, si es que no se había registrado ya.
+  // PRE: rutaArchivo empieza con "$", seguido de el nombre de un proyecto.
+  // PRE: el nombre del proyecto corresponde a un proyecto que ya fue inicializado antes o a un proyecto
+    // cuyo código fuente está en la ubicación dada.
+  let iDiagonal = rutaArchivo.indexOf("/");
+  if (iDiagonal < 0) {
+    Mila.Error(`Ruta inválida: ${rutaArchivo}`); // Aunque podría ser una forma de cargar un proyecto entero o su archivo principal...
+  } else {
+    let nombreProyecto = rutaArchivo.substring(1,iDiagonal);
+    if (!(nombreProyecto in Mila._proyectos)) {
+      Mila._proyectos[nombreProyecto] = ubicacion + nombreProyecto + "/";
+    }
+  }
 };
 
 Mila._Ajustar_Para_ = function(configuracion, rutaArchivo) {
@@ -635,9 +680,17 @@ if (entorno.universo.compilado) {
 } else if (entorno.enNodeJs()) {
   for (let i=0; i<process.argv.length; i++) {
     if (process.argv[i].endsWith("mila.js")) {
-      if (process.argv.length>i+1) {
-        entorno.argumentos = process.argv.slice(i+2);
-        Mila.Cargar(process.argv[i+1]);
+      entorno.argumentos = {lista:[]};
+      for (let argumento of process.argv.slice(i+1)) {
+        let iDosPuntos = argumento.indexOf(':');
+        if (iDosPuntos < 0) {
+          entorno.argumentos.lista.push(argumento);
+        } else {
+          entorno.argumentos[argumento.substring(0,iDosPuntos)] = argumento.substring(iDosPuntos+1);
+        }
+      }
+      if (entorno.argumentos.lista.length >= 1) {
+        Mila.Cargar(entorno.argumentos.lista.splice(0,1)[0]);
       } else {
         Mila.Error(`No se pasa ningún script de Mila.`);
       }

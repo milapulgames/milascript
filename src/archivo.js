@@ -5,13 +5,13 @@ Mila.Modulo({
 // Primitivas de entorno
 
 /*
-  Mila._accesoArchivo : La misma del intérprete (ver el archivo mila.js).
-  Mila._escrituraArchivo : Toma una primera cadena de texto correspondiente a la ruta de un archivo, una segunda cadena de texto
+  Mila.Archivo._accesoArchivo : La misma del intérprete (ver el archivo mila.js).
+  Mila.Archivo._escrituraArchivo : Toma una primera cadena de texto correspondiente a la ruta de un archivo, una segunda cadena de texto
     correspondiente al contenido a escribir y una función de un parámetro. Abre el archivo y escribe en él el contenido dado. En caso
     de error invoca a la función pasándole como argumento un objeto que representa el resultado de la operación.
     El objeto tendrá el campo 'error' cuyo valor será el error que ocurrió.
     No funciona en el navegador.
-  Mila._solicitudArchivo : Solicita al usuario seleccionar una ruta. Tomo una función de un parámetro, correspondiente a la función a
+  Mila.Archivo._solicitudArchivo : Solicita al usuario seleccionar una ruta. Tomo una función de un parámetro, correspondiente a la función a
     ejecutar con el contenido (como texto) del archivo seleccionado.
 */
 
