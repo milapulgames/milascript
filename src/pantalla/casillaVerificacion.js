@@ -1,5 +1,5 @@
 Mila.Modulo({
-  necesita:["tipo","pantalla"]
+  necesita:["../tipo","../pantalla"]
 });
 
 Mila.Tipo.Registrar({
