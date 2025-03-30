@@ -26,6 +26,13 @@ Mila.Objeto.clavesDefinidas = function(objeto) {
 };
 Mila.Objeto._Definir_EnPrototipo_('clavesDefinidas', Object);
 
+Mila.Objeto.valoresContenidos = function(objeto) {
+  // Describe la lista de valores contenidos en el objeto dado.
+    // objeto puede ser cualquier dato.
+  return Object.keys(objeto).transformados(x => objeto[x]);
+};
+Mila.Objeto._Definir_EnPrototipo_('valoresContenidos', Object);
+
 Mila.Objeto.clavesDefinidasYSusTipos = function(objeto) {
   // Describe un objeto cuyas claves son las claves definidas en el objeto dado y sus valores son los tipos de los campos correspondientes a cada clave.
     // objeto puede ser cualquier dato.

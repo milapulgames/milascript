@@ -43,14 +43,16 @@ Mila.Tipo.Registrar = function(dataTipo) {
         // es subtipo. Los campos que no se declaren se heredan de él (excepto prototipo).
       // Puede incluir el campo esSubtipoDe_, una función que tome un tipo y devuelva si el tipo que se está registrando es subtipo de él.
         // En caso de no inlcuirse este campo, la función simplemente verifica que el tipo dado pertenezca a la lista de subtipos de este.
-      // Debe incluir el campo es que permita determinar si un elemento es del tipo.
+      // Puede incluir el campo es que permita determinar si un elemento es del tipo.
         // Si se incluye el campo prototipo, el campo es puede ser una función que tome un elemento del prototipo y devuelva si el elemento
-        // es del tipo o puede ser una cadena de texto correspondiente al nombre de la función que determina si un elemento es del tipo
-        // (la implementación de la función únicamente verificará que el elemento tenga el prototipo adecuado).
-        // Si se incluye el campo subtipoDe, el campo es debe ser una función que tome un elemento del supertipo y devuelva si el elemento
-        // es también del tipo que se está registrando.
-        // Si no se incluye el campo prototipo, el campo es puede ser una función que tome un elemento y devuelva si el elemento es del tipo
-        // o un objeto cuyas claves sean los campos que el elemento debe tener y sus significados los tipos de dichos campos.
+          // es del tipo o puede ser una cadena de texto correspondiente al nombre de la función que determina si un elemento es del tipo
+          // (la implementación de la función únicamente verificará que el elemento tenga el prototipo adecuado). Omitir este campo tiene
+          // el mismo efecto que pasar una cadena de texto.
+        // Si se incluye el campo subtipoDe, el campo es no se puede omitir y debe ser una función que tome un elemento del supertipo y
+          // devuelva si el elemento  es también del tipo que se está registrando.
+        // Si no se incluye el campo prototipo, el campo es no se puede omitir y puede ser una función que tome un elemento y devuelva
+          // si el elemento es del tipo  o un objeto cuyas claves sean los campos que el elemento debe tener y sus significados los
+          // tipos de dichos campos.
       // Puede incluir el campo igualdad que puede ser una función que tome dos elementos del tipo y devuelva si los elementos son
         // observacionalmente iguales o una lista de nombres de campos correspondientes a los campos que deben ser iguales.
         // En caso de no inlcuirse este campo, se asume que el tipo no tiene relación de equivalencia.
@@ -62,7 +64,7 @@ Mila.Tipo.Registrar = function(dataTipo) {
         // En caso de no inlcuirse este campo, se asume que la representación textual del tipo es igual a su nombre.
       // Puede incluir el campo strInstancia, una función que toma un elemento del tipo y devuelve su representación textual.
         // En caso de no inlcuirse este campo, si se incluye el campo prototipo (ya sea en este o en alguno de sus supertipos) se utiliza
-        // en su lugar la función toString del prototipo y si no, se utiliza la función strInstancia del tipo Registro.
+          // en su lugar la función toString del prototipo y si no, se utiliza la función strInstancia del tipo Registro.
       // Puede incluir el campo parametros, una lista de textos correspondientes a los nombres de los parámetros en caso de que se esté
         // registrando un tipo paramétrico. En tal caso, se pueden incluir además los campos puedeSer (una función que toma un elemento
         // y devuelve un booleano correspondiente a si el elemento puede ser del tipo paramétrico, para alguna combinación de parámetros)
@@ -112,7 +114,9 @@ Mila.Tipo.Registrar = function(dataTipo) {
       } else {
         nuevoTipo.strInstancia = function(elemento) { return nuevoTipo.prototipo.prototype.toString.call(elemento); }
       }
-      if (typeof nuevoTipo.es == 'string') {
+      if (!('es' in nuevoTipo)) {
+        nuevoTipo.validacionAdicionalPrototipo = function(elemento) { return true; };
+      } else if (typeof nuevoTipo.es == 'string') {
         nuevoTipo.validacionAdicionalPrototipo = function(elemento) { return true; };
         Mila.Base.DefinirFuncionDeInstancia_({
           prototipo: nuevoTipo.prototipo,
@@ -162,7 +166,12 @@ Mila.Tipo.Registrar = function(dataTipo) {
           const definicion = nuevoTipo.es;
           nuevoTipo.es = function(elemento) {
             return Mila.Objeto.todosCumplen_(definicion, function(clave, valor) {
-              return clave.startsWith("?") || (clave.substr(1) in elemento && Mila.Tipo.esDeTipo_(elemento[clave.substr(1)], valor));
+              return (
+                clave.startsWith("?") &&
+                (!elemento.defineLaClave_(clave.substr(1)) || Mila.Tipo.esDeTipo_(elemento[clave.substr(1)], valor)))
+              || (
+                !clave.startsWith("?") && elemento.defineLaClave_(clave) && Mila.Tipo.esDeTipo_(elemento[clave], valor)
+              );
             });
           }
         } else if (typeof nuevoTipo.es == 'function' && nuevoTipo.es.name.length > 0 && nuevoTipo.es.name != "es") {
@@ -688,6 +697,7 @@ Mila.Tipo.Registrar({
   es: function(elemento) {
     return Mila.Lista.algunoCumple_(this._subs, x => Mila.Tipo.esDeTipo_(elemento, x));
   },
+  inicializacion: "Mila.Tipo._InicializarDisyuncion(resultado, _subs);",
   strTipo: function(tipo) {
     return Mila.Lista.transformados(tipo._subs, Mila.Tipo.aTexto).join(" | ");
   },
@@ -705,6 +715,7 @@ Mila.Tipo.Registrar({
   es: function(elemento) {
     return Mila.Tipo.esDeTipo_(elemento, this._tipo);
   },
+  inicializacion: "Mila.Tipo._InicializarAlias(resultado, _nombre, _tipo);",
   strTipo: function(tipo) {
     return tipo._nombre;
   },
@@ -731,20 +742,47 @@ Mila.Tipo.Registrar({
   },
   strInstancia: function(elemento) {
     return this._tipo.strInstancia(elemento);
+  },
+  AgregarCasos: function(nuevosCasos) {
+    for (let caso of nuevosCasos) {
+      if (!this._casos.includes(caso)) {
+        this._casos.push(caso);
+      }
+      this[caso] = {
+        tipo:function() { return this; },
+        aTexto:function() { return caso; }
+      };
+    }
   }
 });
 
+Mila.Tipo._InicializarDisyuncion = function(tipo, subtipos) {
+  Mila.Tipo._ReemplazarIdentificadoresPorTipos(subtipos, subtipos);
+};
+
+Mila.Tipo._InicializarAlias = function(tipo, nombre, subtipo) {
+  Mila.Tipo._ReemplazarIdentificadoresPorTipos(tipo, {_tipo: subtipo});
+  Mila.Tipo._RegistrarTipo(tipo, nombre);
+};
+
 Mila.Tipo._GenerarVariantes = function(tipo, casos, nombre) {
-  for (let caso of casos) {
-    tipo[caso] = {
-      tipo:function() { return tipo; },
-      aTexto:function() { return caso; }
-    };
-  }
+  tipo.AgregarCasos(casos);
+  Mila.Tipo._RegistrarTipo(tipo, nombre);
+};
+
+Mila.Tipo._RegistrarTipo = function(tipo, nombre) {
   if (!(nombre in Mila.Tipo)) {
     Mila.Tipo[nombre] = tipo;
   }
   if (!(nombre in Mila.Tipo._tipos)) {
     Mila.Tipo._tipos[nombre] = tipo;
+  }
+};
+
+Mila.Tipo._ReemplazarIdentificadoresPorTipos = function(tipo, subtipos) {
+  for (let k in subtipos) {
+    if (Mila.Tipo.esElIdentificadorDeUnTipo(subtipos[k])) {
+      tipo[k] = Mila.Tipo._tipos[subtipos[k]];
+    }
   }
 };

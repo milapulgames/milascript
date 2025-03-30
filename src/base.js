@@ -130,6 +130,21 @@ Mila.Base.RegistrarFuncion_(
   }
 );
 
+Mila.Base.RegistrarFuncion_(
+  function Mostrar(elemento) {
+    // Muestra un elemento.
+      // elemento puede ser cualquier dato.
+    for (let linea of elemento.aTexto().split('\n')) {
+      console.log(linea);
+    }
+  }
+);
+Mila.Base.DefinirFuncionDeInstanciaAPartirDe_({
+  nombre: 'Mostrar',
+  prototipo: Object,
+  funcionAInvocar: "Mostrar"
+});
+
 Mila.Base.ReemplazarFuncion_De_Por_ = function(nombreFuncion, objeto, nuevaFuncion) {
   // Reemplaza la función con el nombre dado en el objeto dado por la función dada.
     // nombreFuncion es una cadena de texto correspondiente al nombre de la función a reemplazar.

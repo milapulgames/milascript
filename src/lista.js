@@ -18,8 +18,6 @@ Mila.Lista._Definir_EnPrototipo_ = function(nombre, prototipo, posicionDeThis=0)
   });
 };
 
-const toStringDeArray = Array.prototype.toString;
-
 Mila.Tipo.Registrar({
   nombre: "Lista",
   prototipo: Array,
@@ -36,7 +34,7 @@ Mila.Tipo.Registrar({
     return true;
   },
   strInstancia: function(elemento) {
-    return `[${toStringDeArray.call(elemento)}]`;
+    return `[${elemento.transformados(Mila.Tipo.aTexto).join(",")}]`;
   }
 });
 
@@ -572,7 +570,12 @@ Mila.Tipo.Registrar({
   es: function(elemento) {
     return elemento.todosCumplen_(x => this._sub.es(x));
   },
+  inicializacion: "Mila.Lista._InicializarTipo(resultado, _sub);",
   strTipo: function(tipo) {
     return `Lista de ${tipo._sub.aTexto()}`;
   }
 });
+
+Mila.Lista._InicializarTipo = function(tipo, subtipo) {
+  Mila.Tipo._ReemplazarIdentificadoresPorTipos(tipo, {_sub: subtipo});
+};
