@@ -16,7 +16,7 @@ Mila.Tipo.Registrar({
 Mila.Pantalla.nuevoBoton = function(atributos={}) {
   Mila.Contrato({
     Proposito: [
-      "Describe un nuevo botón a partir de los atributos dados",
+      "Describir un nuevo botón a partir de los atributos dados",
       Mila.Tipo.Boton
     ],
     Parametros: [
@@ -39,6 +39,12 @@ Mila.Pantalla._Boton = function Boton() {};
 Object.setPrototypeOf(Mila.Pantalla._Boton.prototype, Mila.Pantalla._ElementoVisual.prototype);
 
 Mila.Pantalla._Boton.prototype.CambiarTextoA_ = function(nuevoTexto) {
+  Mila.Contrato({
+    Proposito: "Reemplazar el texto de a este botón por el dado",
+    Parametros: [
+      [nuevoTexto, Mila.Tipo.Texto]
+    ]
+  });
   this._texto = nuevoTexto;
   if ('_nodoHtml' in this) {
     this._nodoHtml.innerHTML = this._texto;
@@ -46,6 +52,12 @@ Mila.Pantalla._Boton.prototype.CambiarTextoA_ = function(nuevoTexto) {
 };
 
 Mila.Pantalla._Boton.prototype.CambiarFuncionA_ = function(nuevaFuncion) {
+  Mila.Contrato({
+    Proposito: "Reemplazar la función de a este botón por la dada",
+    Parametros: [
+      [nuevaFuncion, Mila.Tipo.Funcion]
+    ]
+  });
   this._funcion = nuevaFuncion;
   if ('_nodoHtml' in this) {
     this._nodoHtml.addEventListener('click', funcion);
@@ -53,6 +65,16 @@ Mila.Pantalla._Boton.prototype.CambiarFuncionA_ = function(nuevaFuncion) {
 };
 
 Mila.Pantalla._Boton.prototype.PlasmarEnHtml = function(nodoMadre) {
+  Mila.Contrato({
+    Proposito: "Plasmar este botón en el documento html como hijo del nodo dado",
+    Precondiciones: [
+      "Se está ejecutando en el navegador",
+      Mila.entorno().enNavegador()
+    ],
+    Parametros: [
+      nodoMadre // Tipo nodo dom
+    ]
+  });
   if (!('_nodoHtml' in this)) {
     this._nodoHtml = document.createElement('button');
     this._nodoHtml.innerHTML = this._texto;
@@ -66,5 +88,6 @@ Mila.Pantalla._Boton.prototype.PlasmarEnHtml = function(nodoMadre) {
 
 Mila.Tipo.Registrar({
   nombre:'Boton',
-  prototipo: Mila.Pantalla._Boton
+  prototipo: Mila.Pantalla._Boton,
+  subtipoDe: Mila.Tipo.ElementoVisual
 });
