@@ -473,7 +473,8 @@ Mila._Ajustar_Para_ = function(configuracion, rutaArchivo) {
   configuracion.rutaArchivo = rutaArchivo;
   configuracion.ubicacion = Mila._ubicacionDe_(rutaArchivo);
   for (let campo of ['usa','necesita','usaJs','necesitaJs']) {
-    configuracion[campo] = (configuracion[campo] || []).map(
+    let dato = (configuracion[campo] || []);
+    configuracion[campo] = (Array.isArray(dato) ? dato : [dato]).map(
       x => Mila._rutaCompletaA_Desde_(x, configuracion.ubicacion)
     );
   }

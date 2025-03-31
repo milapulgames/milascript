@@ -744,12 +744,13 @@ Mila.Tipo.Registrar({
     return this._tipo.strInstancia(elemento);
   },
   AgregarCasos: function(nuevosCasos) {
+    const esteTipo = this;
     for (let caso of nuevosCasos) {
-      if (!this._casos.includes(caso)) {
-        this._casos.push(caso);
+      if (!esteTipo._casos.includes(caso)) {
+        esteTipo._casos.push(caso);
       }
-      this[caso] = {
-        tipo:function() { return this; },
+      esteTipo[caso] = {
+        tipo:function() { return esteTipo; },
         aTexto:function() { return caso; }
       };
     }
