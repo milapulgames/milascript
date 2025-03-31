@@ -96,6 +96,8 @@ Mila.Tipo.Registrar = function(dataTipo) {
           nuevoTipo[clave] = supertipo[clave];
         }
       }
+      supertipo.subtipos.push(nuevoTipo.nombre);
+      nuevoTipo.supertipos.push(supertipo.nombre);
     }
     if ('prototipo' in nuevoTipo) {
       if (!('name' in nuevoTipo.prototipo) || (nuevoTipo.prototipo.name.length == 0)) {
@@ -114,10 +116,8 @@ Mila.Tipo.Registrar = function(dataTipo) {
       } else {
         nuevoTipo.strInstancia = function(elemento) { return nuevoTipo.prototipo.prototype.toString.call(elemento); }
       }
-      if (!('es' in nuevoTipo)) {
-        nuevoTipo.validacionAdicionalPrototipo = function(elemento) { return true; };
-      } else if (typeof nuevoTipo.es == 'string') {
-        nuevoTipo.validacionAdicionalPrototipo = function(elemento) { return true; };
+      nuevoTipo.validacionAdicionalPrototipo = function(elemento) { return true; };
+      if (typeof nuevoTipo.es == 'string') {
         Mila.Base.DefinirFuncionDeInstancia_({
           prototipo: nuevoTipo.prototipo,
           nombre: nuevoTipo.es,
@@ -128,9 +128,6 @@ Mila.Tipo.Registrar = function(dataTipo) {
           nombre: nuevoTipo.es,
           codigo: `false`
         });
-        nuevoTipo.es = function(elemento) {
-          return Object.getPrototypeOf(elemento) === nuevoTipo.prototipo.prototype;
-        };
       } else if (typeof nuevoTipo.es == 'function') {
         nuevoTipo.validacionAdicionalPrototipo = nuevoTipo.es;
         if (nuevoTipo.es.name.length > 0 && nuevoTipo.es.name != "es") {
@@ -145,10 +142,8 @@ Mila.Tipo.Registrar = function(dataTipo) {
             codigo: `false`
           });
         }
-        nuevoTipo.es = function(elemento) {
-          return Object.getPrototypeOf(elemento) === nuevoTipo.prototipo.prototype && nuevoTipo.validacionAdicionalPrototipo(elemento);
-        };
       }
+      nuevoTipo.es = Mila.Tipo._esTipoPrototipo(nuevoTipo, nuevoTipo.prototipo.prototype);
       Mila.Base.DefinirFuncionDeInstancia_({
         prototipo: nuevoTipo.prototipo,
         nombre: 'tipo',
@@ -272,8 +267,6 @@ Mila.Tipo._Registrar_ComoSubtipoDe_ = function(nuevoTipo, supertipo) {
       return supertipo.es(elemento) && nuevoTipo.validacionAdicionalTipo(elemento);
     };
   }
-  supertipo.subtipos.push(nuevoTipo.nombre);
-  nuevoTipo.supertipos.push(supertipo.nombre);
 };
 
 // Observadores de tipos
@@ -331,6 +324,14 @@ Mila.Tipo._tipoConPrototipoSub = function(idSubtipo, elemento) {
     return tipo;
   }
   return null;
+};
+
+Mila.Tipo._esTipoPrototipo = function(tipo, prototipo) {
+  return function(elemento) {
+    return Object.getPrototypeOf(elemento) === prototipo && tipo.validacionAdicionalPrototipo(elemento) ||
+      Mila.Lista.algunoCumple_(tipo.subtipos, x => Mila.Tipo._tipos[x].es(elemento))
+    ;
+  };
 };
 
 Mila.Tipo._tipoSinPrototipo = function(elemento, lista=Mila.Tipo._tiposSinPrototipo) {

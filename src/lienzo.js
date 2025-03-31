@@ -1,6 +1,7 @@
 Mila.Modulo({
   define:"Mila.Lienzo",
-  usa:["geometria"]
+  usa:["geometria"],
+  necesita:"pantalla"
 });
 
 Mila.Lienzo.nuevo = function(contentido=[]) {
@@ -85,6 +86,7 @@ Mila.Lienzo._Lienzo.prototype.Redimensionar = function(rectangulo) {
     this._nodoHtml.height = rectangulo.alto;
     this.Dibujar();
   }
+  return rectangulo;
 };
 
 Mila.Lienzo._Lienzo.prototype._BorrarTodo = function() {
@@ -165,5 +167,6 @@ Mila.Tipo.Registrar({
   igualdad: ['_contenido','_dimensiones'],
   strInstancia: function(elemento) {
     return `${elemento._dimensiones} {\n${elemento._contentido.transformados(x => `\t${x}`).join('\n')}\n}`;
-  }
+  },
+  subtipoDe: Mila.Tipo.ElementoVisual
 });

@@ -55,13 +55,22 @@ Mila.Pantalla.ClaveDisposicion = Mila.Tipo.Registrar({
   inferible: false
 });
 
+Mila.Tipo.Registrar({
+  nombre:'AtributosElementoVisual',
+  es: {
+    "?ancho":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio]),
+    "?alto":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio])
+  },
+  inferible: false
+});
+
 Mila.Pantalla._ElementoVisual = function ElementoVisual() {};
 
 Mila.Pantalla._ElementoVisual.prototype.Inicializar = function(atributos, porDefecto=Mila.Pantalla.ComportamientoEspacio.Minimizar) {
   Mila.Contrato({
     Proposito: "Inicializar este elemento visual asignando sus campos ancho y alto",
     Parametros: [
-      atributos, // ?
+      [atributos, Mila.Tipo.AtributosElementoVisual],
       [porDefecto, Mila.Pantalla.ComportamientoEspacio]
     ]
   });
@@ -141,7 +150,7 @@ Mila.Pantalla._ElementoVisual.prototype.rectanguloMinimo = function(rectanguloCo
       "Se está ejecutando en el navegador",
       Mila.entorno().enNavegador(),
       "Hay un elemento html asociado a este elemento visual",
-      _nodoHtml in this /* && this._nodoHtml es de tipo nodo dom */
+      '_nodoHtml' in this /* && this._nodoHtml es de tipo nodo dom */
     ],
     Parametros: [
       [rectanguloCompleto, Mila.Tipo.Rectangulo]
@@ -208,7 +217,7 @@ Mila.Pantalla._ElementoVisual.prototype.anchoHtml = function() {
       "Se está ejecutando en el navegador",
       Mila.entorno().enNavegador(),
       "Hay un elemento html asociado a este elemento visual",
-      _nodoHtml in this /* && this._nodoHtml es de tipo nodo dom */
+      '_nodoHtml' in this /* && this._nodoHtml es de tipo nodo dom */
     ]
   });
   return Mila.Geometria.areaDom_(this._nodoHtml).ancho;
@@ -221,7 +230,7 @@ Mila.Pantalla._ElementoVisual.prototype.MinimizarAncho = function() {
       "Se está ejecutando en el navegador",
       Mila.entorno().enNavegador(),
       "Hay un elemento html asociado a este elemento visual",
-      _nodoHtml in this /* && this._nodoHtml es de tipo nodo dom */
+      '_nodoHtml' in this /* && this._nodoHtml es de tipo nodo dom */
     ]
   });
   this._nodoHtml.style.width = '';
@@ -253,7 +262,7 @@ Mila.Pantalla._ElementoVisual.prototype.altoHtml = function() {
       "Se está ejecutando en el navegador",
       Mila.entorno().enNavegador(),
       "Hay un elemento html asociado a este elemento visual",
-      _nodoHtml in this /* && this._nodoHtml es de tipo nodo dom */
+      '_nodoHtml' in this /* && this._nodoHtml es de tipo nodo dom */
     ]
   });
   return Mila.Geometria.areaDom_(this._nodoHtml).alto;
@@ -266,7 +275,7 @@ Mila.Pantalla._ElementoVisual.prototype.MinimizarAlto = function() {
       "Se está ejecutando en el navegador",
       Mila.entorno().enNavegador(),
       "Hay un elemento html asociado a este elemento visual",
-      _nodoHtml in this /* && this._nodoHtml es de tipo nodo dom */
+      '_nodoHtml' in this /* && this._nodoHtml es de tipo nodo dom */
     ]
   });
   this._nodoHtml.style.height = '';
@@ -390,8 +399,7 @@ Mila.Pantalla.CambiarA_ = function(nombre) {
       nombre in Mila.Pantalla._pantallas
     ],
     Parametros: [
-      [atributos, Mila.Tipo.AtributosPanel],
-      [nombre, Mila.Tipo.O([Mila.Tipo.Texto, Mila.Tipo.Nada])]
+      [nombre, Mila.Tipo.Texto]
     ]
   });
   if (Mila.Pantalla._pantallaActual.esAlgo()) {

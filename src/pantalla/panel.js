@@ -1,11 +1,11 @@
 Mila.Modulo({
-  necesita:["../tipo","../pantalla"]
+  necesita:["../tipo","../lista","../pantalla"]
 });
 
 Mila.Tipo.Registrar({
   nombre:'AtributosPanel',
   es: {
-    "?elementos":Mila.Tipo.Lista,
+    "?elementos":Mila.Tipo.O([Mila.Tipo.ElementoVisual, Mila.Tipo.ListaDe_(Mila.Tipo.ElementoVisual)]),
     "?disposicion":Mila.Tipo.O([Mila.Tipo.Disposicion,Mila.Pantalla.ClaveDisposicion]),
     "?ancho":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio]),
     "?alto":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio])
@@ -120,7 +120,7 @@ Mila.Pantalla._Panel.prototype.MinimizarAncho = function() {
       "Se está ejecutando en el navegador",
       Mila.entorno().enNavegador(),
       "Hay un elemento html asociado a este panel",
-      _nodoHtml in this /* && this._nodoHtml es de tipo nodo dom */
+      '_nodoHtml' in this /* && this._nodoHtml es de tipo nodo dom */
     ]
   });
   this._nodoHtml.style.width = `${this._elementos.esVacia()
@@ -136,7 +136,7 @@ Mila.Pantalla._Panel.prototype.MinimizarAlto = function() {
       "Se está ejecutando en el navegador",
       Mila.entorno().enNavegador(),
       "Hay un elemento html asociado a este panel",
-      _nodoHtml in this /* && this._nodoHtml es de tipo nodo dom */
+      '_nodoHtml' in this /* && this._nodoHtml es de tipo nodo dom */
     ]
   });
   this._nodoHtml.style.height = `${this._elementos.esVacia()
