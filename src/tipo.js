@@ -1,6 +1,6 @@
 Mila.Modulo({
   define:"Mila.Tipo",
-  necesita:["base","objeto"],
+  necesita:["base","documentacion","objeto"],
   usa:["lista"]
 });
 
@@ -189,12 +189,12 @@ Mila.Tipo.Registrar = function(dataTipo) {
         };
       }
     } else {
-      nuevoTipo.igualdad = (elemento1, elemento2) =>
-        Mila.Error(`Los elementos de tipo ${nuevoTipo.nombre} no se pueden comparar por igualdad.`);
+      // nuevoTipo.igualdad = (elemento1, elemento2) =>
+      //   Mila.Error(`Los elementos de tipo ${nuevoTipo.nombre} no se pueden comparar por igualdad.`);
     }
     if (!('orden' in nuevoTipo)) {
-      nuevoTipo.orden = (elemento1, elemento2) =>
-        Mila.Error(`Los elementos de tipo ${nuevoTipo.nombre} no tienen relación de orden.`);
+      // nuevoTipo.orden = (elemento1, elemento2) =>
+      //   Mila.Error(`Los elementos de tipo ${nuevoTipo.nombre} no tienen relación de orden.`);
     }
     if ('strTipo' in nuevoTipo) {
       if (typeof nuevoTipo.strTipo == 'string') {
@@ -475,6 +475,20 @@ Mila.Tipo.unificaCon_ = function(tipo1, tipo2) {
     Mila.Lista.algunoCumple_(tipo1.supertipos, x => Mila.Tipo.unificaCon_(Mila.Tipo[x], tipo2));
 };
 Mila.Tipo._Definir_EnPrototipo_('unificaCon_', Mila.Tipo._Tipo);
+
+Mila.Tipo.defineRelacionDeIgualdad = function(tipo) {
+  // Indica si el tipo dado define una relación de igualdad.
+    // tipo es un tipo.
+  return 'igualdad' in tipo;
+};
+Mila.Tipo._Definir_EnPrototipo_('defineRelacionDeIgualdad', Mila.Tipo._Tipo);
+
+Mila.Tipo.defineRelacionDeOrden = function(tipo) {
+  // Indica si el tipo dado define una relación de orden.
+    // tipo es un tipo.
+  return 'orden' in tipo;
+};
+Mila.Tipo._Definir_EnPrototipo_('defineRelacionDeOrden', Mila.Tipo._Tipo);
 
 Mila.Tipo.tipoUnificadoEntre_Y_ = function(tipo1, tipo2) {
   // Describe el tipo más específico resultante de la unificación de los dos tipos dados.
@@ -788,3 +802,6 @@ Mila.Tipo._ReemplazarIdentificadoresPorTipos = function(tipo, subtipos) {
     }
   }
 };
+
+// Recién después de haber inicializado el módulo de tipos se pueden validar los contratos
+Mila.Documentacion.ajustes.analizarContratos = true;

@@ -1,6 +1,6 @@
 Mila.Modulo({
   define:"Mila.Documentacion",
-  necesita:["tipo","ajustes"]
+  usa:["tipo"]
 });
 
 Mila.Documentacion.mensajes = {
@@ -13,28 +13,29 @@ Mila.Documentacion.mensajes = {
   precondicionNoSeCumple: "Una de las precondiciones no se cumple",
   precondicionNoSePuedeVerificar: "Una de las precondiciones no se pudo verificar",
   parametrosNoEsLista: "La lista de parámetros no es una lista",
-  parametroMasDe2: "Uno de los parámetros es una lista con más de 2 elementos",
-  parametro2NoEsTipo: "El segundo elemento de uno de los parámetros no define un tipo",
-  errorTipoArgumento: "Uno de los argumentos no es del tipo esperado"
+  parametroMasDe3: "El parámetro %I es una lista con más de 3 elementos",
+  parametro2NoEsTipo: "El segundo elemento del parámetro %I no define un tipo: %EXPR",
+  errorTipoArgumento: "El argumento %I (%ARG) no es del tipo esperado (%TYPE)"
 };
 
-Mila.Documentacion.ajustes = Mila.Ajustes.nuevo({
-  analizarContratos: {
-    tipo: "bool",
-    inicial: true
-  }
-});
+Mila.Documentacion.ajustes = {
+  analizarContratos: false
+};
 
 Mila.Contrato = function(dataContrato) {
   // Directiva para declarar el contrato de una función o un procedimiento.
-  if (!Mila.Documentacion.ajustes.analizarContratos()) { return; }
-  if (Mila.Documentacion._contratoMalFormado(dataContrato)) {
-    return;
-  } else if (Mila.Documentacion._hayErroresDeTiposEnArgumentos(Mila.Documentacion._parametrosEn_(dataContrato))) {
-    return;
-  } else if (!Mila.Documentacion._seCumplenLasPrecondiciones(Mila.Documentacion._precondicionesEn_(dataContrato))) {
-    return;
-  }
+
+  if (!Mila.Documentacion.ajustes.analizarContratos) { return; }
+
+  // Deshabilito para evitar recursión infinita
+  Mila.Documentacion.ajustes.analizarContratos = false;
+
+  Mila.Documentacion._contratoMalFormado(dataContrato) ||
+  Mila.Documentacion._hayErroresDeTiposEnArgumentos(Mila.Documentacion._parametrosEn_(dataContrato)) ||
+  !Mila.Documentacion._seCumplenLasPrecondiciones(Mila.Documentacion._precondicionesEn_(dataContrato));
+
+  // Vuelvo a habilitar
+  Mila.Documentacion.ajustes.analizarContratos = true;
 };
 
 Mila.Documentacion._clavesProposito = ['proposito','prop','post'];
@@ -56,9 +57,13 @@ Mila.Documentacion._hayErroresDeTiposEnArgumentos = function(parametros) {
   ) {
     parametros = [parametros];
   }
+  let i=0;
   for (let parametro of parametros) {
+    i++;
     if (Mila.Documentacion._hayErrorDeTipoEnArgumento(parametro)) {
-      Mila.Advertencia(Mila.Documentacion.mensajes.errorTipoArgumento);
+      Mila.Advertencia(Mila.Documentacion.mensajes.errorTipoArgumento
+        .replace("%I", i).replace("%ARG", parametro[0]).replace("%TYPE", parametro[1])
+      );
       return true;
     }
   }
@@ -168,19 +173,25 @@ Mila.Documentacion._parametrosMalFormados = function(parametros) {
   ) {
     parametros = [parametros];
   }
+  let i=0;
   for (let parametro of parametros) {
+    i++;
     if (!Array.isArray(parametros)) {
       parametro = [parametro];
     }
-    if (parametro.length > 2) {
-      Mila.Advertencia(Mila.Documentacion.mensajes.parametroMasDe2)
+    if (parametro.length > 3) {
+      Mila.Advertencia(Mila.Documentacion.mensajes.parametroMasDe3
+        .replace("%I", i)
+      );
       return true;
-    } else if (parametro.length == 2) {
+    } else if (parametro.length > 1) {
       if (
         !Mila.Tipo.esUnTipo(parametro[1]) &&
         !Mila.Tipo.esElIdentificadorDeUnTipo(parametro[1])
       ) {
-        Mila.Advertencia(Mila.Documentacion.mensajes.parametro2NoEsTipo)
+        Mila.Advertencia(Mila.Documentacion.mensajes.parametro2NoEsTipo
+          .replace("%I", i).replace("%EXPR", Mila.Tipo.aTexto(parametro[1]))
+        );
         return true;
       }
     }

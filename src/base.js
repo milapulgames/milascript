@@ -1,17 +1,24 @@
 Mila.Modulo({
   define:"Mila.Base",
-  usa:["documentacion","tipo"]
+  necesita:"documentacion",
+  usa:["tipo"]
 });
 
 // Modificación de prototipos
 
 Mila.Base.DefinirFuncionEnPrototipo_ = function(configuracion) {
-  // Define una función en un prototipo.
-    // configuracion es un objeto que determina cómo definir la función.
-      // Debe incluir el campo funcion, la función que se invocará en el prototipo.
-      // Debe incluir el campo prototipo, el objeto en cuyo prototipo se definirá la función.
-      // Puede incluir el campo nombre, una cadena de texto correspondiente al nombre con el que se accederá a la función en el prototipo.
-        // Si no se incluye se usa el nombre de la función.
+  Mila.Contrato({
+    Proposito: "Definir en un prototipo una función",
+    Parametros: [
+      configuracion, Mila.Tipo.Registro, "\
+      !funcion, la función que se invocará en el prototipo.\
+      !prototipo, el objeto en cuyo prototipo se definirá la función.\
+      ?nombre, una cadena de texto correspondiente al nombre con el que se accederá\
+        a la función en el prototipo.\
+        * Si no se incluye se usa el nombre de la función.\
+      "
+    ]
+  });
   const funcion = configuracion.funcion;
   const prototipo = configuracion.prototipo;
   const nombre = configuracion.nombre || funcion.name;
@@ -23,13 +30,20 @@ Mila.Base.DefinirFuncionEnPrototipo_ = function(configuracion) {
 };
 
 Mila.Base.DefinirFuncionDeInstancia_ = function(configuracion) {
-  // Define en un prototipo una función de instancia.
-    // configuracion es un objeto que determina cómo definir la función.
-      // Debe incluir el campo prototipo, el objeto en cuyo prototipo se definirá la función.
-      // Debe incluir el campo nombre, una cadena de texto correspondiente al nombre con el que se accederá a la función en el prototipo.
-      // Debe incluir el campo codigo, una cadena de texto correspondiente al cuerpo de la función.
-      // Puede incluir el campo parametros, una lista de cadenas de texto correspondientes a los nombres de los parámetros que espera la función.
-        // En caso de no inlcuirse este campo, se asume que la función no toma parámetros.
+  Mila.Contrato({
+    Proposito: "Definir en un prototipo una función de instancia",
+    Parametros: [
+      configuracion, Mila.Tipo.Registro, "\
+      !prototipo, el objeto en cuyo prototipo se definirá la función.\
+      !nombre, una cadena de texto correspondiente al nombre con el\
+        que se accederá a la función en el prototipo.\
+      !codigo, una cadena de texto correspondiente al cuerpo de la función.\
+      ?parametros, una lista de cadenas de texto correspondientes a los\
+        nombres de los parámetros que espera la función.\
+        * En caso de no inlcuirse este campo, se asume que la función no toma parámetros.\
+      "
+    ]
+  });
   const prototipo = configuracion.prototipo;
   const nombre = configuracion.nombre;
   const codigo = `return ${configuracion.codigo};`;
@@ -39,16 +53,25 @@ Mila.Base.DefinirFuncionDeInstancia_ = function(configuracion) {
 };
 
 Mila.Base.DefinirFuncionDeInstanciaAPartirDe_ = function(configuracion) {
-  // Define en un prototipo una función de instancia a partir de otra función que toma a la instancia como argumento.
-    // configuracion es un objeto que determina cómo definir la función.
-      // Debe incluir el campo prototipo, el objeto en cuyo prototipo se definirá la función.
-      // Debe incluir el campo nombre, una cadena de texto correspondiente al nombre con el que se accederá a la función en el prototipo.
-      // Puede incluir el campo cantidadDeParametros, un entero correspondiente a la cantidad de parámetros que espera la función.
-        // En caso de no incluirse este campo, se asume que la función no toma parámetros.
-      // Debe incluir el campo funcionAInvocar, una cadena de texto correspondiente a la representación textual de la función a la que invocar
-        // (esta debe esperar un parámetro más que la que se está definiendo, correspondiente a la instancia this).
-      // Puede incluir el campo posicionDeThis, un entero correspondiente a la posición del argumento que corresponde a la instancia this en la invocación a la otra función.
-        // En caso de no inlcuirse este campo, se asume que es el primer argumento.
+  Mila.Contrato({
+    Proposito: "Definir en un prototipo una función de instancia a partir de otra función\
+      que toma a la instancia como argumento",
+    Parametros: [
+      configuracion, Mila.Tipo.Registro, "\
+      !prototipo: el objeto en cuyo prototipo se definirá la función.\
+      !nombre: una cadena de texto correspondiente al nombre con el que se accederá a\
+        la función en el prototipo.\
+      ?cantidadDeParametros, un entero correspondiente a la cantidad de parámetros que espera la función.\
+        * En caso de no incluirse este campo, se asume que la función no toma parámetros.\
+      !funcionAInvocar, una cadena de texto correspondiente a la representación textual de la\
+        función a la que invocar (esta debe esperar un parámetro más que la que se\
+        está definiendo, correspondiente a la instancia this).\
+      ?posicionDeThis, un entero correspondiente a la posición del argumento que corresponde\
+        a la instancia this en la invocación a la otra función.\
+        * En caso de no inlcuirse este campo, se asume que es el primer argumento.\
+      "
+    ]
+  });
   const prototipo = configuracion.prototipo;
   const nombre = configuracion.nombre;
   const cantidadDeParametros = configuracion.cantidadDeParametros || 0;
@@ -75,8 +98,13 @@ Mila.Base.DefinirFuncionDeInstanciaAPartirDe_ = function(configuracion) {
 // Funciones útiles
 
 Mila.Base.vale = function(condicion) {
-  // Indica si la condición dada vale.
-    // condicion es un booleano o una función que no toma argumentos y devuelve un booleano.
+  Mila.Contrato({
+    Proposito: ["Indicar si la condición dada vale.", Mila.Tipo.Booleano],
+    Parametros: [
+      [condicion, Mila.Tipo.O([Mila.Tipo.Booleano, Mila.Tipo.Funcion])]
+      // Si es una función tiene que no tomar argumentos y devolver un booleano
+    ]
+  });
   return condicion.esUnaFuncion()
     ? condicion()
     : condicion
@@ -94,8 +122,13 @@ Mila.Base.DefinirFuncionDeInstanciaAPartirDe_({
 });
 
 Mila.Base.RegistrarFuncion_ = function(funcion) {
-  // Registra la funcion dada como una función global que será accedida a través de su nombre.
-    // funcion es una función cualquiera.
+  Mila.Contrato({
+    Proposito: "Registrar la función dada como función global que será accedida a través de su nombre.\
+      Falla si ya se registró antes una función global con el mismo nombre.",
+    Parametros: [
+      [funcion, Mila.Tipo.Funcion]
+    ]
+  });
   let nombre = funcion.name;
   if (nombre in Mila.entorno().universo) {
     Mila.Error(`Ya se registró una función global con el nombre ${nombre}`);
@@ -106,35 +139,67 @@ Mila.Base.RegistrarFuncion_ = function(funcion) {
 
 Mila.Base.RegistrarFuncion_(
   function unoSi_CeroSiNo(condicion) {
-    // Describe uno si se cumple la condición dada y cero si no.
-      // condicion es un booleano o una función que no toma argumentos y devuelve un booleano.
+    Mila.Contrato({
+      Proposito: [
+        "Describir uno si se cumple la condición dada y cero si no.",
+        Mila.Tipo.Entero
+      ],
+      Parametros: [
+        [condicion, Mila.Tipo.O([Mila.Tipo.Booleano, Mila.Tipo.Funcion])]
+        // Si es una función tiene que no tomar argumentos y devolver un booleano
+      ]
+    });
     return Mila.Base.vale(condicion) ? 1 : 0;
   }
 );
 
 Mila.Base.RegistrarFuncion_(
   function minimoEntre_Y_(elemento1, elemento2) {
-    // Describe el mínimo elemento entre los dos elementos dados.
-    // PRE: Los elementos dados son del mismo tipo.
-    // PRE: El tipo de los elementos dados define una relación de orden.
+    Mila.Contrato({
+      Proposito: "Describir el mínimo elemento entre los dos elementos dados",
+      Precondiciones: [
+        "Los elementos dados son del mismo tipo",
+        Mila.Tipo.esDelMismoTipoQue_(elemento1, elemento2),
+        "El tipo de los elementos dados define una relación de orden",
+        Mila.Tipo.defineRelacionDeOrden(Mila.Tipo.tipo(elemento1))
+      ],
+      Parametros: [
+        elemento1, // cualquier tipo
+        elemento2 // cualquier tipo
+      ]
+    });
     return elemento1.esMenorOIgualA_(elemento2) ? elemento1 : elemento2;
   }
 );
 
 Mila.Base.RegistrarFuncion_(
   function maximoEntre_Y_(elemento1, elemento2) {
-    // Describe el máximo elemento entre los dos elementos dados.
-    // PRE: Los elementos dados son del mismo tipo.
-    // PRE: El tipo de los elementos dados define una relación de orden.
+    Mila.Contrato({
+      Proposito: "Describir el máximo elemento entre los dos elementos dados",
+      Precondiciones: [
+        "Los elementos dados son del mismo tipo",
+        Mila.Tipo.esDelMismoTipoQue_(elemento1, elemento2),
+        "El tipo de los elementos dados define una relación de orden",
+        Mila.Tipo.defineRelacionDeOrden(Mila.Tipo.tipo(elemento1))
+      ],
+      Parametros: [
+        elemento1, // cualquier tipo
+        elemento2 // cualquier tipo
+      ]
+    });
     return elemento1.esMayorOIgualA_(elemento2) ? elemento1 : elemento2;
   }
 );
 
 Mila.Base.RegistrarFuncion_(
   function Mostrar(elemento) {
-    // Muestra un elemento.
-      // elemento puede ser cualquier dato.
-    for (let linea of elemento.aTexto().split('\n')) {
+    Mila.Contrato({
+      Proposito: "Mostrar una represetanción textual del elemento dado",
+      Parametros: [
+        elemento // cualquier tipo
+      ]
+    });
+    for (let linea of Mila.Tipo.aTexto(elemento).split('\n')) {
       console.log(linea);
     }
   }
@@ -146,11 +211,18 @@ Mila.Base.DefinirFuncionDeInstanciaAPartirDe_({
 });
 
 Mila.Base.ReemplazarFuncion_De_Por_ = function(nombreFuncion, objeto, nuevaFuncion) {
-  // Reemplaza la función con el nombre dado en el objeto dado por la función dada.
-    // nombreFuncion es una cadena de texto correspondiente al nombre de la función a reemplazar.
-    // objeto es un objeto, en el cual se reemplazará la función con el nombre dado.
-    // nuevaFuncion es una función que toma como parámetro la función original y devuelve la nueva función.
-  // PRE: el objeto dado tiene definida una función con el nombre dado.
+  Mila.Contrato({
+    Proposito: "Reemplazar la función con el nombre dado en el objeto dado por la función dada",
+    Precondiciones: [
+      "El objeto dado tiene definida una función con el nombre dado",
+      objeto.defineLaClave_(nombreFuncion)
+    ],
+    Parametros: [
+      [nombreFuncion, Mila.Tipo.Texto],
+      objeto // cualquier tipo
+      [nuevaFuncion, Mila.Tipo.Funcion, "Toma como parámetro la función original y devuelve la nueva función"]
+    ]
+  });
   const funcionOriginal = objeto[nombreFuncion];
   objeto[nombreFuncion] = nuevaFuncion(funcionOriginal);
 };
