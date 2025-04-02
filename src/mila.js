@@ -153,6 +153,9 @@ Mila.Modulo = function(configuracion) {
     // configuracion es el objeto de configuración de un archivo de código milascript.
   // Falla si la configuración dada define un módulo que ya fue definido antes.
   Mila._DefinirArchivo_(configuracion);
+  if ('define' in configuracion) {
+    Mila._RegistrarModulo_En_(configuracion.define, entorno.universo, []);
+  }
 };
 
 Mila.Cargar = function(rutaArchivo) {
@@ -233,7 +236,8 @@ Mila._PedirContenidoArchivo_ = function(rutaArchivo) {
   }
   Mila._accesoArchivo(`${rutaReal}.js`, function(resultado) {
     if ('contenido' in resultado) {
-      Mila._RecibirContenidoArchivo_(rutaReal, resultado.contenido);
+      Mila._archivos[rutaArchivo].rutaReal = rutaReal;
+      Mila._RecibirContenidoArchivo_(rutaArchivo, resultado.contenido);
     } else if (
       nombreProyecto !== null &&
       rutaReal.includes(nombreProyecto) &&
@@ -437,6 +441,10 @@ Mila._rutaCompletaA_Desde_ = function(rutaArchivo, ubicacion) {
     // rutaArchivo es una cadena de texto correspondiente a la ruta relativa de un archivo.
     // ubicacion es una cadena de texto correspondiente a la ubicación desde donde se acccede a la ruta.
   let resultado = rutaArchivo;
+  if (resultado.endsWith(".js")) {
+    // Quito la extensión para unificar
+    resultado = resultado.substring(0, resultado.length-3);
+  }
   if (resultado.startsWith('/')) {
     resultado = `.${resultado}`;
   }
@@ -689,9 +697,14 @@ Mila.EjecutarInicializacionesPendientes = function() {
 
 Mila.ProcesarArgumentosMila = function(argumentos) {
   // Procesa los argumentos que le corresponden a milascript y no al script ejecutado
-  if ('mila' in argumentos) {
-    Mila._RegistrarProyecto("milascript", argumentos.mila);
-  }
+};
+
+Mila._RegistrarRaizMila = function(rutaMila) {
+  const ubicacion = rutaMila.length > "mila.js".length
+    ? rutaMila.substring(0,rutaMila.length - "mila.js".length)
+    : ""
+  ;
+  Mila._RegistrarProyecto("milascript", ubicacion);
 };
 
 if (entorno.universo.compilado) {
@@ -699,6 +712,7 @@ if (entorno.universo.compilado) {
 } else if (entorno.enNodeJs()) {
   for (let i=0; i<process.argv.length; i++) {
     if (process.argv[i].endsWith("mila.js")) {
+      Mila._RegistrarRaizMila(process.argv[i]);
       entorno.argumentos = {lista:[]};
       for (let argumento of process.argv.slice(i+1)) {
         let iDosPuntos = argumento.indexOf(':');
