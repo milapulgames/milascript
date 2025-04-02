@@ -9,7 +9,7 @@ Mila.Texto._Definir_EnPrototipo_ = function(nombre, prototipo, posicionDeThis=0)
     // prototipo es el objeto en cuyo prototipo se definirá la función.
     // posicionDeThis es un entero correspondiente a la posición del argumento que corresponde a la instancia this en la invocación a la función del módulo (0 si se omite).
   // PRE: Hay una función con el nombre dado en este módulo (Mila.Texto).
-  Mila.Base.DefinirFuncionDeInstanciaAPartirDe_({
+  Mila.JS.DefinirFuncionDeInstanciaAPartirDe_({
     prototipo,
     nombre,
     cantidadDeParametros: Mila.Texto[nombre].length-1,

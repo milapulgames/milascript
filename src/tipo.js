@@ -17,7 +17,7 @@ Mila.Tipo._Definir_EnPrototipo_ = function(nombre, prototipo, posicionDeThis=0) 
       [posicionDeThis, Mila.Tipo.Entero]
     ]
   });
-  Mila.Base.DefinirFuncionDeInstanciaAPartirDe_({
+  Mila.JS.DefinirFuncionDeInstanciaAPartirDe_({
     prototipo,
     nombre,
     cantidadDeParametros: Mila.Tipo[nombre].length-1,
@@ -87,7 +87,7 @@ Mila.Tipo._Registrar = function(dataTipo) {
       }
       Mila.Tipo._tiposPorPrototipo[nuevoTipo.prototipo.name] = nuevoTipo.nombre;
       if ('strInstancia' in nuevoTipo) {
-        Mila.Base.DefinirFuncionDeInstancia_({
+        Mila.JS.DefinirFuncionDeInstancia_({
           prototipo: nuevoTipo.prototipo,
           nombre: 'toString',
           codigo: `Mila.Tipo._tipos.${nuevoTipo.nombre}.strInstancia(this)`
@@ -97,12 +97,12 @@ Mila.Tipo._Registrar = function(dataTipo) {
       }
       nuevoTipo.validacionAdicionalPrototipo = function(elemento) { return true; };
       if (typeof nuevoTipo.es == 'string') {
-        Mila.Base.DefinirFuncionDeInstancia_({
+        Mila.JS.DefinirFuncionDeInstancia_({
           prototipo: nuevoTipo.prototipo,
           nombre: nuevoTipo.es,
           codigo: `true`
         });
-        Mila.Base.DefinirFuncionDeInstancia_({
+        Mila.JS.DefinirFuncionDeInstancia_({
           prototipo: Object,
           nombre: nuevoTipo.es,
           codigo: `false`
@@ -110,12 +110,12 @@ Mila.Tipo._Registrar = function(dataTipo) {
       } else if (typeof nuevoTipo.es == 'function') {
         nuevoTipo.validacionAdicionalPrototipo = nuevoTipo.es;
         if (nuevoTipo.es.name.length > 0 && nuevoTipo.es.name != "es") {
-          Mila.Base.DefinirFuncionDeInstanciaAPartirDe_({
+          Mila.JS.DefinirFuncionDeInstanciaAPartirDe_({
             prototipo: nuevoTipo.prototipo,
             nombre: nuevoTipo.es.name,
             funcionAInvocar: `Mila.Tipo._tipos.${nuevoTipo.nombre}.validacionAdicionalPrototipo`
           });
-          Mila.Base.DefinirFuncionDeInstancia_({
+          Mila.JS.DefinirFuncionDeInstancia_({
             prototipo: Object,
             nombre: nuevoTipo.es.name,
             codigo: `false`
@@ -123,7 +123,7 @@ Mila.Tipo._Registrar = function(dataTipo) {
         }
       }
       nuevoTipo.es = Mila.Tipo._esTipoPrototipo(nuevoTipo, nuevoTipo.prototipo.prototype);
-      Mila.Base.DefinirFuncionDeInstancia_({
+      Mila.JS.DefinirFuncionDeInstancia_({
         prototipo: nuevoTipo.prototipo,
         nombre: 'tipo',
         codigo: `Mila.Tipo._tipoConPrototipo("${nuevoTipo.nombre}", this)`
@@ -149,7 +149,7 @@ Mila.Tipo._Registrar = function(dataTipo) {
             });
           }
         } else if (typeof nuevoTipo.es == 'function' && nuevoTipo.es.name.length > 0 && nuevoTipo.es.name != "es") {
-          Mila.Base.DefinirFuncionDeInstanciaAPartirDe_({
+          Mila.JS.DefinirFuncionDeInstanciaAPartirDe_({
             prototipo: Object,
             nombre: nuevoTipo.es.name,
             funcionAInvocar: `Mila.Tipo._tipos.${nuevoTipo.nombre}.es`
@@ -246,12 +246,12 @@ Mila.Tipo._Registrar_ComoSubtipoDe_ = function(nuevoTipo, supertipo) {
       return supertipo.es(elemento) && nuevoTipo.validacionAdicionalTipo.call(this, elemento.valueOf());
     };
     if (nuevoTipo.es.name.length > 0 && nuevoTipo.es.name != "es") {
-      Mila.Base.DefinirFuncionDeInstanciaAPartirDe_({
+      Mila.JS.DefinirFuncionDeInstanciaAPartirDe_({
         prototipo: prototipo,
         nombre: nuevoTipo.es.name,
         funcionAInvocar: `Mila.Tipo._tipos.${nuevoTipo.nombre}.validacionAdicionalPrototipo`
       });
-      Mila.Base.DefinirFuncionDeInstancia_({
+      Mila.JS.DefinirFuncionDeInstancia_({
         prototipo: Object,
         nombre: nuevoTipo.es.name,
         codigo: `false`
@@ -262,7 +262,7 @@ Mila.Tipo._Registrar_ComoSubtipoDe_ = function(nuevoTipo, supertipo) {
     };
   } else {
     if (nuevoTipo.es.name.length > 0 && nuevoTipo.es.name != "es") {
-      Mila.Base.DefinirFuncionDeInstanciaAPartirDe_({
+      Mila.JS.DefinirFuncionDeInstanciaAPartirDe_({
         prototipo: Object,
         nombre: nuevoTipo.es.name,
         funcionAInvocar: `Mila.Tipo._tipos.${nuevoTipo.nombre}.es`
@@ -428,7 +428,7 @@ Mila.Tipo._tipoSinPrototipo = function(elemento, lista=Mila.Tipo._tiposSinProtot
   }
   return resultado;
 };
-Mila.Base.DefinirFuncionDeInstanciaAPartirDe_({
+Mila.JS.DefinirFuncionDeInstanciaAPartirDe_({
   prototipo: Object,
   nombre: 'tipo',
   funcionAInvocar: `Mila.Tipo._tipoSinPrototipo`

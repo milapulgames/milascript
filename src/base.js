@@ -18,12 +18,12 @@ Mila.Base.vale = function(condicion) {
     : condicion
   ;
 };
-Mila.Base.DefinirFuncionDeInstanciaAPartirDe_({
+Mila.JS.DefinirFuncionDeInstanciaAPartirDe_({
   nombre: 'vale',
   prototipo: Boolean,
   funcionAInvocar: "Mila.Base.vale"
 });
-Mila.Base.DefinirFuncionDeInstanciaAPartirDe_({
+Mila.JS.DefinirFuncionDeInstanciaAPartirDe_({
   nombre: 'vale',
   prototipo: Function,
   funcionAInvocar: "Mila.Base.vale"
@@ -112,7 +112,7 @@ Mila.Base.RegistrarFuncion_(
     }
   }
 );
-Mila.Base.DefinirFuncionDeInstanciaAPartirDe_({
+Mila.JS.DefinirFuncionDeInstanciaAPartirDe_({
   nombre: 'Mostrar',
   prototipo: Object,
   funcionAInvocar: "Mostrar"
@@ -127,7 +127,7 @@ Mila.Base.ReemplazarFuncion_De_Por_ = function(nombreFuncion, objeto, nuevaFunci
     ],
     Parametros: [
       [nombreFuncion, Mila.Tipo.Texto],
-      objeto // cualquier tipo
+      objeto, // cualquier tipo
       [nuevaFuncion, Mila.Tipo.Funcion, "Toma como parámetro la función original y devuelve la nueva función"]
     ]
   });
