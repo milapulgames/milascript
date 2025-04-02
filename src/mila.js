@@ -489,6 +489,7 @@ Mila.Compilar_DeTipo_ = function(configuracion, tipo) {
   if (tipo == "Mila") {
     if (entorno.enNodeJs()) {
       encabezado.push("Object.setPrototypeOf(Object.getPrototypeOf([]), Array.prototype)");
+      encabezado.push("Object.setPrototypeOf(Object.getPrototypeOf(function(){}), Function.prototype)");
     }
     if (!entorno.universo.compilado) {
       encabezado.push(`const _miRuta = "${configuracion.rutaArchivo}";`);

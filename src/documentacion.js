@@ -68,7 +68,7 @@ Mila.Documentacion._hayErroresDeTiposEnArgumentos = function(parametros, estado)
     i++;
     if (Mila.Documentacion._hayErrorDeTipoEnArgumento(parametro)) {
       Mila.Documentacion.Advertencia(estado, Mila.Documentacion.mensajes.errorTipoArgumento
-        .replace("%I", i).replace("%ARG", parametro[0]).replace("%TYPE", parametro[1])
+        .replace("%I", i).replace("%ARG", Mila.Tipo.aTexto(parametro[0])).replace("%TYPE", Mila.Tipo.aTexto(parametro[1]))
       );
       return true;
     }

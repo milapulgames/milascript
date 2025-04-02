@@ -383,7 +383,13 @@ Mila.Tipo._esTipoPrototipo = function(tipo, prototipo) {
     ]
   });
   return function(elemento) {
-    return Object.getPrototypeOf(elemento) === prototipo && tipo.validacionAdicionalPrototipo(elemento) ||
+    return (
+      (
+        Object.getPrototypeOf(elemento) === prototipo ||
+        // En Node hay otro nivel de indirección en prototipos:
+        Object.getPrototypeOf(Object.getPrototypeOf(elemento)) === prototipo
+      ) &&
+      tipo.validacionAdicionalPrototipo(elemento)) ||
       Mila.Lista.algunoCumple_(tipo.subtipos, x => Mila.Tipo._tipos[x].es(elemento))
     ;
   };
