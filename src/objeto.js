@@ -1,7 +1,7 @@
 Mila.Modulo({
   define:"Mila.Objeto",
-  necesita:["base"],
-  usa:["lista"]
+  necesita:["documentacion","js"],
+  usa:["tipo","lista"]
 });
 
 Mila.Objeto._Definir_EnPrototipo_ = function(nombre, prototipo, posicionDeThis=0) {

@@ -1,6 +1,7 @@
 Mila.Modulo({
   define:"Mila.Lista",
-  necesita:["base","tipo"]
+  necesita:["documentacion","js"],
+  usa:"tipo"
 });
 
 Mila.Lista._Definir_EnPrototipo_ = function(nombre, prototipo, posicionDeThis=0) {
@@ -17,26 +18,6 @@ Mila.Lista._Definir_EnPrototipo_ = function(nombre, prototipo, posicionDeThis=0)
     funcionAInvocar: `Mila.Lista.${nombre}`
   });
 };
-
-Mila.Tipo.Registrar({
-  nombre: "Lista",
-  prototipo: Array,
-  es: 'esUnaLista',
-  igualdad: function(elemento1, elemento2) {
-    if (Mila.Tipo.esDistintoA_(elemento1.length, elemento2.length)) {
-      return false;
-    }
-    for (let i=0; i<elemento1.length; i++) {
-      if (Mila.Tipo.esDistintoA_(elemento1[i], elemento2[i])) {
-        return false;
-      }
-    }
-    return true;
-  },
-  strInstancia: function(elemento) {
-    return `[${elemento.transformados(Mila.Tipo.aTexto).join(",")}]`;
-  }
-});
 
 Mila.Lista.esVacia = function(lista) {
   // Indica si la lista dada está vacía.
@@ -552,30 +533,3 @@ Mila.Lista.fold1 = function(lista, funcion) {
   return Mila.Lista.sinElUltimo(lista).reduce(function(rec, x) { return funcion(x, rec); }, Mila.Lista.ultimo(lista));
 };
 Mila.Lista._Definir_EnPrototipo_('fold1', Array);
-
-Mila.Tipo.Registrar({
-  nombre: "ListaDe_",
-  parametros: ['_sub'],
-  subtipoDe: "Lista",
-  esSubtipoDe_: function(otroTipo) {
-    return Mila.Tipo.esIgualA_(otroTipo, Mila.Tipo.Lista) ||
-      (Mila.Tipo.esIgualA_(otroTipo.nombre, "ListaDe_") && Mila.Tipo.esSubtipoDe_(this._sub, otroTipo._sub));
-  },
-  puedeSer: function(elemento) {
-    return elemento.length > 0 && Mila.Tipo.hayTipoUnificableEn_(elemento);
-  },
-  tipoPara: function(elemento) {
-    return Mila.Tipo.ListaDe_(Mila.Tipo.tipoUnificadoEn_(elemento));
-  },
-  es: function(elemento) {
-    return elemento.todosCumplen_(x => this._sub.es(x));
-  },
-  inicializacion: "Mila.Lista._InicializarTipo(resultado, _sub);",
-  strTipo: function(tipo) {
-    return `Lista de ${tipo._sub.aTexto()}`;
-  }
-});
-
-Mila.Lista._InicializarTipo = function(tipo, subtipo) {
-  Mila.Tipo._ReemplazarIdentificadoresPorTipos(tipo, {_sub: subtipo});
-};

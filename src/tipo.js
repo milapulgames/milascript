@@ -1,15 +1,22 @@
 Mila.Modulo({
   define:"Mila.Tipo",
-  necesita:["base","documentacion","objeto"],
-  usa:["lista"]
+  necesita:["documentacion","js","objeto","lista"]
 });
 
 Mila.Tipo._Definir_EnPrototipo_ = function(nombre, prototipo, posicionDeThis=0) {
-  // Define en un prototipo una función de instancia a partir de otra función definida en este módulo.
-    // nombre es una cadena de texto correspondiente al nombre de la función a definir (la misma que la que ya está definida).
-    // prototipo es el objeto en cuyo prototipo se definirá la función.
-    // posicionDeThis es un entero correspondiente a la posición del argumento que corresponde a la instancia this en la invocación a la función del módulo (0 si se omite).
-  // PRE: Hay una función con el nombre dado en este módulo (Mila.Tipo).
+  Mila.Contrato({
+    Proposito: "Definir en un prototipo una función de instancia a partir de otra función definida en este módulo.",
+    Precondiciones: [
+      posicionDeThis >= 0,
+      "Hay una función con el nombre dado en este módulo (Mila.Tipo).",
+      nombre in Mila.Tipo // && es una función
+    ],
+    Parametros: [
+      [nombre, Mila.Tipo.Texto, "nombre de la función a definir (la misma que la que ya está definida)."],
+      [prototipo, Mila.Tipo.Registro],
+      [posicionDeThis, Mila.Tipo.Entero]
+    ]
+  });
   Mila.Base.DefinirFuncionDeInstanciaAPartirDe_({
     prototipo,
     nombre,
@@ -34,49 +41,21 @@ Mila.Tipo._Tipo = function Tipo(dataTipo) {
 };
 
 Mila.Tipo.Registrar = function(dataTipo) {
-  // Registra un tipo a partir de la información dada.
-    // dataTipo es un objeto que determina las características del tipo.
-      // Debe incluir el campo nombre, una cadena de texto correspondiente al nombre del tipo.
-      // Puede incluir el campo prototipo, un objeto a cuyo prototipo asociar el tipo definido.
-        // En caso de no inlcuirse este campo, el tipo no se asocia a ningún prototipo.
-      // Puede incluir el campo subtipoDe, un tipo o un identificador de tipo correspondiente al tipo del cual el tipo que se está registrando
-        // es subtipo. Los campos que no se declaren se heredan de él (excepto prototipo).
-      // Puede incluir el campo esSubtipoDe_, una función que tome un tipo y devuelva si el tipo que se está registrando es subtipo de él.
-        // En caso de no inlcuirse este campo, la función simplemente verifica que el tipo dado pertenezca a la lista de subtipos de este.
-      // Puede incluir el campo es que permita determinar si un elemento es del tipo.
-        // Si se incluye el campo prototipo, el campo es puede ser una función que tome un elemento del prototipo y devuelva si el elemento
-          // es del tipo o puede ser una cadena de texto correspondiente al nombre de la función que determina si un elemento es del tipo
-          // (la implementación de la función únicamente verificará que el elemento tenga el prototipo adecuado). Omitir este campo tiene
-          // el mismo efecto que pasar una cadena de texto.
-        // Si se incluye el campo subtipoDe, el campo es no se puede omitir y debe ser una función que tome un elemento del supertipo y
-          // devuelva si el elemento  es también del tipo que se está registrando.
-        // Si no se incluye el campo prototipo, el campo es no se puede omitir y puede ser una función que tome un elemento y devuelva
-          // si el elemento es del tipo  o un objeto cuyas claves sean los campos que el elemento debe tener y sus significados los
-          // tipos de dichos campos.
-      // Puede incluir el campo igualdad que puede ser una función que tome dos elementos del tipo y devuelva si los elementos son
-        // observacionalmente iguales o una lista de nombres de campos correspondientes a los campos que deben ser iguales.
-        // En caso de no inlcuirse este campo, se asume que el tipo no tiene relación de equivalencia.
-      // Puede incluir el campo orden, una función que toma dos elementos del tipo y devuelve si el primero está antes que el segundo en la
-        // relación de orden del tipo.
-        // En caso de no inlcuirse este campo, se asume que el tipo no tiene relación de orden.
-      // Puede incluir el campo strTipo que puede ser un texto correspondiente a la representación textual del tipo o una función
-        // que tome como parámetro al tipo y devuelva dicha representación.
-        // En caso de no inlcuirse este campo, se asume que la representación textual del tipo es igual a su nombre.
-      // Puede incluir el campo strInstancia, una función que toma un elemento del tipo y devuelve su representación textual.
-        // En caso de no inlcuirse este campo, si se incluye el campo prototipo (ya sea en este o en alguno de sus supertipos) se utiliza
-          // en su lugar la función toString del prototipo y si no, se utiliza la función strInstancia del tipo Registro.
-      // Puede incluir el campo parametros, una lista de textos correspondientes a los nombres de los parámetros en caso de que se esté
-        // registrando un tipo paramétrico. En tal caso, se pueden incluir además los campos puedeSer (una función que toma un elemento
-        // y devuelve un booleano correspondiente a si el elemento puede ser del tipo paramétrico, para alguna combinación de parámetros)
-        // y tipoPara (una función que toma un elemento y, asumiendo que el resultado de puedeSer con dicho elemento es verdadero, devuelve
-        // una instanciación del tipo paramétrico para tal elemento).
-      // Si incluye el campo parametros puede incluir también el campo inicializacion, un texto que se agregará como código a la función de
-        // inicialización del tipo cuando se parametrice.
-      // Puede incluir el campo inferible, un booleano que indique si este tipo se debe tener en cuenta al inferir el tipo de una expresión.
-        // En caso de no inlcuirse este campo, se asume que sí.
-  // Falla si ya se registró antes un tipo con el mismo nombre.
-  // Falla si el nombre colisiona con algún campo ya existente.
-  // Falla si se pasa el campo prototipo y ya se registró antes un tipo con ese mismo prototipo.
+  Mila.Contrato({
+    Proposito: "Registrar un tipo a partir de la información dada.",
+    // Falla si ya se registró antes un tipo con el mismo nombre.
+    // Falla si el nombre colisiona con algún campo ya existente.
+    // Falla si se pasa el campo prototipo y ya se registró antes un tipo con ese mismo prototipo.
+    Parametros: [
+      [dataTipo, "DataTipo"]
+    ]
+  });
+  return Mila.Documentacion.Ejecutar_SinAnalizarContratos(function() {
+    return Mila.Tipo._Registrar(dataTipo);
+  });
+};
+
+Mila.Tipo._Registrar = function(dataTipo) {
   if (dataTipo.nombre in Mila.Tipo._tipos) {
     Mila.Error(`Ya se registró un tipo con el nombre ${dataTipo.nombre}.`);
   } else if (dataTipo.nombre in Mila.Tipo) {
@@ -185,7 +164,7 @@ Mila.Tipo.Registrar = function(dataTipo) {
       if (Array.isArray(nuevoTipo.igualdad)) {
         const campos = nuevoTipo.igualdad;
         nuevoTipo.igualdad = function(elemento1, elemento2) {
-          return campos.every(x => Mila.Tipo.esIgualA_(elemento1[x], elemento2[x]));
+          return campos.todosCumplen_(x => Mila.Tipo.esIgualA_(elemento1[x], elemento2[x]));
         };
       }
     } else {
@@ -220,6 +199,20 @@ Mila.Tipo.Registrar = function(dataTipo) {
 };
 
 Mila.Tipo._tipoParametrico = function(nuevoTipo) {
+  Mila.Contrato({
+    Proposito: [
+      "Describir la función de inicialización de un tipo paramétrico a partir de la información dada.",
+      Mila.Tipo.Funcion // Toma los parámetros del tipo parámetrico y devuelve una instancia del tipo.
+    ],
+    Parametros: [
+      [nuevoTipo, Mila.Tipo.Registro] /*
+        Los mismos campos de DataTipo más:
+        ! subtipos
+        ! supertipos
+        ? validacionAdicionalPrototipo (si tiene prototipo)
+      */
+    ]
+  });
   Mila.Tipo._tiposParametricos[nuevoTipo.nombre] = nuevoTipo;
   let codigo = `const resultado = new Mila.Tipo._Tipo(Mila.Tipo._tiposParametricos.${nuevoTipo.nombre});`;
   for (let parametro of nuevoTipo.parametros) {
@@ -233,6 +226,18 @@ Mila.Tipo._tipoParametrico = function(nuevoTipo) {
 };
 
 Mila.Tipo._Registrar_ComoSubtipoDe_ = function(nuevoTipo, supertipo) {
+  Mila.Contrato({
+    Proposito: "Incorporar al objeto de configuración dado la información de tipado\
+      para que sea subtipo del tipo dado.",
+    Parametros: [
+      [nuevoTipo, Mila.Tipo.Registro] /*
+        Los mismos campos de DataTipo más:
+        ! subtipos
+        ! supertipos
+      */,
+      [supertipo, Mila.Tipo.Tipo]
+    ]
+  });
   nuevoTipo.validacionAdicionalTipo = nuevoTipo.es;
   if ('prototipo' in supertipo) {
     const prototipo = supertipo.prototipo;
@@ -272,8 +277,12 @@ Mila.Tipo._Registrar_ComoSubtipoDe_ = function(nuevoTipo, supertipo) {
 // Observadores de tipos
 
 Mila.Tipo.tipo = function(elemento) {
-  // Describe el tipo del elemento dado.
-    // elemento puede ser cualquier dato.
+  Mila.Contrato({
+    Proposito: ["Describir el tipo del elemento dado.", Mila.Tipo.Tipo],
+    Parametros: [
+      [elemento, Mila.Tipo.Cualquiera]
+    ]
+  });
   if (Mila.Tipo.esNada(elemento)) {
     return Mila.Tipo.Nada;
   }
@@ -291,6 +300,23 @@ Mila.Tipo.tipo = function(elemento) {
 };
 
 Mila.Tipo._tipoConPrototipo = function(idTipo, elemento) {
+  Mila.Contrato({
+    Proposito: [
+      "Describir el tipo del elemento dado intentando inferirlo a partir del tipo dado.",
+      Mila.Tipo.Tipo
+    ],
+    Precondiciones: [
+      "idTipo es el id de un tipo.",
+      idTipo in Mila.Tipo._tipos,
+      "El tipo al que hace referencia idTipo tiene un prototipo y es el del elemento dado.",
+      'prototipo' in Mila.Tipo._tipos[idTipo] &&
+      Object.getPrototypeOf(elemento) === Mila.Tipo._tipos[idTipo].prototipo.prototype
+    ],
+    Parametros: [
+      [idTipo, Mila.Tipo.Texto],
+      [elemento, Mila.Tipo.Cualquiera]
+    ]
+  });
   const tipo = Mila.Tipo._tipos[idTipo];
   if (tipo.validacionAdicionalPrototipo(elemento.valueOf())) {
     for (let idSubtipo of Mila.Lista.losQueCumplen(tipo.subtipos, Mila.Tipo.esInferible)) {
@@ -305,6 +331,21 @@ Mila.Tipo._tipoConPrototipo = function(idTipo, elemento) {
 };
 
 Mila.Tipo._tipoConPrototipoSub = function(idSubtipo, elemento) {
+  Mila.Contrato({
+    Proposito: [
+      "Describir el tipo del elemento dado intentando inferirlo a partir del tipo dado\
+        o null si no es posible.",
+      Mila.Tipo.O([Mila.Tipo.Tipo, Mila.Tipo.Nada])
+    ],
+    Precondiciones: [
+      "idSubtipo es el id de un tipo.",
+      idSubtipo in Mila.Tipo._tipos
+    ],
+    Parametros: [
+      [idSubtipo, Mila.Tipo.Texto],
+      [elemento, Mila.Tipo.Cualquiera]
+    ]
+  });
   const tipo = Mila.Tipo._tipos[idSubtipo];
   if (idSubtipo in Mila.Tipo._tiposParametricos) { // Es un tipo parámetrico
     if (
@@ -327,6 +368,20 @@ Mila.Tipo._tipoConPrototipoSub = function(idSubtipo, elemento) {
 };
 
 Mila.Tipo._esTipoPrototipo = function(tipo, prototipo) {
+  Mila.Contrato({
+    Proposito: [
+      "Describir la función que determina si un elemento es del tipo dado, basándose en el prototipo dado.",
+      Mila.Tipo.Funcion // Toma un elemento y devuelve un booleano
+    ],
+    Parametros: [
+      [tipo, Mila.Tipo.Registro] /*
+        Los mismos campos de DataTipo más:
+        ! subtipos
+        ! supertipos
+      */,
+      [prototipo, Mila.Tipo.Cualquiera]
+    ]
+  });
   return function(elemento) {
     return Object.getPrototypeOf(elemento) === prototipo && tipo.validacionAdicionalPrototipo(elemento) ||
       Mila.Lista.algunoCumple_(tipo.subtipos, x => Mila.Tipo._tipos[x].es(elemento))
@@ -335,10 +390,19 @@ Mila.Tipo._esTipoPrototipo = function(tipo, prototipo) {
 };
 
 Mila.Tipo._tipoSinPrototipo = function(elemento, lista=Mila.Tipo._tiposSinPrototipo) {
-  // Describe el tipo del elemento dado, que no está asociado a ningún prototipo.
-    // elemento puede ser cualquier dato.
-    // lista es una lista de textos, correspondientes a los ids de los tipos entre los cuales buscar.
-  // PRE: El tipo del elemento dado no está asociado a un prototipo.
+  Mila.Contrato({
+    Proposito: [
+      "Describir el tipo del elemento dado, que no está asociado a ningún prototipo.",
+      Mila.Tipo.Tipo
+    ],
+    Precondiciones: [
+      "El tipo del elemento dado no está asociado a un prototipo."
+    ],
+    Parametros: [
+      [elemento, Mila.Tipo.Cualquiera] // pero no de los que están asociados a prototipos
+      [lista, Mila.Tipo.ListaDe_(Mila.Tipo.Texto), "ids de tipos entre los cuales buscar"]
+    ]
+  });
   let resultado = Mila.Tipo.Registro;
   for (let nombreTipo of Mila.Lista.losQueCumplen(lista, Mila.Tipo.esInferible)) {
     if (nombreTipo in Mila.Tipo._tiposParametricos) { // Es un tipo parámetrico
@@ -365,8 +429,20 @@ Mila.Base.DefinirFuncionDeInstanciaAPartirDe_({
 });
 
 Mila.Tipo.esInferible = function(tipoOIdentificadorDeTipo) {
-  // Indica si el tipo dado se debe tener en cuenta al inferir el tipo de una expresión.
-    // tipoOIdentificadorDeTipo puede ser un tipo o un indentificador de tipo (una cadena de texto correspondiente al nombre del tipo).
+  Mila.Contrato({
+    Proposito: [
+      "Indicar si el tipo dado se debe tener en cuenta al inferir el tipo de una expresión.",
+      Mila.Tipo.Booleano
+    ],
+    Precondiciones: [
+      "Si tipoOIdentificadorDeTipo es un texto, entonces se corresponde al id de un tipo.",
+      !Mila.Tipo.Texto.es(tipoOIdentificadorDeTipo) ||
+        Mila.Tipo.esElIdentificadorDeUnTipo(tipoOIdentificadorDeTipo)
+    ],
+    Parametros: [
+      [tipoOIdentificadorDeTipo, Mila.Tipo.O([Mila.Tipo.Tipo, Mila.Tipo.Texto])]
+    ]
+  });
   const tipo = Mila.Tipo.esElIdentificadorDeUnTipo(tipoOIdentificadorDeTipo)
     ? (tipoOIdentificadorDeTipo in Mila.Tipo._tiposParametricos
         ? Mila.Tipo._tiposParametricos[tipoOIdentificadorDeTipo]
@@ -377,23 +453,49 @@ Mila.Tipo.esInferible = function(tipoOIdentificadorDeTipo) {
 };
 
 Mila.Tipo.esUnTipo = function(elemento) {
-  // Indica si el elemento dado es un tipo.
-    // elemento puede ser cualquier dato.
+  Mila.Contrato({
+    Proposito: [
+      "Indicar si el elememto dado es un tipo.",
+      Mila.Tipo.Booleano
+    ],
+    Parametros: [
+      [elemento, Mila.Tipo.Cualquiera]
+    ]
+  });
   return Mila.Tipo.esAlgo(elemento) && Object.getPrototypeOf(elemento) == Mila.Tipo._Tipo.prototype && elemento.nombre in Mila.Tipo._tipos;
 };
 Mila.Tipo._Definir_EnPrototipo_('esUnTipo', Object);
 
 Mila.Tipo.esElIdentificadorDeUnTipo = function(elemento) {
-  // Indica si el elemento dado es un identificador de tipo.
-    // elemento puede ser cualquier dato (si no es un texto el resultado es falso).
+  Mila.Contrato({
+    Proposito: [
+      "Indicar si el elemento dado es un identificador de tipo.",
+      Mila.Tipo.Booleano
+    ],
+    Parametros: [
+      [elemento, Mila.Tipo.Cualquiera]
+    ]
+  });
   return Object.getPrototypeOf(elemento) == String.prototype && elemento in Mila.Tipo._tipos;
 };
 Mila.Tipo._Definir_EnPrototipo_('esElIdentificadorDeUnTipo', Object);
 
 Mila.Tipo.esDeTipo_ = function(elemento, tipoOIdentificadorDeTipo) {
-  // Indica si el elemento dado es del tipo dado.
-    // elemento puede ser cualquier dato.
-    // tipoOIdentificadorDeTipo puede ser un tipo o un indentificador de tipo (una cadena de texto correspondiente al nombre del tipo).
+  Mila.Contrato({
+    Proposito: [
+      "Indicar si el elemento dado es del tipo dado.",
+      Mila.Tipo.Booleano
+    ],
+    Precondiciones: [
+      "Si tipoOIdentificadorDeTipo es un texto, entonces se corresponde al id de un tipo.",
+      !Mila.Tipo.Texto.es(tipoOIdentificadorDeTipo) ||
+        Mila.Tipo.esElIdentificadorDeUnTipo(tipoOIdentificadorDeTipo)
+    ],
+    Parametros: [
+      [elemento, Mila.Tipo.Cualquiera],
+      [tipoOIdentificadorDeTipo, Mila.Tipo.O([Mila.Tipo.Tipo, Mila.Tipo.Texto])]
+    ]
+  });
   let tipo = Mila.Tipo.esElIdentificadorDeUnTipo(tipoOIdentificadorDeTipo)
     ? Mila.Tipo._tipos[tipoOIdentificadorDeTipo]
     : tipoOIdentificadorDeTipo
@@ -403,58 +505,131 @@ Mila.Tipo.esDeTipo_ = function(elemento, tipoOIdentificadorDeTipo) {
 Mila.Tipo._Definir_EnPrototipo_('esDeTipo_', Object);
 
 Mila.Tipo.esNada = function(elemento) {
-  // Indica si el elemento dado es un valor nulo.
+  Mila.Contrato({
+    Proposito: [
+      "Indicar si el elemento dado es un vlaor nulo.",
+      Mila.Tipo.Booleano
+    ],
+    Parametros: [
+      [elemento, Mila.Tipo.Cualquiera]
+    ]
+  });
   return elemento === Mila.Nada || elemento === null || elemento === undefined ||
   (Object.getPrototypeOf(elemento) == Number.prototype && isNaN(elemento));
 };
 
 Mila.Tipo.esAlgo = function(elemento) {
-  // Indica si el elemento dado describe algo (no es un valor nulo).
+  Mila.Contrato({
+    Proposito: [
+      "Indicar si el elemento dado describe algo (no es un valor nulo).",
+      Mila.Tipo.Booleano
+    ],
+    Parametros: [
+      [elemento, Mila.Tipo.Cualquiera]
+    ]
+  });
   return !Mila.Tipo._tipos.Nada.es(elemento);
 };
 Mila.Tipo._Definir_EnPrototipo_('esAlgo', Object);
 
 Mila.Tipo.aTexto = function(elemento) {
-  // Describe la representación textual del elemento dado.
+  Mila.Contrato({
+    Proposito: [
+      "Describir la representación textual del elemento dado.",
+      Mila.Tipo.Texto
+    ],
+    Parametros: [
+      [elemento, Mila.Tipo.Cualquiera]
+    ]
+  });
   return Mila.Tipo.tipo(elemento).strInstancia(elemento);
 }
 Mila.Tipo._Definir_EnPrototipo_('aTexto', Object);
 
 Mila.Tipo.esIgualA_ = function(elemento1, elemento2) {
-  // Indica si el primer elemento dado es observacionalmente igual al segundo.
-    // elemento1 y elemento2 pueden ser datos cualesquiera pero del mismo tipo.
-  // PRE: Los elementos dados son del mismo tipo.
-  // PRE: El tipo de los elementos dados tiene definida una relación de equivalencia.
+  Mila.Contrato({
+    Proposito: [
+      "Indicar si el primer elemento dado es observacionalmente igual al segundo.",
+      Mila.Tipo.Booleano
+    ],
+    Precondiciones:[
+      "Los elementos dados son del mismo tipo.",
+      Mila.Tipo.esDelMismoTipoQue_(elemento1, elemento2),
+      "El tipo de los elementos dados define una relación de equivalencia.",
+      Mila.Tipo.defineRelacionDeEquivalencia(Mila.Tipo.tipo(elemento1))
+    ],
+    Parametros: [
+      [elemento1, Mila.Tipo.Cualquiera],
+      [elemento2, Mila.Tipo.Cualquiera]
+    ]
+  });
   return Mila.Tipo.tipo(elemento1).igualdad(elemento1, elemento2);
 };
 Mila.Tipo._Definir_EnPrototipo_('esIgualA_', Object);
 
 Mila.Tipo.esDistintoA_ = function(elemento1, elemento2) {
-  // Indica si el primer elemento dado es observacionalmente distinto al segundo.
-    // elemento1 y elemento2 pueden ser datos cualesquiera pero del mismo tipo.
-  // PRE: Los elementos dados son del mismo tipo.
-  // PRE: El tipo de los elementos dados tiene definida una relación de equivalencia.
+  Mila.Contrato({
+    Proposito: [
+      "Indicar si el primer elemento dado es observacionalmente distinto al segundo.",
+      Mila.Tipo.Booleano
+    ],
+    Precondiciones:[
+      "Los elementos dados son del mismo tipo.",
+      Mila.Tipo.esDelMismoTipoQue_(elemento1, elemento2),
+      "El tipo de los elementos dados define una relación de equivalencia.",
+      Mila.Tipo.defineRelacionDeEquivalencia(Mila.Tipo.tipo(elemento1))
+    ],
+    Parametros: [
+      [elemento1, Mila.Tipo.Cualquiera],
+      [elemento2, Mila.Tipo.Cualquiera]
+    ]
+  });
   return !Mila.Tipo.esIgualA_(elemento1, elemento2);
 };
 Mila.Tipo._Definir_EnPrototipo_('esDistintoA_', Object);
 
 Mila.Tipo.esDelMismoTipoQue_ = function(elemento1, elemento2) {
-  // Indica si el primer elemento dado es del mismo tipo que el segundo.
-    // elemento1 y elemento2 pueden ser datos cualesquiera.
-  return Mila.Tipo.esIgualA_(Mila.Tipo.tipo(elemento1), Mila.Tipo.tipo(elemento2));
+  Mila.Contrato({
+    Proposito: [
+      "Indicar si el primer elemento dado es del mismo tipo que el segundo.",
+      Mila.Tipo.Booleano
+    ],
+    Parametros: [
+      [elemento1, Mila.Tipo.Cualquiera],
+      [elemento2, Mila.Tipo.Cualquiera]
+    ]
+  });
+  return Mila.Tipo.esDeTipo_(elemento1, Mila.Tipo.tipo(elemento2)) ||
+    Mila.Tipo.esDeTipo_(elemento2, Mila.Tipo.tipo(elemento1));
 };
 Mila.Tipo._Definir_EnPrototipo_('esDelMismoTipoQue_', Object);
 
 Mila.Tipo.esDeOtroTipoQue_ = function(elemento1, elemento2) {
-  // Indica si el primer elemento dado es un tipo diferente al del segundo.
-    // elemento1 y elemento2 pueden ser datos cualesquiera.
+  Mila.Contrato({
+    Proposito: [
+      "Indicar si el primer elemento dado es un tipo diferente al del segundo.",
+      Mila.Tipo.Booleano
+    ],
+    Parametros: [
+      [elemento1, Mila.Tipo.Cualquiera],
+      [elemento2, Mila.Tipo.Cualquiera]
+    ]
+  });
   return !Mila.Tipo.esDelMismoTipoQue_(elemento1, elemento2);
 };
 Mila.Tipo._Definir_EnPrototipo_('esDeOtroTipoQue_', Object);
 
 Mila.Tipo.esSubtipoDe_ = function(tipo1, tipo2) {
-  // Indica si el primer tipo dado es subtipo del segundo.
-    // tipo1 y tipo2 son tipos.
+  Mila.Contrato({
+    Proposito: [
+      "Indicar si el primer tipo dado es subtipo del segundo.",
+      Mila.Tipo.Booleano
+    ],
+    Parametros: [
+      [tipo1, Mila.Tipo.Tipo],
+      [tipo2, Mila.Tipo.Tipo]
+    ]
+  });
   return tipo2.subtipos.includes(tipo1.nombre) ||
     Mila.Lista.algunoCumple_(tipo2.subtipos, x => Mila.Tipo.esSubtipoDe_(tipo1, Mila.Tipo[x])) ||
     (tipo1.hasOwnProperty('esSubtipoDe_') && tipo1.esSubtipoDe_(tipo2));
@@ -462,38 +637,79 @@ Mila.Tipo.esSubtipoDe_ = function(tipo1, tipo2) {
 Mila.Tipo._Definir_EnPrototipo_('esSubtipoDe_', Mila.Tipo._Tipo);
 
 Mila.Tipo.esSupertipoDe_ = function(tipo1, tipo2) {
-  // Indica si el primer tipo dado es supertipo del segundo.
-    // tipo1 y tipo2 son tipos.
+  Mila.Contrato({
+    Proposito: [
+      "Indicar si el primer tipo dado es supertipo del segundo.",
+      Mila.Tipo.Booleano
+    ],
+    Parametros: [
+      [tipo1, Mila.Tipo.Tipo],
+      [tipo2, Mila.Tipo.Tipo]
+    ]
+  });
   return Mila.Tipo.esSubtipoDe_(tipo2, tipo1);
 };
 Mila.Tipo._Definir_EnPrototipo_('esSupertipoDe_', Mila.Tipo._Tipo);
 
 Mila.Tipo.unificaCon_ = function(tipo1, tipo2) {
-  // Indica si el primer tipo dado unifica con el segundo.
-    // tipo1 y tipo2 son tipos.
+  Mila.Contrato({
+    Proposito: [
+      "Indicar si el primer tipo dado unifica con el segundo.",
+      Mila.Tipo.Booleano
+    ],
+    Parametros: [
+      [tipo1, Mila.Tipo.Tipo],
+      [tipo2, Mila.Tipo.Tipo]
+    ]
+  });
   return Mila.Tipo.esIgualA_(tipo1, tipo2) || Mila.Tipo.esSubtipoDe_(tipo1, tipo2) || Mila.Tipo.esSubtipoDe_(tipo2, tipo1) ||
     Mila.Lista.algunoCumple_(tipo1.supertipos, x => Mila.Tipo.unificaCon_(Mila.Tipo[x], tipo2));
 };
 Mila.Tipo._Definir_EnPrototipo_('unificaCon_', Mila.Tipo._Tipo);
 
-Mila.Tipo.defineRelacionDeIgualdad = function(tipo) {
-  // Indica si el tipo dado define una relación de igualdad.
-    // tipo es un tipo.
+Mila.Tipo.defineRelacionDeEquivalencia = function(tipo) {
+  Mila.Contrato({
+    Proposito: [
+      "Indicar si el tipo dado define una relación de equivalencia.",
+      Mila.Tipo.Booleano
+    ],
+    Parametros: [
+      [tipo, Mila.Tipo.Tipo]
+    ]
+  });
   return 'igualdad' in tipo;
 };
-Mila.Tipo._Definir_EnPrototipo_('defineRelacionDeIgualdad', Mila.Tipo._Tipo);
+Mila.Tipo._Definir_EnPrototipo_('defineRelacionDeEquivalencia', Mila.Tipo._Tipo);
 
 Mila.Tipo.defineRelacionDeOrden = function(tipo) {
-  // Indica si el tipo dado define una relación de orden.
-    // tipo es un tipo.
+  Mila.Contrato({
+    Proposito: [
+      "Indicar si el tipo dado define una relación de orden.",
+      Mila.Tipo.Booleano
+    ],
+    Parametros: [
+      [tipo, Mila.Tipo.Tipo]
+    ]
+  });
   return 'orden' in tipo;
 };
 Mila.Tipo._Definir_EnPrototipo_('defineRelacionDeOrden', Mila.Tipo._Tipo);
 
 Mila.Tipo.tipoUnificadoEntre_Y_ = function(tipo1, tipo2) {
-  // Describe el tipo más específico resultante de la unificación de los dos tipos dados.
-    // tipo1 y tipo2 son tipos.
-  // PRE: tipo1 y tipo2 unifican entre sí.
+  Mila.Contrato({
+    Proposito: [
+      "Describir el tipo más específico resultante de la unificación de los dos tipos dados.",
+      Mila.Tipo.Tipo
+    ],
+    Precondiciones: [
+      "tipo1 y tipo2 unifican entre sí.",
+      Mila.Tipo.unificaCon_(tipo1, tipo2)
+    ],
+    Parametros: [
+      [tipo1, Mila.Tipo.Tipo],
+      [tipo2, Mila.Tipo.Tipo]
+    ]
+  });
   if (Mila.Tipo.esIgualA_(tipo1, tipo2) || Mila.Tipo.esSubtipoDe_(tipo2, tipo1)) {
     return tipo1;
   };
@@ -504,8 +720,15 @@ Mila.Tipo.tipoUnificadoEntre_Y_ = function(tipo1, tipo2) {
 };
 
 Mila.Tipo.hayTipoUnificableEn_ = function(lista) {
-  // Indica si hay un tipo tal que todos los elementos de la lista dada sean de ese tipo.
-    // lista es una lista de elementos cualesquiera.
+  Mila.Contrato({
+    Proposito: [
+      "Indicar si hay un tipo tal que todos los elementos de la lista dada sean de ese tipo.",
+      Mila.Tipo.Booleano
+    ],
+    Parametros: [
+      [lista, Mila.Tipo.Lista]
+    ]
+  });
   if (lista.length == 0) {
     return true;
   }
@@ -521,9 +744,15 @@ Mila.Tipo.hayTipoUnificableEn_ = function(lista) {
 };
 
 Mila.Tipo.tipoUnificadoEn_ = function(lista) {
-  // Describe el tipo más específico tal que todos los elementos de la lista dada sean de ese tipo.
-    // lista es una lista de elementos cualesquiera.
-  // PRE: existe un tipo tal que todos los elementos de la lista dada sean de ese tipo.
+  Mila.Contrato({
+    Proposito: [
+      "Describir el tipo más específico tal que todos los elementos de la lista dada sean de ese tipo.",
+      Mila.Tipo.Tipo
+    ],
+    Parametros: [
+      [lista, Mila.Tipo.Lista]
+    ]
+  });
   if (lista.length == 0) {
     return Mila.Tipo.Registro;
   }
@@ -536,46 +765,114 @@ Mila.Tipo.tipoUnificadoEn_ = function(lista) {
 };
 
 Mila.Tipo.esMenorA_ = function(elemento1, elemento2) {
-  // Indica si el primer elemento dado es menor al segundo según la relación de orden del tipo.
-    // elemento1 y elemento2 pueden ser datos cualesquiera pero del mismo tipo.
-  // PRE: Los elementos dados son del mismo tipo.
-  // PRE: El tipo de los elementos dados tiene definida una relación de orden.
+  Mila.Contrato({
+    Proposito: [
+      "Indicar si el primer elemento dado es menor al segundo según la relación de orden del tipo.",
+      Mila.Tipo.Booleano
+    ],
+    Precondiciones:[
+      "Los elementos dados son del mismo tipo.",
+      Mila.Tipo.esDelMismoTipoQue_(elemento1, elemento2),
+      "El tipo de los elementos dados define una relación de orden.",
+      Mila.Tipo.defineRelacionDeOrden(Mila.Tipo.tipo(elemento1))
+    ],
+    Parametros: [
+      [elemento1, Mila.Tipo.Cualquiera],
+      [elemento2, Mila.Tipo.Cualquiera]
+    ]
+  });
   return Mila.Tipo.tipo(elemento1).orden(elemento1, elemento2);
 };
 Mila.Tipo._Definir_EnPrototipo_('esMenorA_', Object);
 
 Mila.Tipo.esMayorA_ = function(elemento1, elemento2) {
-  // Indica si el primer elemento dado es mayor al segundo según la relación de orden del tipo.
-    // elemento1 y elemento2 pueden ser datos cualesquiera pero del mismo tipo.
-  // PRE: Los elementos dados son del mismo tipo.
-  // PRE: El tipo de los elementos dados tiene definida una relación de orden.
+  Mila.Contrato({
+    Proposito: [
+      "Indicar si el primer elemento dado es mayor al segundo según la relación de orden del tipo.",
+      Mila.Tipo.Booleano
+    ],
+    Precondiciones:[
+      "Los elementos dados son del mismo tipo.",
+      Mila.Tipo.esDelMismoTipoQue_(elemento1, elemento2),
+      "El tipo de los elementos dados define una relación de orden.",
+      Mila.Tipo.defineRelacionDeOrden(Mila.Tipo.tipo(elemento1))
+    ],
+    Parametros: [
+      [elemento1, Mila.Tipo.Cualquiera],
+      [elemento2, Mila.Tipo.Cualquiera]
+    ]
+  });
   return Mila.Tipo.tipo(elemento1).orden(elemento2, elemento1);
 };
 Mila.Tipo._Definir_EnPrototipo_('esMayorA_', Object);
 
 Mila.Tipo.esMenorOIgualA_ = function(elemento1, elemento2) {
-  // Indica si el primer elemento dado es menor o igual al segundo según la relación de orden del tipo.
-    // elemento1 y elemento2 pueden ser datos cualesquiera pero del mismo tipo.
-  // PRE: Los elementos dados son del mismo tipo.
-  // PRE: El tipo de los elementos dados tiene definida una relación de orden y una relación de equivalencia.
+  Mila.Contrato({
+    Proposito: [
+      "Indicar si el primer elemento dado es menor al segundo según la relación de orden del tipo.",
+      Mila.Tipo.Booleano
+    ],
+    Precondiciones:[
+      "Los elementos dados son del mismo tipo.",
+      Mila.Tipo.esDelMismoTipoQue_(elemento1, elemento2),
+      "El tipo de los elementos dados define una relación de orden.",
+      Mila.Tipo.defineRelacionDeOrden(Mila.Tipo.tipo(elemento1)),
+      "El tipo de los elementos dados define una relación de equivalencia.",
+      Mila.Tipo.defineRelacionDeEquivalencia(Mila.Tipo.tipo(elemento1))
+    ],
+    Parametros: [
+      [elemento1, Mila.Tipo.Cualquiera],
+      [elemento2, Mila.Tipo.Cualquiera]
+    ]
+  });
   return Mila.Tipo.tipo(elemento1).igualdad(elemento1, elemento2) || Mila.Tipo.tipo(elemento1).orden(elemento1, elemento2);
 };
 Mila.Tipo._Definir_EnPrototipo_('esMenorOIgualA_', Object);
 
 Mila.Tipo.esMayorOIgualA_ = function(elemento1, elemento2) {
-  // Indica si el primer elemento dado es mayor o igual al segundo según la relación de orden del tipo.
-    // elemento1 y elemento2 pueden ser datos cualesquiera pero del mismo tipo.
-  // PRE: Los elementos dados son del mismo tipo.
-  // PRE: El tipo de los elementos dados tiene definida una relación de orden y una relación de equivalencia.
+  Mila.Contrato({
+    Proposito: [
+      "Indicar si el primer elemento dado es menor al segundo según la relación de orden del tipo.",
+      Mila.Tipo.Booleano
+    ],
+    Precondiciones:[
+      "Los elementos dados son del mismo tipo.",
+      Mila.Tipo.esDelMismoTipoQue_(elemento1, elemento2),
+      "El tipo de los elementos dados define una relación de orden.",
+      Mila.Tipo.defineRelacionDeOrden(Mila.Tipo.tipo(elemento1)),
+      "El tipo de los elementos dados define una relación de equivalencia.",
+      Mila.Tipo.defineRelacionDeEquivalencia(Mila.Tipo.tipo(elemento1))
+    ],
+    Parametros: [
+      [elemento1, Mila.Tipo.Cualquiera],
+      [elemento2, Mila.Tipo.Cualquiera]
+    ]
+  });
   return Mila.Tipo.tipo(elemento1).igualdad(elemento1, elemento2) || Mila.Tipo.tipo(elemento1).orden(elemento2, elemento1);
 };
 Mila.Tipo._Definir_EnPrototipo_('esMayorOIgualA_', Object);
 
 Mila.Tipo.estaEntre_Y_Inclusive = function(elemento, limiteInferior, limiteSuperior) {
-  // Indica si el primer elemento dado está entre los otros dos según la relación de orden del tipo.
-    // elemento1 y elemento2 pueden ser datos cualesquiera pero del mismo tipo.
-  // PRE: Los elementos dados son del mismo tipo.
-  // PRE: El tipo de los elementos dados tiene definida una relación de orden y una relación de equivalencia.
+  Mila.Contrato({
+    Proposito: [
+      "Indicar si el primer elemento dado está entre los otros dos según la relación de orden del tipo.",
+      Mila.Tipo.Booleano
+    ],
+    Precondiciones:[
+      "Los elementos dados son del mismo tipo.",
+      Mila.Tipo.esDelMismoTipoQue_(elemento, limiteInferior) &&
+      Mila.Tipo.esDelMismoTipoQue_(elemento, limiteSuperior),
+      "El tipo de los elementos dados define una relación de orden.",
+      Mila.Tipo.defineRelacionDeOrden(Mila.Tipo.tipo(elemento)),
+      "El tipo de los elementos dados define una relación de equivalencia.",
+      Mila.Tipo.defineRelacionDeEquivalencia(Mila.Tipo.tipo(elemento))
+    ],
+    Parametros: [
+      [elemento, Mila.Tipo.Cualquiera],
+      [limiteInferior, Mila.Tipo.Cualquiera],
+      [limiteSuperior, Mila.Tipo.Cualquiera]
+    ]
+  });
   return Mila.Tipo.esMayorOIgualA_(elemento, limiteInferior) && Mila.Tipo.esMenorOIgualA_(elemento, limiteSuperior);
 };
 Mila.Tipo._Definir_EnPrototipo_('estaEntre_Y_Inclusive', Object);
@@ -593,6 +890,13 @@ Mila.Tipo.Registrar({
   strInstancia: function(elemento) {
     return elemento.strTipo(elemento);
   }
+});
+
+// Tipo Cualquiera: usado en contratos para indicar que puede ser de cualquier tipo.
+
+Mila.Tipo.Registrar({
+  nombre: "Cualquiera",
+  es: x => true
 });
 
 // Tipo Nada: el tipo de los valores nulos (null, undefined, NaN).
@@ -682,6 +986,53 @@ Mila.Tipo.Registrar({
   strTipo: "Función"
 });
 
+// Tipo Lista: el tipo de las listas
+
+Mila.Tipo.Registrar({
+  nombre: "Lista",
+  prototipo: Array,
+  es: 'esUnaLista',
+  igualdad: function(elemento1, elemento2) {
+    if (Mila.Tipo.esDistintoA_(elemento1.length, elemento2.length)) {
+      return false;
+    }
+    for (let i=0; i<elemento1.length; i++) {
+      if (Mila.Tipo.esDistintoA_(elemento1[i], elemento2[i])) {
+        return false;
+      }
+    }
+    return true;
+  },
+  strInstancia: function(elemento) {
+    return `[${elemento.transformados(Mila.Tipo.aTexto).join(",")}]`;
+  }
+});
+
+// Tipo ListaDe: el tipo de las listas cuyos elementos son todos del mismo tipo
+
+Mila.Tipo.Registrar({
+  nombre: "ListaDe_",
+  parametros: ['_sub'],
+  subtipoDe: "Lista",
+  esSubtipoDe_: function(otroTipo) {
+    return Mila.Tipo.esIgualA_(otroTipo, Mila.Tipo.Lista) ||
+      (Mila.Tipo.esIgualA_(otroTipo.nombre, "ListaDe_") && Mila.Tipo.esSubtipoDe_(this._sub, otroTipo._sub));
+  },
+  puedeSer: function(elemento) {
+    return elemento.length > 0 && Mila.Tipo.hayTipoUnificableEn_(elemento);
+  },
+  tipoPara: function(elemento) {
+    return Mila.Tipo.ListaDe_(Mila.Tipo.tipoUnificadoEn_(elemento));
+  },
+  es: function(elemento) {
+    return elemento.todosCumplen_(x => this._sub.es(x));
+  },
+  inicializacion: "Mila.Tipo._InicializarLista(resultado, _sub);",
+  strTipo: function(tipo) {
+    return `Lista de ${tipo._sub.aTexto()}`;
+  }
+});
+
 // Tipo Registro: el tipo de todos los demás objetos que tienen a Object como prototipo.
 
 Mila.Tipo.Registrar({
@@ -746,7 +1097,7 @@ Mila.Tipo.Registrar({
   nombre: "Variante",
   parametros: ['_nombre','_casos'],
   es: function(elemento) {
-    return Mila.Lista.algunoCumple_(this._casos, x => Mila.Tipo.esIgualA_(elemento, this[x]));
+    return Mila.Lista.algunoCumple_(this._casos, x => this.igualdad(elemento, this[x]));
   },
   inicializacion: "Mila.Tipo._GenerarVariantes(resultado, _casos, _nombre);",
   igualdad: function(elemento1, elemento2) {
@@ -756,7 +1107,7 @@ Mila.Tipo.Registrar({
     return tipo._nombre;
   },
   strInstancia: function(elemento) {
-    return this._tipo.strInstancia(elemento);
+    return elemento.aTexto();
   },
   AgregarCasos: function(nuevosCasos) {
     const esteTipo = this;
@@ -771,6 +1122,12 @@ Mila.Tipo.Registrar({
     }
   }
 });
+
+// Funciones auxiliares de tipos
+
+Mila.Tipo._InicializarLista = function(tipo, subtipo) {
+  Mila.Tipo._ReemplazarIdentificadoresPorTipos(tipo, {_sub: subtipo});
+};
 
 Mila.Tipo._InicializarDisyuncion = function(tipo, subtipos) {
   Mila.Tipo._ReemplazarIdentificadoresPorTipos(subtipos, subtipos);
@@ -803,5 +1160,136 @@ Mila.Tipo._ReemplazarIdentificadoresPorTipos = function(tipo, subtipos) {
   }
 };
 
+// Tipos auxiliares
+
+Mila.Tipo.Registrar({
+  nombre:"MapaTipos",
+  es: function(elemento) {
+    return elemento.valoresContenidos().todosCumplen_(x =>
+      Mila.Tipo.esUnTipo(x) || Mila.Tipo.esElIdentificadorDeUnTipo(x)
+    );
+  }
+});
+
+Mila.Tipo.Registrar({
+  nombre:"DataTipo",
+  es: function(elemento) {
+    return elemento.clavesDefinidas().todosCumplen_(x => [
+      'nombre', 'prototipo', 'es',
+      'subtipoDe', 'esSubtipoDe_',
+      'igualdad', 'orden',
+      'strTipo', 'strInstancia',
+      'parametros', 'puedeSer', 'tipoPara', 'inicializacion',
+      'inferible'
+    ].includes(x)) &&
+    // Debe incluir el campo nombre, una cadena de texto correspondiente al nombre del tipo.
+    elemento.defineLaClave_('nombre') && Mila.Tipo.esDeTipo_(elemento.nombre, Mila.Tipo.Texto) &&
+    // Puede incluir el campo prototipo, un objeto a cuyo prototipo asociar el tipo definido.
+      // En caso de no inlcuirse este campo, el tipo no se asocia a ningún prototipo.
+    // Puede incluir el campo subtipoDe, un tipo o un identificador de tipo correspondiente al
+      // tipo del cual el tipo que se está registrando es subtipo. Los campos que no se declaren
+      // se heredan de él (excepto prototipo).
+      (!elemento.defineLaClave_('subtipoDe') ||
+        (Mila.Tipo.esUnTipo(elemento.subtipoDe) || Mila.Tipo.esElIdentificadorDeUnTipo(elemento.subtipoDe))
+      ) &&
+    // Si incluye el campo subtipoDe puede incluir también el campo esSubtipoDe_, una función
+      // que tome un tipo y devuelva si el tipo  que se está registrando es subtipo de él.
+      // En caso de no inlcuirse este campo, la función simplemente verifica que el tipo dado
+        // pertenezca a la lista de subtipos de este.
+      (!elemento.defineLaClave_('esSubtipoDe_') || (
+        elemento.defineLaClave_('subtipoDe') &&
+        Mila.Tipo.esDeTipo_(elemento.esSubtipoDe_, Mila.Tipo.Funcion)
+      )) &&
+    // Puede incluir el campo es que permita determinar si un elemento es del tipo.
+    (
+      // Si se incluye el campo prototipo, el campo es puede ser una función que tome un
+        // elemento del prototipo y devuelva si el elemento es del tipo o puede ser una
+        // cadena de texto correspondiente al nombre de la función que determina si un elemento
+        // es del tipo (la implementación de la función únicamente verificará que el elemento
+        // tenga el prototipo adecuado). Omitir este campo tiene el mismo efecto que pasar una cadena de texto.
+      (elemento.defineLaClave_('prototipo') && (
+        !elemento.defineLaClave_('es') ||
+        Mila.Tipo.esDeTipo_(elemento.es, Mila.Tipo.Funcion) ||
+        Mila.Tipo.esDeTipo_(elemento.es, Mila.Tipo.Texto)
+      // Si no se incluye el campo prototipo, el campo es no se puede omitir.
+      )) || (!elemento.defineLaClave_('prototipo') && elemento.defineLaClave_('es') && (
+        // Si se incluye el campo subtipoDe, debe ser una función que tome un elemento del supertipo y
+          // devuelva si el elemento  es también del tipo que se está registrando.
+        (elemento.defineLaClave_('subtipoDe') && Mila.Tipo.esDeTipo_(elemento.es, Mila.Tipo.Funcion)) ||
+        // Si no, puede ser una función que tome un elemento y devuelva si el elemento es del tipo
+          // o un objeto cuyas claves sean los campos que el elemento debe tener y sus significados los
+          // tipos de dichos campos.
+        (!elemento.defineLaClave_('subtipoDe') && (
+          Mila.Tipo.esDeTipo_(elemento.es, Mila.Tipo.Funcion) ||
+          Mila.Tipo.esDeTipo_(elemento.es, "MapaTipos"))
+        )
+      ))
+    ) &&
+    // Puede incluir el campo igualdad que puede ser una función que tome dos elementos del
+      // tipo y devuelva si los elementos son observacionalmente iguales o una lista de nombres
+      // de campos correspondientes a los campos que deben ser iguales.
+      // En caso de no inlcuirse este campo, se asume que el tipo no tiene relación de equivalencia.
+      (!elemento.defineLaClave_('igualdad') ||
+        Mila.Tipo.esDeTipo_(elemento.igualdad, Mila.Tipo.Funcion) ||
+        Mila.Tipo.esDeTipo_(elemento.igualdad, Mila.Tipo.ListaDe_(Mila.Tipo.Texto))
+      ) &&
+    // Puede incluir el campo orden, una función que toma dos elementos del tipo y devuelve si el
+      // primero está antes que el segundo en la relación de orden del tipo.
+      // En caso de no inlcuirse este campo, se asume que el tipo no tiene relación de orden.
+      (!elemento.defineLaClave_('orden') ||
+        Mila.Tipo.esDeTipo_(elemento.orden, Mila.Tipo.Funcion)
+      ) &&
+    // Puede incluir el campo strTipo que puede ser un texto correspondiente a la representación
+      // textual del tipo o una función que tome como parámetro al tipo y devuelva dicha representación.
+      // En caso de no inlcuirse este campo, se asume que la representación textual del tipo es
+      // igual a su nombre.
+      (!elemento.defineLaClave_('strTipo') ||
+        Mila.Tipo.esDeTipo_(elemento.strTipo, Mila.Tipo.Texto) ||
+        Mila.Tipo.esDeTipo_(elemento.strTipo, Mila.Tipo.Funcion)
+      ) &&
+    // Puede incluir el campo strInstancia, una función que toma un elemento del tipo y devuelve
+      // su representación textual.
+      // En caso de no inlcuirse este campo, si se incluye el campo prototipo (ya sea en este o
+        // en alguno de sus supertipos) se utiliza en su lugar la función toString del prototipo
+        // y si no, se utiliza la función strInstancia del tipo Registro.
+      (!elemento.defineLaClave_('strInstancia') ||
+        Mila.Tipo.esDeTipo_(elemento.strInstancia, Mila.Tipo.Funcion)
+      ) &&
+    // Puede incluir el campo parametros, una lista de textos correspondientes a los nombres
+      // de los parámetros en caso de que se esté registrando un tipo paramétrico.
+      (!elemento.defineLaClave_('parametros') ||
+        Mila.Tipo.esDeTipo_(elemento.parametros, Mila.Tipo.ListaDe_(Mila.Tipo.Texto))
+      ) &&
+    // Si incluye el campo parametros puede incluir también:
+      // * el campo puedeSer (una función que toma un elemento y devuelve un booleano
+        // correspondiente a si el elemento puede ser del tipo paramétrico, para alguna
+        // combinación de parámetros)
+      (!elemento.defineLaClave_('puedeSer') || (
+        elemento.defineLaClave_('parametros') &&
+        Mila.Tipo.esDeTipo_(elemento.puedeSer, Mila.Tipo.Funcion)
+      )) &&
+      // * el campo tipoPara (una función que toma un elemento y, asumiendo que el resultado
+        // de puedeSer con dicho elemento es verdadero, devuelve una instanciación del tipo
+        // paramétrico para tal elemento).
+      (!elemento.defineLaClave_('tipoPara') || (
+        elemento.defineLaClave_('parametros') &&
+        Mila.Tipo.esDeTipo_(elemento.tipoPara, Mila.Tipo.Funcion)
+      )) &&
+      // * el campo inicializacion, un texto que se  agregará como código a la función
+        // de inicialización del tipo cuando se parametrice.
+      (!elemento.defineLaClave_('inicializacion') || (
+        elemento.defineLaClave_('parametros') &&
+        Mila.Tipo.esDeTipo_(elemento.inicializacion, Mila.Tipo.Texto)
+      )) &&
+    // Puede incluir el campo inferible, un booleano que indique si este tipo se debe
+      // tener en cuenta al inferir el tipo de una expresión.
+      // En caso de no inlcuirse este campo, se asume que sí.
+      (!elemento.defineLaClave_('inferible') ||
+        Mila.Tipo.esDeTipo_(elemento.inferible, Mila.Tipo.Booleano)
+      )
+    ;
+  }
+});
+
 // Recién después de haber inicializado el módulo de tipos se pueden validar los contratos
-Mila.Documentacion.ajustes.analizarContratos = true;
+Mila.Documentacion.EmpezarAAnalizarContratos();
