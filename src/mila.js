@@ -64,6 +64,7 @@ entorno.universo.Mila = {
 if (entorno.enNodeJs()) {
   Mila._os = process;
   Mila._fs = await import("node:fs");
+  Mila._path = await import("node:path");
   Mila._accesoArchivo = function(ruta, funcion) {
     Mila._fs.readFile(ruta, "utf8", (error, contenido) => {
       const resultado = {};
@@ -95,6 +96,7 @@ if (entorno.enNodeJs()) {
   };
   Mila.os = function() { return Mila._os; }
   Mila.fs = function() { return Mila._fs; }
+  Mila.path = function() { return Mila._path; }
 } else {
   Mila._accesoArchivo = function(ruta, funcion) {
     let pedido = new XMLHttpRequest();
@@ -126,6 +128,7 @@ if (entorno.enNodeJs()) {
   };
   Mila.os = function() { Mila.Error("No disponible en el navegador"); }
   Mila.fs = function() { Mila.Error("No disponible en el navegador"); }
+  Mila.path = function() { Mila.Error("No disponible en el navegador"); }
 }
 
 // Archivos
@@ -344,6 +347,9 @@ Mila._Agregar_AlEntorno = function(rutaArchivo) {
   const configuracion = Mila._archivos[rutaArchivo].configuracion;
   const tipo = Mila._archivos[rutaArchivo].tipo;
   Mila.Compilar_DeTipo_(configuracion, tipo);
+  if ('define' in configuracion) {
+    Mila._RegistrarModulo_En_(configuracion.define, entorno.universo, []);
+  }
   Mila._AgregarCodigo(configuracion.codigo, tipo);
 };
 
@@ -461,9 +467,14 @@ Mila._RegistrarRutaProyecto = function(rutaArchivo, ubicacion) {
   } else {
     let nombreProyecto = rutaArchivo.substring(1,iDiagonal);
     if (!(nombreProyecto in Mila._proyectos)) {
-      Mila._proyectos[nombreProyecto] = ubicacion + nombreProyecto + "/";
+      Mila._RegistrarProyecto(nombreProyecto, ubicacion + nombreProyecto + "/");
     }
   }
+};
+
+Mila._RegistrarProyecto = function(nombreProyecto, ubicacion) {
+  // Registra el proyecto con el nombre dado en la ubicación dada.
+  Mila._proyectos[nombreProyecto] = ubicacion
 };
 
 Mila._Ajustar_Para_ = function(configuracion, rutaArchivo) {
@@ -592,7 +603,6 @@ Mila._RegistrarModulo_ = function(nombreModulo) {
   if (nombreModulo in Mila._modulos) {
     Mila.Error(`Ya se registró un módulo con el nombre ${nombreModulo}.`);
   } else {
-    Mila._RegistrarModulo_En_(nombreModulo, entorno.universo, []);
     Mila._modulos[nombreModulo] = {};
   }
 };
@@ -677,6 +687,13 @@ Mila.EjecutarInicializacionesPendientes = function() {
   }
 };
 
+Mila.ProcesarArgumentosMila = function(argumentos) {
+  // Procesa los argumentos que le corresponden a milascript y no al script ejecutado
+  if ('mila' in argumentos) {
+    Mila._RegistrarProyecto("milascript", argumentos.mila);
+  }
+};
+
 if (entorno.universo.compilado) {
   entorno.universo.addEventListener('load', Mila._Inicializar);
 } else if (entorno.enNodeJs()) {
@@ -692,6 +709,7 @@ if (entorno.universo.compilado) {
         }
       }
       if (entorno.argumentos.lista.length >= 1) {
+        Mila.ProcesarArgumentosMila(entorno.argumentos);
         Mila.Cargar(entorno.argumentos.lista.splice(0,1)[0]);
       } else {
         Mila.Error(`No se pasa ningún script de Mila.`);

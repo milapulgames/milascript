@@ -33,17 +33,20 @@ const build = function(nombre, ubicacionMila) {
     Mila.alIniciar(function() {
       const contenido = '<html>\n  <script type="module">window.compilado = true;</script>\n'
         + archivosInlcuidos.transformados(function(archivo) {
-          return `  <script${archivo.tipo == "Mila" ? ' type="module"' : ''} src="${
+          return `  <script${archivo.tipo == "Mila" ? ' type="module"' : ''} src="${rutaRelativa(
             (archivo.ruta in Mila._archivos && 'rutaReal' in Mila._archivos[archivo.ruta])
               ? Mila._archivos[archivo.ruta].rutaReal
               : archivo.ruta
-          }.js"></script>`;
+          )}.js"></script>`;
         }).join("\n")
         + '\n  <style media="screen">\n    body {\n      margin: 0;\n      padding: 0;\n    }\n  </style>\n</html>';
       Mila.Archivo.Escribir_EnElArchivo_(contenido, `${nombre}.html`);
-      debugger;
     });
   };
+};
+
+const rutaRelativa = function(rutaOriginal) {
+  return `${Mila.path().relative(Mila.path().resolve(),rutaOriginal)}`;
 };
 
 Mila.alIniciar(function() {
@@ -60,10 +63,8 @@ Mila.alIniciar(function() {
       if (rutaRaiz.length > 0) {
         Mila.os().chdir(rutaRaiz);
       }
-      let ubicacionMila = argumentos.mila || "milascript/";
-      if (!ubicacionMila.endsWith("/")) {
-        ubicacionMila += "/";
-      }
+      let ubicacionMila = Mila.path().resolve(argumentos.mila || "milascript");
+      ubicacionMila = rutaRelativa(ubicacionMila) + "/";
       const acceso = function(ruta, f_si, f_no) {
         Mila.fs().access(ruta, Mila.fs().constants.F_OK, (err) => {
           err ? f_no() : f_si();
