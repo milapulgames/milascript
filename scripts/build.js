@@ -32,7 +32,7 @@ const build = function(nombre, ubicacionMila) {
     });
     Mila.Cargar(nombre);
     Mila.alIniciar(function() {
-      const contenido = '<html>\n  <script type="module">window.compilado = true;</script>\n'
+      const contenido = '<!DOCTYPE HTML>\n<html>\n<head>\n  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">\n  <script type="module">window.compilado = true;</script>\n'
         + archivosInlcuidos.transformados(function(archivo) {
           return `  <script${archivo.tipo == "Mila" ? ' type="module"' : ''} src="${rutaRelativa(
             (archivo.ruta in Mila._archivos && 'rutaReal' in Mila._archivos[archivo.ruta])
@@ -40,7 +40,7 @@ const build = function(nombre, ubicacionMila) {
               : archivo.ruta
           )}.js"></script>`;
         }).join("\n")
-        + '\n  <style media="screen">\n    body {\n      margin: 0;\n      padding: 0;\n    }\n  </style>\n</html>';
+        + '\n  <style media="screen">\n    body {\n      margin: 0;\n      padding: 0;\n    }\n  </style>\n</head>\n<body>\n</body>\n</html>';
       Mila.Archivo.Escribir_EnElArchivo_(contenido, `${nombre}.html`);
     });
   };
