@@ -75,6 +75,9 @@ Mila.Pantalla._AreaTexto.prototype.PlasmarEnHtml = function(nodoMadre) {
     this._nodoHtml = document.createElement('textarea');
     this._nodoHtml.style.resize = 'none';
     this._nodoHtml.style.position = 'fixed';
+    this._nodoHtml.style.margin = '0';
+    this._nodoHtml.style.padding = '0';
+    this._nodoHtml.style.border = 'solid 1px';
     this._nodoHtml.value = this._texto;
     nodoMadre.appendChild(this._nodoHtml);
   }

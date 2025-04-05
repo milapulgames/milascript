@@ -339,9 +339,9 @@ Mila.Pantalla.rectanguloPantalla = function() {
     ]
   });
   // TODO: distinguir el caso que esté ejecutando en node
-  const rectangulo = Mila.Geometria.areaDom_(document.body);
+  const rectangulo = Mila.Geometria.rectanguloEn__De_x_(0,0,window.innerWidth, window.innerHeight);
   rectangulo.ancho -= 2;
-  rectangulo.alto -= 2;
+  rectangulo.alto -= 2; // TODO: distinguir según el navegador (son 2 en Chrome y 3 en Firefox)
   return rectangulo;
 };
 
