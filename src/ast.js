@@ -43,11 +43,22 @@ Mila.Tipo.Registrar({
 });
 
 Mila.Tipo.Registrar({
+  nombre:'MapaNodosAST',
+  es: function(elemento) {
+    return elemento.clavesDefinidas().todosCumplen_(x =>
+      elemento[x].esDeTipo_(Mila.Tipo.NodoAST) ||
+      elemento[x].esDeTipo_(Mila.Tipo.ListaDe_(Mila.Tipo.NodoAST))
+    );
+  },
+  inferible: false
+});
+
+Mila.Tipo.Registrar({
   nombre:'AtributosNodoAST',
   es: {
     "?id":Mila.Tipo.Texto,
     "?tipoNodo":Mila.Tipo.Texto,
-    "?hijos":Mila.Tipo.NodoAST,
+    "?hijos":Mila.Tipo.MapaNodosAST,
     "?ubicacion":Mila.Tipo.UbicacionNodo,
     "?campos":Mila.Tipo.Registro
   },
@@ -71,19 +82,50 @@ Mila.AST.nuevoNodoDeTipo_ = function(tipoNodo) {
 
 Mila.AST._NodoAST.prototype.CambiarHijosA_ = function(nuevosHijos) {
   for (let hijoViejo in this.hijos) {
-    if (!nuevosHijos.defineLaClave_(hijoViejo)) {
+    if (
+      !nuevosHijos.defineLaClave_(hijoViejo) ||
+      (nuevosHijos[hijoViejo].esUnaLista() && this[hijoViejo].length == 0) ||
+      (!nuevosHijos[hijoViejo].esUnaLista() && this[hijoViejo].length != 0)
+    ) {
       delete this[hijoViejo];
     }
   }
   for (let hijoNuevo in nuevosHijos) {
     if (!this.hijos.defineLaClave_(hijoNuevo)) {
-      this[hijoNuevo] = function() {
-        return this.hijos[hijoNuevo];
+      if (nuevosHijos[hijoNuevo].esUnaLista()) {
+        this[hijoNuevo] = function(i) {
+          if (Mila.Tipo.esNada(i)) {
+            return this.hijos[hijoNuevo];
+          }
+          return this.hijos[hijoNuevo][i];
+        }
+      } else {
+        this[hijoNuevo] = function() {
+          return this.hijos[hijoNuevo];
+        }
       }
     }
   }
   this.hijos = nuevosHijos;
   this.NivelarHijos();
+};
+
+Mila.AST._NodoAST.prototype.CambiarHijo_A_ = function(clave, nuevoHijo) {
+  if (nuevoHijo.esUnaLista() && this[clave].length == 0) {
+    this[clave] = function(i) {
+      if (Mila.Tipo.esNada(i)) {
+        return this.hijos[clave];
+      }
+      return this.hijos[clave][i];
+    }
+  }
+  if (!nuevoHijo.esUnaLista() && this[clave].length != 0) {
+    this[clave] = function() {
+      return this.hijos[clave];
+    }
+  }
+  this.hijos[clave] = nuevoHijo;
+  this.NivelarHijo_(clave);
 };
 
 Mila.AST._NodoAST.prototype.CambiarUbicacionA_ = function(nuevaUbicacion) {
@@ -92,6 +134,10 @@ Mila.AST._NodoAST.prototype.CambiarUbicacionA_ = function(nuevaUbicacion) {
 
 Mila.AST._NodoAST.prototype.CambiarNivelA_ = function(nuevoNivel) {
   this.nivel = nuevoNivel;
+};
+
+Mila.AST._NodoAST.prototype.CambiarCampo_A_ = function(clave, nuevoValor) {
+  this.campos[clave] = nuevoValor;
 };
 
 Mila.AST._NodoAST.prototype.CambiarCamposA_ = function(nuevosCampos) {
@@ -111,10 +157,22 @@ Mila.AST._NodoAST.prototype.CambiarCamposA_ = function(nuevosCampos) {
 };
 
 Mila.AST._NodoAST.prototype.NivelarHijos = function() {
-  for (let hijo of this.hijos.valoresContenidos()) {
-    hijo.CambiarNivelA_(this.nivel + 1);
-    hijo.NivelarHijos();
+  for (let clave in this.hijos) {
+    this.NivelarHijo_(clave);
   }
+};
+
+Mila.AST._NodoAST.prototype.NivelarHijo_ = function(clave) {
+  let hijos = this.hijos[clave];
+  if (!hijos.esUnaLista()) {
+    hijos = [hijos];
+  }
+  const nivelHijos = this.nivel + 1;
+  hijos.Transformar(function(hijo) {
+    hijo.CambiarNivelA_(nivelHijos);
+    hijo.NivelarHijos();
+    return hijo;
+  });
 };
 
 Mila.AST._NodoAST.prototype.fold = function(mapaDeFunciones) {

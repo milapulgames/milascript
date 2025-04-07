@@ -383,6 +383,9 @@ Mila.Tipo._esTipoPrototipo = function(tipo, prototipo) {
     ]
   });
   return function(elemento) {
+    if (Mila.Tipo.esNada(elemento)) {
+      return false;
+    }
     return (
       (
         Object.getPrototypeOf(elemento) === prototipo ||
