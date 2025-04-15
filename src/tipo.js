@@ -137,17 +137,7 @@ Mila.Tipo._Registrar = function(dataTipo) {
           Mila.Tipo._tiposSinPrototipo.push(nuevoTipo.nombre);
         }
         if (typeof nuevoTipo.es == 'object') {
-          const definicion = nuevoTipo.es;
-          nuevoTipo.es = function(elemento) {
-            return Mila.Objeto.todosCumplen_(definicion, function(clave, valor) {
-              return (
-                clave.startsWith("?") &&
-                (!elemento.defineLaClave_(clave.substr(1)) || Mila.Tipo.esDeTipo_(elemento[clave.substr(1)], valor)))
-              || (
-                !clave.startsWith("?") && elemento.defineLaClave_(clave) && Mila.Tipo.esDeTipo_(elemento[clave], valor)
-              );
-            });
-          }
+          nuevoTipo.es = Mila.Tipo._esTipoRegistro(nuevoTipo.es);
         } else if (typeof nuevoTipo.es == 'function' && nuevoTipo.es.name.length > 0 && nuevoTipo.es.name != "es") {
           Mila.JS.DefinirFuncionDeInstanciaAPartirDe_({
             prototipo: Object,
@@ -269,7 +259,7 @@ Mila.Tipo._Registrar_ComoSubtipoDe_ = function(nuevoTipo, supertipo) {
       });
     }
     nuevoTipo.es = function(elemento) {
-      return supertipo.es(elemento) && nuevoTipo.validacionAdicionalTipo(elemento);
+      return supertipo.es(elemento) && nuevoTipo.validacionAdicionalTipo.call(this, elemento);
     };
   }
 };
@@ -436,6 +426,19 @@ Mila.JS.DefinirFuncionDeInstanciaAPartirDe_({
   nombre: 'tipo',
   funcionAInvocar: `Mila.Tipo._tipoSinPrototipo`
 });
+
+Mila.Tipo._esTipoRegistro = function(modelo) {
+  return function(elemento) {
+    return Mila.Objeto.todosCumplen_(modelo, function(clave, valor) {
+      return (
+        clave.startsWith("?") &&
+        (!elemento.defineLaClave_(clave.substr(1)) || Mila.Tipo.esDeTipo_(elemento[clave.substr(1)], valor)))
+      || (
+        !clave.startsWith("?") && elemento.defineLaClave_(clave) && Mila.Tipo.esDeTipo_(elemento[clave], valor)
+      );
+    });
+  };
+};
 
 Mila.Tipo.esInferible = function(tipoOIdentificadorDeTipo) {
   Mila.Contrato({
@@ -905,7 +908,8 @@ Mila.Tipo.Registrar({
 
 Mila.Tipo.Registrar({
   nombre: "Cualquiera",
-  es: x => true
+  es: x => true,
+  inferible: false
 });
 
 // Tipo Nada: el tipo de los valores nulos (null, undefined, NaN).
@@ -1064,6 +1068,18 @@ Mila.Tipo.Registrar({
   }
 });
 
+// Tipo RegistroCon: el tipo de los registros con campos específicos
+
+Mila.Tipo.Registrar({
+  nombre: "RegistroCon_",
+  subtipoDe: "Registro", // Para que herede igualdad y srtInstancia
+  parametros: ['_def'],
+  es: function(elemento) {
+    return Mila.Tipo._esTipoRegistro(this._def)(elemento);
+  },
+  inicializacion: "Mila.Tipo._InicializarRegistro(resultado, _def);"
+});
+
 // Tipo Disyunción: la forma de representar un tipo que puede ser alguno de una lista de tipos.
 
 Mila.Tipo.Registrar({
@@ -1136,6 +1152,10 @@ Mila.Tipo.Registrar({
 
 Mila.Tipo._InicializarLista = function(tipo, subtipo) {
   Mila.Tipo._ReemplazarIdentificadoresPorTipos(tipo, {_sub: subtipo});
+};
+
+Mila.Tipo._InicializarRegistro = function(tipo, modelo) {
+  Mila.Tipo._ReemplazarIdentificadoresPorTipos(tipo, {_def: modelo});
 };
 
 Mila.Tipo._InicializarDisyuncion = function(tipo, subtipos) {

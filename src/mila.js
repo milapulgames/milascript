@@ -633,8 +633,8 @@ Mila._RegistrarModulo_En_ = function(nombreModulo, moduloMadre, rutaModuloMadre)
     }
   } else {
     let nuevoModuloMadre = nombreModulo.substring(0,iPunto);
-    rutaModuloMadre.push(nuevoModuloMadre);
     if (nuevoModuloMadre in moduloMadre) {
+      rutaModuloMadre.push(nuevoModuloMadre);
       Mila._RegistrarModulo_En_(
         nombreModulo.substring(iPunto+1),
         moduloMadre[nuevoModuloMadre],
