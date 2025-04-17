@@ -72,8 +72,8 @@ Mila.Base.RegistrarFuncion_(
         Mila.Tipo.defineRelacionDeOrden(Mila.Tipo.tipo(elemento1))
       ],
       Parametros: [
-        elemento1, // cualquier tipo
-        elemento2 // cualquier tipo
+        [elemento1, Mila.Tipo.Cualquiera],
+        [elemento2, Mila.Tipo.Cualquiera]
       ]
     });
     return elemento1.esMenorOIgualA_(elemento2) ? elemento1 : elemento2;
@@ -91,8 +91,8 @@ Mila.Base.RegistrarFuncion_(
         Mila.Tipo.defineRelacionDeOrden(Mila.Tipo.tipo(elemento1))
       ],
       Parametros: [
-        elemento1, // cualquier tipo
-        elemento2 // cualquier tipo
+        [elemento1, Mila.Tipo.Cualquiera],
+        [elemento2, Mila.Tipo.Cualquiera]
       ]
     });
     return elemento1.esMayorOIgualA_(elemento2) ? elemento1 : elemento2;
@@ -104,7 +104,7 @@ Mila.Base.RegistrarFuncion_(
     Mila.Contrato({
       Proposito: "Mostrar una represetanción textual del elemento dado",
       Parametros: [
-        elemento // cualquier tipo
+        [elemento, Mila.Tipo.Cualquiera]
       ]
     });
     for (let linea of Mila.Tipo.aTexto(elemento).split('\n')) {
@@ -127,7 +127,7 @@ Mila.Base.ReemplazarFuncion_De_Por_ = function(nombreFuncion, objeto, nuevaFunci
     ],
     Parametros: [
       [nombreFuncion, Mila.Tipo.Texto],
-      objeto, // cualquier tipo
+      [objeto, Mila.Tipo.Cualquiera],
       [nuevaFuncion, Mila.Tipo.Funcion, "Toma como parámetro la función original y devuelve la nueva función"]
     ]
   });

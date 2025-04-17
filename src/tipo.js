@@ -1197,7 +1197,8 @@ Mila.Tipo.Registrar({
     return elemento.valoresContenidos().todosCumplen_(x =>
       Mila.Tipo.esUnTipo(x) || Mila.Tipo.esElIdentificadorDeUnTipo(x)
     );
-  }
+  },
+  inferible: false
 });
 
 Mila.Tipo.Registrar({

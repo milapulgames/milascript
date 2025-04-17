@@ -125,7 +125,10 @@ Mila.Pantalla._Panel.prototype.MinimizarAncho = function() {
   });
   this._nodoHtml.style.width = `${this._elementos.esVacia()
     ? 0
-    : this._elementos.transformados(x=>x.anchoHtml()).maximo()
+    : (this._disposicion.eje == Mila.Pantalla.Eje.Horizontal
+      ? this._elementos.transformados(x=>x.anchoHtml()).fold((x,y)=>x+y,0)
+      : this._elementos.transformados(x=>x.anchoHtml()).maximo()
+    )
   }px`;
 };
 
@@ -141,7 +144,10 @@ Mila.Pantalla._Panel.prototype.MinimizarAlto = function() {
   });
   this._nodoHtml.style.height = `${this._elementos.esVacia()
     ? 0
-    : this._elementos.transformados(x=>x.altoHtml()).maximo()
+    : (this._disposicion.eje == Mila.Pantalla.Eje.Horizontal
+      ? this._elementos.transformados(x=>x.altoHtml()).maximo()
+      : this._elementos.transformados(x=>x.altoHtml()).fold((x,y)=>x+y,0)
+    )
   }px`;
 };
 
@@ -162,6 +168,10 @@ Mila.Pantalla._Panel.prototype.Redimensionar = function(rectanguloCompleto) {
     this._nodoHtml.style.height = `${Math.abs(resultado.alto)}px`;
     this._disposicion.OrganizarElementos_En_(this._elementos, resultado);
     resultado = this.rectanguloMinimo(resultado);
+    if (rectanguloCompleto.alto < 0 || rectanguloCompleto.ancho < 0) {
+      // Disposición invertida, tengo que volver a organizar mis elementos en el rectángulo final
+      this._disposicion.OrganizarElementos_En_(this._elementos, resultado);
+    }
   }
   return resultado;
 };
