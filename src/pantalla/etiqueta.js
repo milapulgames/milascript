@@ -5,10 +5,9 @@ Mila.Modulo({
 Mila.Tipo.Registrar({
   nombre:'AtributosEtiqueta',
   es: {
-    "?texto":Mila.Tipo.Texto,
-    "?ancho":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio]),
-    "?alto":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio])
+    "?texto":Mila.Tipo.Texto
   },
+  subtipoDe: "AtributosElementoVisual",
   inferible: false
 });
 
@@ -61,8 +60,10 @@ Mila.Pantalla._Etiqueta.prototype.PlasmarEnHtml = function(nodoMadre) {
   if (!('_nodoHtml' in this)) {
     this._nodoHtml = document.createElement('span');
     this._nodoHtml.innerHTML = this._texto;
-    this._nodoHtml.style.position = 'fixed';
+    this._nodoHtml.style.border = `solid ${this._grosorBorde}px blue`;
+    this._nodoHtml.style.position = 'absolute';
     this._nodoHtml.style['text-align'] = 'center';
+    this._nodoHtml.style['text-wrap-mode'] = 'nowrap';
     nodoMadre.appendChild(this._nodoHtml);
   }
 };

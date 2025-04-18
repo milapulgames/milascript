@@ -5,10 +5,9 @@ Mila.Modulo({
 Mila.Tipo.Registrar({
   nombre:'AtributosCampoTexto',
   es: {
-    "?texto":Mila.Tipo.Texto,
-    "?ancho":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio]),
-    "?alto":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio])
+    "?texto":Mila.Tipo.Texto
   },
+  subtipoDe: "AtributosElementoVisual",
   inferible: false
 });
 
@@ -73,7 +72,7 @@ Mila.Pantalla._CampoTexto.prototype.PlasmarEnHtml = function(nodoMadre) {
   });
   if (!('_nodoHtml' in this)) {
     this._nodoHtml = document.createElement('input');
-    this._nodoHtml.style.position = 'fixed';
+    this._nodoHtml.style.position = 'absolute';
     this._nodoHtml.value = this._texto;
     nodoMadre.appendChild(this._nodoHtml);
   }

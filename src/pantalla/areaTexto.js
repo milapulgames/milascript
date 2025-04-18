@@ -5,10 +5,9 @@ Mila.Modulo({
 Mila.Tipo.Registrar({
   nombre:'AtributosAreaTexto',
   es: {
-    "?texto":Mila.Tipo.Texto,
-    "?ancho":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio]),
-    "?alto":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio])
+    "?texto":Mila.Tipo.Texto
   },
+  subtipoDe: "AtributosElementoVisual",
   inferible: false
 });
 
@@ -23,7 +22,10 @@ Mila.Pantalla.nuevaAreaTexto = function(atributos={}) {
     ]
   });
   let nuevaAreaTexto = new Mila.Pantalla._AreaTexto();
-  nuevaAreaTexto.Inicializar(atributos, Mila.Pantalla.ComportamientoEspacio.Maximizar);
+  nuevaAreaTexto.Inicializar(atributos, {
+    ancho:Mila.Pantalla.ComportamientoEspacio.Maximizar,
+    alto:Mila.Pantalla.ComportamientoEspacio.Maximizar
+  });
   nuevaAreaTexto.CambiarTextoA_('texto' in atributos
     ? atributos.texto
     : ''
@@ -74,7 +76,7 @@ Mila.Pantalla._AreaTexto.prototype.PlasmarEnHtml = function(nodoMadre) {
   if (!('_nodoHtml' in this)) {
     this._nodoHtml = document.createElement('textarea');
     this._nodoHtml.style.resize = 'none';
-    this._nodoHtml.style.position = 'fixed';
+    this._nodoHtml.style.position = 'absolute';
     this._nodoHtml.style.margin = '0';
     this._nodoHtml.style.padding = '0';
     this._nodoHtml.style.border = 'solid 1px';

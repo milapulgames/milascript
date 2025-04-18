@@ -7,6 +7,11 @@ Mila.Modulo({
 Mila.Pantalla._pantallas = {};
 Mila.Pantalla._pantallaActual = Mila.Nada;
 
+Mila.Pantalla.Constantes = {
+  grosorBarraScroll: 15.5,
+  offsetVentana: 2 // Ojo: En Firefox es 3
+}
+
 Mila.Pantalla.ComportamientoEspacio = Mila.Tipo.Variante("ComportamientoEspacio",
   ["Maximizar","Minimizar"]
 );
@@ -59,29 +64,32 @@ Mila.Tipo.Registrar({
   nombre:'AtributosElementoVisual',
   es: {
     "?ancho":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio]),
-    "?alto":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio])
+    "?alto":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio]),
+    "?grosorBorde":Mila.Tipo.Entero
   },
   inferible: false
 });
 
+Mila.Pantalla.AtributosElementoVisualPorDefecto = {
+  ancho:Mila.Pantalla.ComportamientoEspacio.Minimizar,
+  alto:Mila.Pantalla.ComportamientoEspacio.Minimizar,
+  grosorBorde:0
+};
+
 Mila.Pantalla._ElementoVisual = function ElementoVisual() {};
 
-Mila.Pantalla._ElementoVisual.prototype.Inicializar = function(atributos, porDefecto=Mila.Pantalla.ComportamientoEspacio.Minimizar) {
+Mila.Pantalla._ElementoVisual.prototype.Inicializar = function(atributos, porDefecto=Mila.Pantalla.AtributosElementoVisualPorDefecto) {
   Mila.Contrato({
     Proposito: "Inicializar este elemento visual asignando sus campos ancho y alto",
     Parametros: [
       [atributos, Mila.Tipo.AtributosElementoVisual],
-      [porDefecto, Mila.Pantalla.ComportamientoEspacio]
+      [porDefecto, Mila.Tipo.AtributosElementoVisual]
     ]
   });
-  this.CambiarAnchoA_('ancho' in atributos
-    ? atributos.ancho
-    : porDefecto
-  );
-  this.CambiarAltoA_('alto' in atributos
-    ? atributos.alto
-    : porDefecto
-  );
+  const todosLosAtributos = Object.assign({}, Mila.Pantalla.AtributosElementoVisualPorDefecto, porDefecto, atributos);
+  this.CambiarAnchoA_(todosLosAtributos.ancho);
+  this.CambiarAltoA_(todosLosAtributos.alto);
+  this.CambiarGrosorBordeA_(todosLosAtributos.grosorBorde);
 };
 
 Mila.Pantalla._ElementoVisual.prototype.rectanguloInterno = function(rectanguloCompleto) {
@@ -95,6 +103,8 @@ Mila.Pantalla._ElementoVisual.prototype.rectanguloInterno = function(rectanguloC
     ]
   });
   let rectangulo = rectanguloCompleto.copia();
+  rectangulo.ancho -= 2*this._grosorBorde;
+  rectangulo.alto -= 2*this._grosorBorde;
   if (this.ancho().esUnNumero()) {
     if (rectangulo.ancho < 0) {
       rectangulo.ancho = maximoEntre_Y_(-this.ancho(), rectangulo.ancho);
@@ -140,11 +150,15 @@ Mila.Pantalla._ElementoVisual.prototype.rectanguloInterno = function(rectanguloC
   return resultado;
 };
 
-Mila.Pantalla._ElementoVisual.prototype.rectanguloMinimo = function(rectanguloCompleto) {
+Mila.Pantalla._ElementoVisual.prototype.rectanguloMinimo = function(rectanguloCompleto, anchoInvertido=false, altoInvertido=false) {
   Mila.Contrato({
     Proposito: [
       "Describir el rectángulo mínimo ocupado por el elemento html asociado a este elemento visual",
       Mila.Tipo.Rectangulo
+    ],
+    Parametros: [
+      [anchoInvertido, Mila.Tipo.Booleano, "Si es cierto, al minimizar hay que aumentar la coordenada x además de reducir el ancho"],
+      [altoInvertido, Mila.Tipo.Booleano, "Si es cierto, al minimizar hay que aumentar la coordenada y además de reducir el alto"]
     ],
     Precondiciones: [
       "Se está ejecutando en el navegador",
@@ -159,14 +173,14 @@ Mila.Pantalla._ElementoVisual.prototype.rectanguloMinimo = function(rectanguloCo
   if (this.ancho().esIgualA_(Mila.Pantalla.ComportamientoEspacio.Maximizar)) {
     this._nodoHtml.style.width = `${rectanguloCompleto.ancho}px`;
   } else if (this.ancho().esIgualA_(Mila.Pantalla.ComportamientoEspacio.Minimizar)) {
-    this.MinimizarAncho();
+    this.MinimizarAncho(anchoInvertido, rectanguloCompleto);
   } else if (this.ancho().esUnNumero()) {
     this._nodoHtml.style.width = `${this.ancho()}px`;
   }
   if (this.alto().esIgualA_(Mila.Pantalla.ComportamientoEspacio.Maximizar)) {
     this._nodoHtml.style.height = `${rectanguloCompleto.alto}px`;
   } else if (this.alto().esIgualA_(Mila.Pantalla.ComportamientoEspacio.Minimizar)) {
-    this.MinimizarAlto();
+    this.MinimizarAlto(altoInvertido, rectanguloCompleto);
   } else if (this.alto().esUnNumero()) {
     this._nodoHtml.style.height = `${this.alto()}px`;
   }
@@ -186,7 +200,7 @@ Mila.Pantalla._ElementoVisual.prototype.Redimensionar = function(rectanguloCompl
   });
   let resultado = this.rectanguloInterno(rectanguloCompleto);
   if ('_nodoHtml' in this) {
-    resultado = this.rectanguloMinimo(resultado);
+    resultado = this.rectanguloMinimo(resultado, rectanguloCompleto.ancho < 0, rectanguloCompleto.alto < 0);
   }
   return resultado;
 };
@@ -220,12 +234,32 @@ Mila.Pantalla._ElementoVisual.prototype.anchoHtml = function() {
       '_nodoHtml' in this /* && this._nodoHtml es de tipo nodo dom */
     ]
   });
-  return Mila.Geometria.areaDom_(this._nodoHtml).ancho;
+  return Mila.Geometria.areaDom_(this._nodoHtml).ancho + this._grosorBorde;
 };
 
-Mila.Pantalla._ElementoVisual.prototype.MinimizarAncho = function() {
+Mila.Pantalla._ElementoVisual.prototype.anchoBarraScroll = function() {
+  Mila.Contrato({
+    Proposito: [
+      "Describir el ancho en píxeles de la barra vertical de scroll del elemento html de este elemento visual",
+      Mila.Tipo.Entero
+    ],
+    Precondiciones: [
+      "Se está ejecutando en el navegador",
+      Mila.entorno().enNavegador(),
+      "Hay un elemento html asociado a este elemento visual",
+      '_nodoHtml' in this /* && this._nodoHtml es de tipo nodo dom */
+    ]
+  });
+  return this._nodoHtml.scrollHeight > this._nodoHtml.clientHeight ? Mila.Pantalla.Constantes.grosorBarraScroll : 0;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.MinimizarAncho = function(anchoInvertido, rectanguloCompleto) {
   Mila.Contrato({
     Proposito: "Minimizar el ancho del elemento html de este elemento visual",
+    Parametros: [
+      [anchoInvertido, Mila.Tipo.Booleano, "Si es cierto, hay que aumentar la coordenada x además de reducir el ancho"],
+      [rectanguloCompleto, Mila.Tipo.Rectangulo, "Área total disponible (necesaria en el caso de que el ancho esté invertido)"]
+    ],
     Precondiciones: [
       "Se está ejecutando en el navegador",
       Mila.entorno().enNavegador(),
@@ -265,12 +299,32 @@ Mila.Pantalla._ElementoVisual.prototype.altoHtml = function() {
       '_nodoHtml' in this /* && this._nodoHtml es de tipo nodo dom */
     ]
   });
-  return Mila.Geometria.areaDom_(this._nodoHtml).alto;
+  return Mila.Geometria.areaDom_(this._nodoHtml).alto + this._grosorBorde;
 };
 
-Mila.Pantalla._ElementoVisual.prototype.MinimizarAlto = function() {
+Mila.Pantalla._ElementoVisual.prototype.altoBarraScroll = function() {
+  Mila.Contrato({
+    Proposito: [
+      "Describir el alto en píxeles de la barra horizontal de scroll del elemento html de este elemento visual",
+      Mila.Tipo.Entero
+    ],
+    Precondiciones: [
+      "Se está ejecutando en el navegador",
+      Mila.entorno().enNavegador(),
+      "Hay un elemento html asociado a este elemento visual",
+      '_nodoHtml' in this /* && this._nodoHtml es de tipo nodo dom */
+    ]
+  });
+  return this._nodoHtml.scrollWidth > this._nodoHtml.clientWidth ? Mila.Pantalla.Constantes.grosorBarraScroll : 0;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.MinimizarAlto = function(altoInvertido, rectanguloCompleto) {
   Mila.Contrato({
     Proposito: "Minimizar el alto del elemento html de este elemento visual",
+    Parametros: [
+      [altoInvertido, Mila.Tipo.Booleano, "Si es cierto, al minimizar hay que aumentar la coordenada y además de reducir el alto"],
+      [rectanguloCompleto, Mila.Tipo.Rectangulo, "Área total disponible (necesaria en el caso de que el alto esté invertido)"]
+    ],
     Precondiciones: [
       "Se está ejecutando en el navegador",
       Mila.entorno().enNavegador(),
@@ -307,6 +361,16 @@ Mila.Pantalla._ElementoVisual.prototype.CambiarAltoA_ = function(nuevoAlto) {
   ;
 };
 
+Mila.Pantalla._ElementoVisual.prototype.CambiarGrosorBordeA_ = function(nuevoGrosorBorde) {
+  Mila.Contrato({
+    Proposito: "Reemplazar el grosor del borde de a este elemento visual por el dado",
+    Parametros: [
+      [nuevoGrosorBorde, Mila.Tipo.Entero]
+    ]
+  });
+  this._grosorBorde = nuevoGrosorBorde;
+};
+
 Mila.Pantalla._ElementoVisual.prototype.QuitarDelHtml = function() {
   Mila.Contrato({
     Proposito: "Quitar este elemento visual del documento html",
@@ -340,8 +404,8 @@ Mila.Pantalla.rectanguloPantalla = function() {
   });
   // TODO: distinguir el caso que esté ejecutando en node
   const rectangulo = Mila.Geometria.rectanguloEn__De_x_(0,0,window.innerWidth, window.innerHeight);
-  rectangulo.ancho -= 2;
-  rectangulo.alto -= 2; // TODO: distinguir según el navegador (son 2 en Chrome y 3 en Firefox)
+  rectangulo.ancho -= Mila.Pantalla.Constantes.offsetVentana;
+  rectangulo.alto -= Mila.Pantalla.Constantes.offsetVentana;
   return rectangulo;
 };
 
@@ -427,6 +491,10 @@ Mila.Pantalla._Disposicion = function Disposicion(eje, orden=Mila.Pantalla.Orden
       (this.orden.esIgualA_(Mila.Pantalla.OrdenDisposicion.Alternada) && this.i % 2 == 1);
   }
   this.DividirRectangulo = function(rectangulo, cantidad) {
+    if (this.scrolleable) {
+      // No vale la pena dividir el espacio
+      return rectangulo;
+    }
     let nuevoRectangulo = rectangulo.copia();
     nuevoRectangulo[limite.dimension] = nuevoRectangulo[limite.dimension] / cantidad;
     if (this.invertida()) {
@@ -436,11 +504,16 @@ Mila.Pantalla._Disposicion = function Disposicion(eje, orden=Mila.Pantalla.Orden
     return nuevoRectangulo;
   };
   this.RecortarRectangulo = function(completo, ocupado) {
-    if (this.invertida()) {
-      completo[limite.dimension] -= ocupado[limite.dimension];
+    if (ocupado[limite.dimension] > completo[limite.dimension]) {
+      // Es más grande que el espacio disponible
+      this.scrolleable = true;
     } else {
-      completo[limite.coordenada] += ocupado[limite.dimension];
       completo[limite.dimension] -= ocupado[limite.dimension];
+    }
+    if (!this.invertida()) {
+      completo[limite.coordenada] += ocupado[limite.dimension];
+    } else if (this.scrolleable) {
+      // Advertencia: no se puede mostrar correctamente porque se están cargando de abajo hacia arriba y no alcanza el espacio
     }
   }
 };
@@ -463,6 +536,7 @@ Mila.Pantalla._Disposicion.prototype.OrganizarElementos_En_ = function(elementos
   let elementosRestantes = elementos;
   let rectanguloRestante = rectangulo.copia();
   this.i = 0;
+  this.scrolleable = false;
   while (elementosRestantes.longitud() > 0) {
     let rectanguloActual = this.DividirRectangulo(rectanguloRestante, elementosRestantes.longitud());
     this.RecortarRectangulo(rectanguloRestante, elementosRestantes[0].Redimensionar(rectanguloActual));

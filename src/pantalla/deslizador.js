@@ -4,10 +4,8 @@ Mila.Modulo({
 
 Mila.Tipo.Registrar({
   nombre:'AtributosDeslizador',
-  es: {
-    "?ancho":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio]),
-    "?alto":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio])
-  },
+  es: {},
+  subtipoDe: "AtributosElementoVisual",
   inferible: false
 });
 
@@ -43,7 +41,7 @@ Mila.Pantalla._Deslizador.prototype.PlasmarEnHtml = function(nodoMadre) {
   if (!('_nodoHtml' in this)) {
     this._nodoHtml = document.createElement('input');
     this._nodoHtml.setAttribute("type","range");
-    this._nodoHtml.style.position = 'fixed';
+    this._nodoHtml.style.position = 'absolute';
     nodoMadre.appendChild(this._nodoHtml);
   }
 };

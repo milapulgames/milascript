@@ -78,6 +78,7 @@ Mila.Tipo._Registrar = function(dataTipo) {
       supertipo.subtipos.push(nuevoTipo.nombre);
       nuevoTipo.supertipos.push(supertipo.nombre);
     }
+    nuevoTipo.esOriginal = nuevoTipo.es;
     if ('prototipo' in nuevoTipo) {
       if (!('name' in nuevoTipo.prototipo) || (nuevoTipo.prototipo.name.length == 0)) {
         Mila.Error(`Prototipo inválido: debe tener un nombre (la función se debe definir "... .NOMBRE = function NOMBRE() {...")`);
@@ -228,22 +229,23 @@ Mila.Tipo._Registrar_ComoSubtipoDe_ = function(nuevoTipo, supertipo) {
       [supertipo, Mila.Tipo.Tipo]
     ]
   });
-  nuevoTipo.validacionAdicionalTipo = nuevoTipo.es;
+  const fEs = (typeof nuevoTipo.es == 'object') ? Mila.Tipo._esTipoRegistro(nuevoTipo.es) : nuevoTipo.es;
+  nuevoTipo.validacionAdicionalTipo = fEs;
   if ('prototipo' in supertipo) {
     const prototipo = supertipo.prototipo;
     nuevoTipo.prototipo = prototipo;
     nuevoTipo.validacionAdicionalPrototipo = function(elemento) {
       return supertipo.es(elemento) && nuevoTipo.validacionAdicionalTipo.call(this, elemento.valueOf());
     };
-    if (nuevoTipo.es.name.length > 0 && nuevoTipo.es.name != "es") {
+    if (fEs.name.length > 0 && fEs.name != "es") {
       Mila.JS.DefinirFuncionDeInstanciaAPartirDe_({
         prototipo: prototipo,
-        nombre: nuevoTipo.es.name,
+        nombre: fEs.name,
         funcionAInvocar: `Mila.Tipo._tipos.${nuevoTipo.nombre}.validacionAdicionalPrototipo`
       });
       Mila.JS.DefinirFuncionDeInstancia_({
         prototipo: Object,
-        nombre: nuevoTipo.es.name,
+        nombre: fEs.name,
         codigo: `false`
       });
     }
@@ -251,10 +253,10 @@ Mila.Tipo._Registrar_ComoSubtipoDe_ = function(nuevoTipo, supertipo) {
       return Object.getPrototypeOf(elemento) === prototipo.prototype && nuevoTipo.validacionAdicionalPrototipo.call(this, elemento);
     };
   } else {
-    if (nuevoTipo.es.name.length > 0 && nuevoTipo.es.name != "es") {
+    if (fEs.name.length > 0 && fEs.name != "es") {
       Mila.JS.DefinirFuncionDeInstanciaAPartirDe_({
         prototipo: Object,
-        nombre: nuevoTipo.es.name,
+        nombre: fEs.name,
         funcionAInvocar: `Mila.Tipo._tipos.${nuevoTipo.nombre}.es`
       });
     }
@@ -1243,9 +1245,19 @@ Mila.Tipo.Registrar({
         Mila.Tipo.esDeTipo_(elemento.es, Mila.Tipo.Texto)
       // Si no se incluye el campo prototipo, el campo es no se puede omitir.
       )) || (!elemento.defineLaClave_('prototipo') && elemento.defineLaClave_('es') && (
-        // Si se incluye el campo subtipoDe, debe ser una función que tome un elemento del supertipo y
-          // devuelva si el elemento  es también del tipo que se está registrando.
-        (elemento.defineLaClave_('subtipoDe') && Mila.Tipo.esDeTipo_(elemento.es, Mila.Tipo.Funcion)) ||
+        // Si se incluye el campo subtipoDe,
+        (elemento.defineLaClave_('subtipoDe') && (
+          // debe ser una función que tome un elemento del supertipo y devuelva si el elemento
+            // es también del tipo que se está registrando.
+          Mila.Tipo.esDeTipo_(elemento.es, Mila.Tipo.Funcion) ||
+          // O, si el supertipo se define a partir de un registro, puede ser también un MapaTipos
+          (
+            (typeof
+              (Mila.Tipo.esUnTipo(elemento.subtipoDe) ? elemento.subtipoDe : Mila.Tipo._tipos[elemento.subtipoDe])
+            .esOriginal === 'object') &&
+            Mila.Tipo.esDeTipo_(elemento.es, "MapaTipos")
+          )
+        )) ||
         // Si no, puede ser una función que tome un elemento y devuelva si el elemento es del tipo
           // o un objeto cuyas claves sean los campos que el elemento debe tener y sus significados los
           // tipos de dichos campos.

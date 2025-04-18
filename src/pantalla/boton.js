@@ -6,10 +6,9 @@ Mila.Tipo.Registrar({
   nombre:'AtributosBoton',
   es: {
     "?texto":Mila.Tipo.Texto,
-    "?funcion":Mila.Tipo.Funcion,
-    "?ancho":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio]),
-    "?alto":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio])
+    "?funcion":Mila.Tipo.Funcion
   },
+  subtipoDe: "AtributosElementoVisual",
   inferible: false
 });
 
@@ -24,7 +23,7 @@ Mila.Pantalla.nuevoBoton = function(atributos={}) {
     ]
   });
   let nuevoBoton = new Mila.Pantalla._Boton();
-  nuevoBoton.Inicializar(atributos);
+  nuevoBoton.Inicializar(atributos, {grosorBorde:2});
   nuevoBoton.CambiarTextoA_('texto' in atributos
     ? atributos.texto
     : ''
@@ -78,7 +77,7 @@ Mila.Pantalla._Boton.prototype.PlasmarEnHtml = function(nodoMadre) {
   if (!('_nodoHtml' in this)) {
     this._nodoHtml = document.createElement('button');
     this._nodoHtml.innerHTML = this._texto;
-    this._nodoHtml.style.position = 'fixed';
+    this._nodoHtml.style.position = 'absolute';
     if ('_funcion' in this) {
       this._nodoHtml.addEventListener('click', this._funcion);
     }

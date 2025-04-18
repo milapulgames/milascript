@@ -20,6 +20,7 @@ Mila.Lienzo.nuevo = function(contentido=[]) {
 Mila.Lienzo._Lienzo = function Lienzo(contentido=[]) {
   this._contenido = contentido;
   this._dimensiones = Mila.Geometria.rectanguloCompleto();
+  this._grosorBorde = 1;
 };
 
 Mila.Lienzo._Lienzo.prototype.PlasmarEnHtml = function(nodoMadre) {
@@ -34,10 +35,10 @@ Mila.Lienzo._Lienzo.prototype.PlasmarEnHtml = function(nodoMadre) {
     ]
   });
   this._nodoHtml = document.createElement('canvas');
-  this._nodoHtml.style.border = 'solid 1px red';
+  this._nodoHtml.style.border = `solid ${this._grosorBorde}px red`;
   this._nodoHtml.style.margin = '0';
   this._nodoHtml.style.padding = '0';
-  this._nodoHtml.style.position = 'fixed';
+  this._nodoHtml.style.position = 'absolute';
   this._contexto = this._nodoHtml.getContext('2d');
   nodoMadre.appendChild(this._nodoHtml);
 };
@@ -87,8 +88,8 @@ Mila.Lienzo._Lienzo.prototype.Redimensionar = function(rectangulo) {
   if ('_nodoHtml' in this) {
     this._nodoHtml.style.left = `${rectangulo.x}px`;
     this._nodoHtml.style.top = `${rectangulo.y}px`;
-    this._nodoHtml.width = rectangulo.ancho;
-    this._nodoHtml.height = rectangulo.alto;
+    this._nodoHtml.width = rectangulo.ancho-2*this._grosorBorde;
+    this._nodoHtml.height = rectangulo.alto-2*this._grosorBorde;
     this.Dibujar();
   }
   return rectangulo;
