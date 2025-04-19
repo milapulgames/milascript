@@ -170,19 +170,19 @@ Mila.Pantalla._ElementoVisual.prototype.rectanguloMinimo = function(rectanguloCo
       [rectanguloCompleto, Mila.Tipo.Rectangulo]
     ]
   });
-  if (this.ancho().esIgualA_(Mila.Pantalla.ComportamientoEspacio.Maximizar)) {
-    this._nodoHtml.style.width = `${rectanguloCompleto.ancho}px`;
+  if (this.ancho().esUnNumero()) {
+    this._nodoHtml.style.width = `${this.ancho()}px`;
   } else if (this.ancho().esIgualA_(Mila.Pantalla.ComportamientoEspacio.Minimizar)) {
     this.MinimizarAncho(anchoInvertido, rectanguloCompleto);
-  } else if (this.ancho().esUnNumero()) {
-    this._nodoHtml.style.width = `${this.ancho()}px`;
+  } else if (this.ancho().esIgualA_(Mila.Pantalla.ComportamientoEspacio.Maximizar)) {
+    this._nodoHtml.style.width = `${rectanguloCompleto.ancho}px`;
   }
-  if (this.alto().esIgualA_(Mila.Pantalla.ComportamientoEspacio.Maximizar)) {
-    this._nodoHtml.style.height = `${rectanguloCompleto.alto}px`;
+  if (this.alto().esUnNumero()) {
+    this._nodoHtml.style.height = `${this.alto()}px`;
   } else if (this.alto().esIgualA_(Mila.Pantalla.ComportamientoEspacio.Minimizar)) {
     this.MinimizarAlto(altoInvertido, rectanguloCompleto);
-  } else if (this.alto().esUnNumero()) {
-    this._nodoHtml.style.height = `${this.alto()}px`;
+  } else if (this.alto().esIgualA_(Mila.Pantalla.ComportamientoEspacio.Maximizar)) {
+    this._nodoHtml.style.height = `${rectanguloCompleto.alto}px`;
   }
   return Mila.Geometria.areaDom_(this._nodoHtml);
 };

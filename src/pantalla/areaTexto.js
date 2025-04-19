@@ -24,7 +24,8 @@ Mila.Pantalla.nuevaAreaTexto = function(atributos={}) {
   let nuevaAreaTexto = new Mila.Pantalla._AreaTexto();
   nuevaAreaTexto.Inicializar(atributos, {
     ancho:Mila.Pantalla.ComportamientoEspacio.Maximizar,
-    alto:Mila.Pantalla.ComportamientoEspacio.Maximizar
+    alto:Mila.Pantalla.ComportamientoEspacio.Maximizar,
+    grosorBorde: 1
   });
   nuevaAreaTexto.CambiarTextoA_('texto' in atributos
     ? atributos.texto
@@ -79,7 +80,7 @@ Mila.Pantalla._AreaTexto.prototype.PlasmarEnHtml = function(nodoMadre) {
     this._nodoHtml.style.position = 'absolute';
     this._nodoHtml.style.margin = '0';
     this._nodoHtml.style.padding = '0';
-    this._nodoHtml.style.border = 'solid 1px';
+    this._nodoHtml.style.border = `solid ${this._grosorBorde}px`;
     this._nodoHtml.value = this._texto;
     nodoMadre.appendChild(this._nodoHtml);
   }
