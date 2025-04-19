@@ -224,11 +224,37 @@ Mila.Lista.Insertar_EnPosicion_ = function(lista, elemento, posicion) {
     // lista es una lista de elementos, aquella en la cual se inserta el elemento.
     // elemento puede ser cualquier dato.
     // posición es un entero, correspondiente a la posición en la que insertar el elemento.
-  // PRE: *posicion* es mayor o igual a 0.
-  // PRE: La lista dada contiene al menos *posicion*-1 elementos.
-  lista.splice(posicion, 0, elemento);
+  // PRE: *posicion* es mayor a 0.
+  // PRE: La lista dada contiene al menos *posicion-1* elementos (la posición puede ser la próxima posición de la lista).
+  lista.splice(posicion-1, 0, elemento);
 };
 Mila.Lista._Definir_EnPrototipo_('Insertar_EnPosicion_', Array);
+
+Mila.Lista.Insertar_EnOrden = function(lista, elemento) {
+  // Inserta el elemento dado en la posición de la lista dada que mantenga el orden.
+    // lista es una lista de elementos, aquella en la cual se inserta el elemento.
+    // elemento puede ser cualquier dato.
+  // PRE: Todos los elementos de la lista dada son del mismo tipo que el elemento dado.
+  // PRE: El tipo de los elementos de la lista define una relación de orden.
+  // PRE: La lista dada está ordenada.
+  Mila.Lista.Insertar_EnOrdenSegun_(lista, elemento, Mila.Tipo.tipo(elemento).orden);
+};
+Mila.Lista._Definir_EnPrototipo_('Insertar_EnOrden', Array);
+
+Mila.Lista.Insertar_EnOrdenSegun_ = function(lista, elemento, comparador) {
+  // Inserta el elemento dado en la posición de la lista dada que mantenga el orden según el comparador dado.
+    // lista es una lista de elementos, aquella en la cual se inserta el elemento.
+    // elemento puede ser cualquier dato.
+    // comparador es una función que toma dos elementos y devuelve si el primero es menor al segundo.
+  // PRE: Los elementos de la lista se pueden ordenar con el comparador dado.
+  // PRE: La lista dada está ordenada según el comparador dado.
+  let i=lista.length;
+  while(i>0 && comparador(elemento, lista[i-1])) {
+    i--;
+  }
+  Mila.Lista.Insertar_EnPosicion_(lista, elemento, i+1);
+};
+Mila.Lista._Definir_EnPrototipo_('Insertar_EnOrdenSegun_', Array);
 
 Mila.Lista.concatenadaCon_ = function(lista1, lista2) {
   // Describe la concatenación entre las listas dadas.
@@ -493,7 +519,7 @@ Mila.Lista.minimo = function(lista) {
   // PRE: Hay al menos un elemento en la lista dada.
   // PRE: Todos los elementos de la lista dada son del mismo tipo.
   // PRE: El tipo de los elementos de la lista dada define una relación de orden.
-  return Mila.Lista.mejorSegun_(lista, minimoEntre_Y_);
+  return Mila.Lista.mejorSegun_(lista, Mila.Tipo.esMenorA_);
 };
 Mila.Lista._Definir_EnPrototipo_('minimo', Array);
 
@@ -503,18 +529,77 @@ Mila.Lista.maximo = function(lista) {
   // PRE: Hay al menos un elemento en la lista dada.
   // PRE: Todos los elementos de la lista dada son del mismo tipo.
   // PRE: El tipo de los elementos de la lista dada define una relación de orden.
-  return Mila.Lista.mejorSegun_(lista, maximoEntre_Y_);
+  return Mila.Lista.mejorSegun_(lista, Mila.Tipo.esMayorA_);
 };
 Mila.Lista._Definir_EnPrototipo_('maximo', Array);
 
 Mila.Lista.mejorSegun_ = function(lista, comparador) {
   // Describe el mejor elemento de la lista dada según el comparador dado.
     // lista es una lista de elementos, para la cual se describe su mejor elemento.
-    // comparador es una función que toma dos elementos y devuelve uno de ellos.
+    // comparador es una función que toma dos elementos y devuelve si el primero es mejor que el segundo.
   // PRE: Hay al menos un elemento en la lista dada.
-  return Mila.Lista.fold1(lista, function(x, rec) { return comparador(x, rec); });
+  // PRE: Los elementos de la lista se pueden comparar con el comparador dado
+  return Mila.Lista.fold1(lista, function(x, rec) { return comparador(x, rec) ? x : rec; });
 };
 Mila.Lista._Definir_EnPrototipo_('mejorSegun_', Array);
+
+Mila.Lista.ordenadaPor_ = function(lista, comparador) {
+  // Describe la lista dada ordenada según el comparador dado.
+    // lista es una lista de elementos, para la cual se describe su versión ordenada.
+    // comparador es una función que toma dos elementos y devuelve si el primero es mejor que el segundo.
+  // PRE: Los elementos de la lista se pueden ordenar con el comparador dado.
+  const listaOrdenada = [];
+  for (let elemento of lista) {
+    Mila.Lista.Insertar_EnOrdenSegun_(listaOrdenada, elemento, comparador);
+  }
+  return listaOrdenada;
+};
+Mila.Lista._Definir_EnPrototipo_('ordenadaPor_', Array);
+
+Mila.Lista.OrdenarPor_ = function(lista, comparador) {
+  // Ordena la lista dada según el comparador dado.
+    // lista es una lista de elementos, la cual se ordena.
+    // comparador es una función que toma dos elementos y devuelve si el primero es mejor que el segundo.
+  // PRE: Los elementos de la lista se pueden ordenar con el comparador dado.
+  let i=0;
+  while (i<lista.length) {
+    let j=i;
+    let jMaximo = j;
+    while (j<lista.length) {
+      jMaximo = comparador(lista[j], lista[jMaximo]) ? jMaximo : j;
+      j++;
+    }
+    let elementoMaximo = lista[jMaximo];
+    Mila.Lista.SacarElementoEnPosicion_(lista, jMaximo+1);
+    Mila.Lista.Agregar_AlPrincipio(lista, elementoMaximo);
+    i++;
+  }
+};
+Mila.Lista._Definir_EnPrototipo_('OrdenarPor_', Array);
+
+Mila.Lista.ordenada = function(lista) {
+  // Describe la lista dada ordenada.
+    // lista es una lista de elementos, para la cual se describe su versión ordenada.
+  // PRE: Todos los elementos de la lista dada son del mismo tipo.
+  // PRE: El tipo de los elementos de la lista define una relación de orden.
+  const listaOrdenada = [];
+  for (let elemento of lista) {
+    Mila.Lista.Insertar_EnOrden(listaOrdenada, elemento);
+  }
+  return listaOrdenada;
+};
+Mila.Lista._Definir_EnPrototipo_('ordenada', Array);
+
+Mila.Lista.Ordenar = function(lista) {
+  // Ordena la lista dada.
+    // lista es una lista de elementos, la cual se ordena.
+  // PRE: Todos los elementos de la lista dada son del mismo tipo.
+  // PRE: El tipo de los elementos de la lista define una relación de orden.
+  if (lista.length > 0) {
+    Mila.Lista.OrdenarPor_(lista, Mila.Tipo.tipo(lista[0]).orden);
+  }
+};
+Mila.Lista._Definir_EnPrototipo_('Ordenar', Array);
 
 Mila.Lista.fold = function(lista, funcion, casoBase) {
   // Describe el resultado de la recursión estructural sobre la lista dada con *casoBase* como caso base y la función dada como caso recursivo.
