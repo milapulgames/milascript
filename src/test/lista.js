@@ -27,6 +27,9 @@ Mila.alIniciar(() => {
   {i:"let a=[2];a.contieneA_(2)", o:true,                                 d:"contieneA_ devuelve verdadero con una lista que tiene una vez al elemento buscado"},
   {i:"let a=[2];a.contieneA_(3)", o:false,                                d:"contieneA_ devuelve falso con una lista no vacía pero que no contiene al elemento buscado"},
   {i:"let a=[2,2,2];a.contieneA_(2)", o:true,                             d:"contieneA_ devuelve verdadero sin importar cuántas veces aparezca el elemento buscado"},
+
+  // contieneUnoComo_
+
   {i:"let a=[2];a.posicionDe_(2)", o:1,                                   d:"posicionDe_ devuelve la primera aparición del elemento buscado en una lista que sólo tiene ese elemento"},
   {i:"let a=[1,2,3];a.posicionDe_(2)", o:2,                               d:"posicionDe_ devuelve la primera aparición del elemento buscado en una lista que tiene además otros elementos"},
   {i:"let a=[2,2,2];a.posicionDe_(2)", o:1,                               d:"posicionDe_ devuelve la primera aparición del elemento buscado en una lista en la que aparece más de una vez"},
@@ -78,6 +81,7 @@ Mila.alIniciar(() => {
   {i:"let a=[1,2,3];a.ConcatenarCon_([4,5,6]);a", o:[1,2,3,4,5,6],        d:"ConcatenarCon_ concatena la segunda lista a la primera lista"},
   {i:"let a=[1,2,3];let b=[4,5,6];a.ConcatenarCon_(b);b", o:[4,5,6],      d:"ConcatenarCon_ no modifica la segunda lista"},
 
+  // concatenadas
   // mismosElementosQue_
 
   {i:"let a=[1,2,3];a.sinLaPrimeraAparicionDe_(2)", o:[1,3],              d:"sinLaPrimeraAparicionDe_ devuelve la lista sin la primera aparición del elemento"},

@@ -133,6 +133,16 @@ Mila.Lista.contieneA_ = function(lista, elemento) {
 };
 Mila.Lista._Definir_EnPrototipo_('contieneA_', Array);
 
+Mila.Lista.contieneUnoComo_ = function(lista, elemento) {
+  // Indica si la lista dada contiene al menos una vez un elemento igual al dado.
+    // lista es una lista de elementos, la cual se indica si contiene al elemento dado.
+    // elemento puede ser cualquier dato.
+  // PRE: Los elementos de la lista dada son todos del mismo tipo que el elemento dado.
+  // PRE: El tipo del elemento dado define una relación de igualdad.
+  return Mila.Lista.algunoCumple_(lista, x => Mila.Tipo.esIgualA_(x, elemento));
+};
+Mila.Lista._Definir_EnPrototipo_('contieneUnoComo_', Array);
+
 Mila.Lista.posicionDe_ = function(lista, elemento) {
   // Describe la posición de la primera aparición del elemento dado en la lista dada.
     // lista es una lista de elementos, aquella para la cual se describe la posición en la que se encuentra el elemento dado.
@@ -271,6 +281,13 @@ Mila.Lista.ConcatenarCon_ = function(lista1, lista2) {
   });
 };
 Mila.Lista._Definir_EnPrototipo_('ConcatenarCon_', Array);
+
+Mila.Lista.concatenadas = function(listaDeListas) {
+  // Describe la concatenación entre las listas de la lista dada.
+    // listaDeListas es una lista cuyos elementos también son listas.
+  return Mila.Lista.fold1(listaDeListas, function(x, rec) { return rec.concatenadaCon_(x); });
+};
+Mila.Lista._Definir_EnPrototipo_('concatenadas', Array);
 
 Mila.Lista.mismosElementosQue_ = function(lista1, lista2) {
   // Indica si las listas dadas tienen exactamente los mismos elementos y en las mismas cantidades. Es decir, si una es una permutación de la otra.
