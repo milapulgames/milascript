@@ -9,9 +9,9 @@ Repositorio oficial del lenguaje de programación milascript.
 
 1. Instalar [Node](https://nodejs.org/).
 2. Clonar el repositorio:
-    > git clone 
+    > `git clone https://github.com/milapulgames/milascript.git`
 3. Agregar la siguiente línea al archivo `~/.bash_aliases`, reemplazando `<REPO>` por la ruta absoluta al repositorio cloando:
-    > alias mila="< REPO >/src/mila.js"
+    > `alias mila="node <REPO>/src/mila.js"`
 
 Listo. Ahora se puede ejecutar un archivo de milascript con `mila` seguido del nombre del archivo.
 
