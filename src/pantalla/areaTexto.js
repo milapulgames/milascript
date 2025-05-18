@@ -4,9 +4,7 @@ Mila.Modulo({
 
 Mila.Tipo.Registrar({
   nombre:'AtributosAreaTexto',
-  es: {
-    "?texto":Mila.Tipo.Texto
-  },
+  es: {},
   subtipoDe: "AtributosElementoVisual",
   inferible: false
 });
@@ -27,19 +25,15 @@ Mila.Pantalla.nuevaAreaTexto = function(atributos={}) {
     alto:Mila.Pantalla.ComportamientoEspacio.Maximizar,
     grosorBorde: 1
   });
-  nuevaAreaTexto.CambiarTextoA_('texto' in atributos
-    ? atributos.texto
-    : ''
-  );
   return nuevaAreaTexto;
 };
 
 Mila.Pantalla._AreaTexto = function AreaTexto() {};
-Object.setPrototypeOf(Mila.Pantalla._AreaTexto.prototype, Mila.Pantalla._ElementoVisual.prototype);
+Object.setPrototypeOf(Mila.Pantalla._AreaTexto.prototype, Mila.Pantalla._ElementoVisualTextual.prototype);
 
 Mila.Pantalla._AreaTexto.prototype.CambiarTextoA_ = function(nuevoTexto) {
   Mila.Contrato({
-    Proposito: "Reemplazar el texto de a esta área de ingreso de texto por el dado",
+    Proposito: "Reemplazar el texto de esta área de ingreso de texto por el dado",
     Parametros: [
       [nuevoTexto, Mila.Tipo.Texto]
     ]
@@ -80,9 +74,10 @@ Mila.Pantalla._AreaTexto.prototype.PlasmarEnHtml = function(nodoMadre) {
     this._nodoHtml.style.position = 'absolute';
     this._nodoHtml.style.margin = '0';
     this._nodoHtml.style.padding = '0';
-    this._nodoHtml.style.border = `solid ${this._grosorBorde}px`;
     this._nodoHtml.value = this._texto;
+    this._nodoHtml.style['font-size'] = `${this._tamanioLetra}pt`;
     nodoMadre.appendChild(this._nodoHtml);
+    this.InicializarHtml();
   }
 };
 

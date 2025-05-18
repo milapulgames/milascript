@@ -1,13 +1,11 @@
 Mila.Modulo({
-  necesita:["../tipo","../pantalla"]
+  necesita:["../tipo","../pantalla"],
+  usa:["../geometria"]
 });
 
 Mila.Tipo.Registrar({
   nombre:'AtributosBoton',
-  es: {
-    "?texto":Mila.Tipo.Texto,
-    "?funcion":Mila.Tipo.Funcion
-  },
+  es: {},
   subtipoDe: "AtributosElementoVisual",
   inferible: false
 });
@@ -23,45 +21,15 @@ Mila.Pantalla.nuevoBoton = function(atributos={}) {
     ]
   });
   let nuevoBoton = new Mila.Pantalla._Boton();
-  nuevoBoton.Inicializar(atributos, {grosorBorde:2});
-  nuevoBoton.CambiarTextoA_('texto' in atributos
-    ? atributos.texto
-    : ''
-  );
-  if ('funcion' in atributos) {
-    nuevoBoton.CambiarFuncionA_(atributos.funcion);
-  }
+  nuevoBoton.Inicializar(atributos, {grosorBorde:2, colorBorde:"#000",
+    margenInterno:Mila.Geometria.rectanguloEn__De_x_(5,0,5,0),
+    cssAdicional:{'border-radius':'5px'}
+  });
   return nuevoBoton;
 };
 
 Mila.Pantalla._Boton = function Boton() {};
-Object.setPrototypeOf(Mila.Pantalla._Boton.prototype, Mila.Pantalla._ElementoVisual.prototype);
-
-Mila.Pantalla._Boton.prototype.CambiarTextoA_ = function(nuevoTexto) {
-  Mila.Contrato({
-    Proposito: "Reemplazar el texto de a este botón por el dado",
-    Parametros: [
-      [nuevoTexto, Mila.Tipo.Texto]
-    ]
-  });
-  this._texto = nuevoTexto;
-  if ('_nodoHtml' in this) {
-    this._nodoHtml.innerHTML = this._texto;
-  }
-};
-
-Mila.Pantalla._Boton.prototype.CambiarFuncionA_ = function(nuevaFuncion) {
-  Mila.Contrato({
-    Proposito: "Reemplazar la función de a este botón por la dada",
-    Parametros: [
-      [nuevaFuncion, Mila.Tipo.Funcion]
-    ]
-  });
-  this._funcion = nuevaFuncion;
-  if ('_nodoHtml' in this) {
-    this._nodoHtml.addEventListener('click', funcion);
-  }
-};
+Object.setPrototypeOf(Mila.Pantalla._Boton.prototype, Mila.Pantalla._ElementoVisualTextual.prototype);
 
 Mila.Pantalla._Boton.prototype.PlasmarEnHtml = function(nodoMadre) {
   Mila.Contrato({
@@ -75,13 +43,13 @@ Mila.Pantalla._Boton.prototype.PlasmarEnHtml = function(nodoMadre) {
     ]
   });
   if (!('_nodoHtml' in this)) {
-    this._nodoHtml = document.createElement('button');
+    this._nodoHtml = document.createElement('a');
     this._nodoHtml.innerHTML = this._texto;
     this._nodoHtml.style.position = 'absolute';
-    if ('_funcion' in this) {
-      this._nodoHtml.addEventListener('click', this._funcion);
-    }
+    this._nodoHtml.style['font-size'] = `${this._tamanioLetra}pt`;
+    this._nodoHtml.style['cursor'] = 'pointer';
     nodoMadre.appendChild(this._nodoHtml);
+    this.InicializarHtml();
   }
 };
 

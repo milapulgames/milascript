@@ -32,7 +32,7 @@ const build = function(nombre, ubicacionMila) {
     });
     Mila.Cargar(nombre);
     Mila.alIniciar(function() {
-      const contenido = '<!DOCTYPE HTML>\n<html>\n<head>\n  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">\n  <script type="module">window.compilado = true;</script>\n'
+      const contenido = '<!DOCTYPE HTML>\n<html>\n<head>\n  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">\n  <script type="module">window.compilado = true;window.sinContratos = true;</script>\n'
         + archivosInlcuidos.transformados(function(archivo) {
           return `  <script${archivo.tipo == "Mila" ? ' type="module"' : ''} src="${rutaRelativa(
             (archivo.ruta in Mila._archivos && 'rutaReal' in Mila._archivos[archivo.ruta])

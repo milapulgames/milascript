@@ -4,9 +4,7 @@ Mila.Modulo({
 
 Mila.Tipo.Registrar({
   nombre:'AtributosEtiqueta',
-  es: {
-    "?texto":Mila.Tipo.Texto
-  },
+  es: {},
   subtipoDe: "AtributosElementoVisual",
   inferible: false
 });
@@ -23,28 +21,11 @@ Mila.Pantalla.nuevaEtiqueta = function(atributos={}) {
   });
   let nuevaEtiqueta = new Mila.Pantalla._Etiqueta();
   nuevaEtiqueta.Inicializar(atributos);
-  nuevaEtiqueta.CambiarTextoA_('texto' in atributos
-    ? atributos.texto
-    : ''
-  );
   return nuevaEtiqueta;
 };
 
 Mila.Pantalla._Etiqueta = function Etiqueta() {};
-Object.setPrototypeOf(Mila.Pantalla._Etiqueta.prototype, Mila.Pantalla._ElementoVisual.prototype);
-
-Mila.Pantalla._Etiqueta.prototype.CambiarTextoA_ = function(nuevoTexto) {
-  Mila.Contrato({
-    Proposito: "Reemplazar el texto de a esta etiqueta por el dado",
-    Parametros: [
-      [nuevoTexto, Mila.Tipo.Texto]
-    ]
-  });
-  this._texto = nuevoTexto;
-  if ('_nodoHtml' in this) {
-    this._nodoHtml.innerHTML = this._texto;
-  }
-};
+Object.setPrototypeOf(Mila.Pantalla._Etiqueta.prototype, Mila.Pantalla._ElementoVisualTextual.prototype);
 
 Mila.Pantalla._Etiqueta.prototype.PlasmarEnHtml = function(nodoMadre) {
   Mila.Contrato({
@@ -60,11 +41,12 @@ Mila.Pantalla._Etiqueta.prototype.PlasmarEnHtml = function(nodoMadre) {
   if (!('_nodoHtml' in this)) {
     this._nodoHtml = document.createElement('span');
     this._nodoHtml.innerHTML = this._texto;
-    this._nodoHtml.style.border = `solid ${this._grosorBorde}px blue`;
     this._nodoHtml.style.position = 'absolute';
     this._nodoHtml.style['text-align'] = 'center';
     this._nodoHtml.style['text-wrap-mode'] = 'nowrap';
+    this._nodoHtml.style['font-size'] = `${this._tamanioLetra}pt`;
     nodoMadre.appendChild(this._nodoHtml);
+    this.InicializarHtml();
   }
 };
 

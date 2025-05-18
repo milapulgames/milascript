@@ -413,6 +413,12 @@ Mila.Lista.SacarElementosHasta_ = function(lista, elemento) {
 };
 Mila.Lista._Definir_EnPrototipo_('SacarElementosHasta_', Array);
 
+Mila.Lista.copia = function(lista) {
+  // Describe una lista igual a la dada.
+  return Mila.Lista.fold(lista, function(x, rec) { return Mila.Lista.cons(rec, x); }, []);
+};
+Mila.Lista._Definir_EnPrototipo_('copia', Array);
+
 Mila.Lista.transformados = function(lista, funcion) {
   // Describe la lista dada tras aplicarle la función dada a cada uno de sus elementos.
     // lista es una lista de elementos, a cuyos elementos se les aplica la función dada.

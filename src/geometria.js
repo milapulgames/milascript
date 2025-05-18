@@ -128,6 +128,33 @@ Mila.Geometria._Figura.prototype.Trasladar_En_ = function(cantidad, eje) {
   this[eje] += cantidad;
 };
 
+Mila.Geometria._Figura.prototype.CambiarAnchoA_ = function(nuevoAncho) {
+  Mila.Contrato({
+    Proposito: "Cambiar el ancho de esta figura por el dado",
+    Parametros: [
+      [nuevoAncho, Mila.Tipo.Numero]
+    ],
+    Precondiciones: [
+      "Esta figura contiene el campo ancho",
+      'ancho' in this
+    ]
+  });
+  this.ancho = nuevoAncho;
+};
+
+Mila.Geometria._Figura.prototype.CambiarAltoA_ = function(nuevoAlto) {
+  Mila.Contrato({
+    Proposito: "Cambiar el alto de esta figura por el dado",
+    Parametros: [
+      [nuevoAlto, Mila.Tipo.Numero]
+    ],
+    Precondiciones: [
+      "Esta figura contiene el campo alto",
+      'alto' in this
+    ]
+  });
+  this.alto = nuevoAlto;
+};
 
 Mila.Geometria._Punto = function Punto(x, y) {
   this.x = x;

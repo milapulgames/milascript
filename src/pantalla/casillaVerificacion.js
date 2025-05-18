@@ -43,6 +43,7 @@ Mila.Pantalla._CasillaVerificacion.prototype.PlasmarEnHtml = function(nodoMadre)
     this._nodoHtml.setAttribute("type","checkbox");
     this._nodoHtml.style.position = 'absolute';
     nodoMadre.appendChild(this._nodoHtml);
+    this.InicializarHtml();
   }
 };
 

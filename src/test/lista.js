@@ -112,6 +112,9 @@ Mila.alIniciar(() => {
   {i:"let a=[1,2,3,2,5];a.SacarElementosDesde_(2);a", o:[1],              d:"SacarElementosDesde_ toma en cuenta únicamente la primera aparición"},
   {i:"let a=[1,2,3,4,5];a.SacarElementosHasta_(3);a", o:[4,5],            d:"SacarElementosHasta_ quita los elementos hasta el pedido"},
   {i:"let a=[1,2,3,2,5];a.SacarElementosHasta_(2);a", o:[3,2,5],          d:"SacarElementosHasta_ toma en cuenta únicamente la primera aparición"},
+
+  // copia
+
   {i:"let a=['2+2','!true'];a.transformados(eval)", o:[4,false],          d:"transformados devuelve la lista tras aplicar la función a cada elemento"},
   {i:"let a=['2+2','!true'];a.transformados(eval);a", o:["2+2","!true"],  d:"transformados no modifica la lista"},
   {i:"let a=[2,NaN,5];a.losQueCumplen(isFinite)", o:[2,5],                d:"losQueCumplen devuelve los elementos de la lista que cumplen"},

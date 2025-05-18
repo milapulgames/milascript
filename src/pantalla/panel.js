@@ -26,7 +26,7 @@ Mila.Pantalla.nuevoPanel = function(atributos={}) {
   nuevoPanel.Inicializar(atributos, {
     ancho:Mila.Pantalla.ComportamientoEspacio.Maximizar,
     alto:Mila.Pantalla.ComportamientoEspacio.Maximizar,
-    grosorBorde:1
+    grosorBorde:1, colorBorde:"#fff"
   });
   nuevoPanel.CambiarElementosA_('elementos' in atributos
     ? atributos.elementos
@@ -88,12 +88,12 @@ Mila.Pantalla._Panel.prototype.PlasmarEnHtml = function(nodoMadre) {
   });
   if (!('_nodoHtml' in this)) {
     this._nodoHtml = document.createElement('div');
-    this._nodoHtml.style.border = `solid ${this._grosorBorde}px green`;
     this._nodoHtml.style.margin = '0';
     this._nodoHtml.style.padding = '0';
     this._nodoHtml.style.position = 'absolute';
     this._nodoHtml.style.overflow = 'auto';
     nodoMadre.appendChild(this._nodoHtml);
+    this.InicializarHtml();
     for (let elemento of this._elementos) {
       elemento.PlasmarEnHtml(this._nodoHtml);
     }

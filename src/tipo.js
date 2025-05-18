@@ -1334,4 +1334,6 @@ Mila.Tipo.Registrar({
 });
 
 // Recién después de haber inicializado el módulo de tipos se pueden validar los contratos
-Mila.Documentacion.EmpezarAAnalizarContratos();
+if (!('sinContratos' in Mila.entorno().universo)) {
+  Mila.Documentacion.EmpezarAAnalizarContratos();
+}

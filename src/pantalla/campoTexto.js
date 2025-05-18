@@ -4,9 +4,7 @@ Mila.Modulo({
 
 Mila.Tipo.Registrar({
   nombre:'AtributosCampoTexto',
-  es: {
-    "?texto":Mila.Tipo.Texto
-  },
+  es: {},
   subtipoDe: "AtributosElementoVisual",
   inferible: false
 });
@@ -23,19 +21,15 @@ Mila.Pantalla.nuevoCampoTexto = function(atributos={}) {
   });
   let nuevoCampoTexto = new Mila.Pantalla._CampoTexto();
   nuevoCampoTexto.Inicializar(atributos);
-  nuevoCampoTexto.CambiarTextoA_('texto' in atributos
-    ? atributos.texto
-    : ''
-  );
   return nuevoCampoTexto;
 };
 
 Mila.Pantalla._CampoTexto = function CampoTexto() {};
-Object.setPrototypeOf(Mila.Pantalla._CampoTexto.prototype, Mila.Pantalla._ElementoVisual.prototype);
+Object.setPrototypeOf(Mila.Pantalla._CampoTexto.prototype, Mila.Pantalla._ElementoVisualTextual.prototype);
 
 Mila.Pantalla._CampoTexto.prototype.CambiarTextoA_ = function(nuevoTexto) {
   Mila.Contrato({
-    Proposito: "Reemplazar el texto de a este campo de texto por el dado",
+    Proposito: "Reemplazar el texto de este campo de texto por el dado",
     Parametros: [
       [nuevoTexto, Mila.Tipo.Texto]
     ]
@@ -74,7 +68,9 @@ Mila.Pantalla._CampoTexto.prototype.PlasmarEnHtml = function(nodoMadre) {
     this._nodoHtml = document.createElement('input');
     this._nodoHtml.style.position = 'absolute';
     this._nodoHtml.value = this._texto;
+    this._nodoHtml.style['font-size'] = `${this._tamanioLetra}pt`;
     nodoMadre.appendChild(this._nodoHtml);
+    this.InicializarHtml();
   }
 };
 

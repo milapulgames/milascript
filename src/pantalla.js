@@ -1,7 +1,7 @@
 Mila.Modulo({
   define:"Mila.Pantalla",
-  usa:["geometria","base","pantalla/panel"],
-  necesita:["tipo"]
+  usa:["base","pantalla/panel"],
+  necesita:["tipo","geometria"]
 });
 
 Mila.Pantalla._pantallas = {};
@@ -65,7 +65,14 @@ Mila.Tipo.Registrar({
   es: {
     "?ancho":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio]),
     "?alto":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio]),
-    "?grosorBorde":Mila.Tipo.Entero
+    "?grosorBorde":Mila.Tipo.Entero,
+    "?colorBorde":Mila.Tipo.Texto, // ¿Color?
+    "?margenInterno":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Tipo.Rectangulo]),
+    "?margenExterno":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Tipo.Rectangulo]),
+    "?cssAdicional":Mila.Tipo.Registro,
+    "?visible":Mila.Tipo.Booleano,
+    "?funcion":Mila.Tipo.Funcion,
+    "?destino":Mila.Tipo.Texto
   },
   inferible: false
 });
@@ -73,14 +80,19 @@ Mila.Tipo.Registrar({
 Mila.Pantalla.AtributosElementoVisualPorDefecto = {
   ancho:Mila.Pantalla.ComportamientoEspacio.Minimizar,
   alto:Mila.Pantalla.ComportamientoEspacio.Minimizar,
-  grosorBorde:0
+  grosorBorde:0,
+  margenInterno:0,
+  margenExterno:0,
+  colorBorde:"#000",
+  cssAdicional:{},
+  visible:true
 };
 
 Mila.Pantalla._ElementoVisual = function ElementoVisual() {};
 
 Mila.Pantalla._ElementoVisual.prototype.Inicializar = function(atributos, porDefecto=Mila.Pantalla.AtributosElementoVisualPorDefecto) {
   Mila.Contrato({
-    Proposito: "Inicializar este elemento visual asignando sus campos ancho y alto",
+    Proposito: "Inicializar este elemento visual asignando sus campos básicos",
     Parametros: [
       [atributos, Mila.Tipo.AtributosElementoVisual],
       [porDefecto, Mila.Tipo.AtributosElementoVisual]
@@ -90,7 +102,60 @@ Mila.Pantalla._ElementoVisual.prototype.Inicializar = function(atributos, porDef
   this.CambiarAnchoA_(todosLosAtributos.ancho);
   this.CambiarAltoA_(todosLosAtributos.alto);
   this.CambiarGrosorBordeA_(todosLosAtributos.grosorBorde);
+  this.CambiarColorBordeA_(todosLosAtributos.colorBorde);
+  this.CambiarMargenInternoA_(todosLosAtributos.margenInterno);
+  this.CambiarMargenExternoA_(todosLosAtributos.margenExterno);
+  this.CambiarCssAdicionalA_(todosLosAtributos.cssAdicional);
+  this.CambiarVisibilidadA_(todosLosAtributos.visible);
+  let funcion = Mila.Nada;
+  if ('funcion' in atributos) {
+    funcion = atributos.funcion;
+  }
+  if ('destino' in atributos) {
+    let funcionDestino = function() { open(atributos.destino); };
+    funcion = funcion.esAlgo() ? function() {
+      funcion();
+      funcionDestino();
+    } : funcionDestino;
+  }
+  if (funcion.esAlgo()) {
+    this.CambiarFuncionA_(funcion);
+  }
 };
+
+Mila.Tipo.Registrar({
+  nombre:'AtributosElementoVisualTextual',
+  es: {
+    "?texto":Mila.Tipo.Texto,
+    "?tamanioLetra":Mila.Tipo.Entero
+  },
+  subtipoDe: "AtributosElementoVisual",
+  inferible: false
+});
+
+Mila.Pantalla.AtributosElementoVisualTextualPorDefecto = {
+  tamanioLetra: 12
+};
+
+Mila.Pantalla._ElementoVisualTextual = function ElementoVisualTextual() {};
+Object.setPrototypeOf(Mila.Pantalla._ElementoVisualTextual.prototype, Mila.Pantalla._ElementoVisual.prototype);
+
+Mila.Pantalla._ElementoVisualTextual.prototype.Inicializar = function(atributos, porDefecto=Mila.Pantalla.AtributosElementoVisualTextualPorDefecto) {
+  Mila.Contrato({
+    Proposito: "Inicializar este elemento visual textual asignando sus campos básicos",
+    Parametros: [
+      [atributos, Mila.Tipo.AtributosElementoVisualTextual],
+      [porDefecto, Mila.Tipo.AtributosElementoVisualTextual]
+    ]
+  });
+  Mila.Pantalla._ElementoVisual.prototype.Inicializar.call(this, atributos, porDefecto);
+  const todosLosAtributos = Object.assign({}, Mila.Pantalla.AtributosElementoVisualTextualPorDefecto, porDefecto, atributos);
+  this.CambiarTamanioLetraA_(todosLosAtributos.tamanioLetra);
+  this.CambiarTextoA_('texto' in todosLosAtributos
+    ? todosLosAtributos.texto
+    : ''
+  );
+}
 
 Mila.Pantalla._ElementoVisual.prototype.rectanguloInterno = function(rectanguloCompleto) {
   Mila.Contrato({
@@ -103,8 +168,6 @@ Mila.Pantalla._ElementoVisual.prototype.rectanguloInterno = function(rectanguloC
     ]
   });
   let rectangulo = rectanguloCompleto.copia();
-  rectangulo.ancho -= 2*this._grosorBorde;
-  rectangulo.alto -= 2*this._grosorBorde;
   if (this.ancho().esUnNumero()) {
     if (rectangulo.ancho < 0) {
       rectangulo.ancho = maximoEntre_Y_(-this.ancho(), rectangulo.ancho);
@@ -119,6 +182,12 @@ Mila.Pantalla._ElementoVisual.prototype.rectanguloInterno = function(rectanguloC
       rectangulo.alto = minimoEntre_Y_(this.alto(), rectangulo.alto);
     }
   }
+  rectangulo.ancho -= (2*this._grosorBorde +
+    this.margenInternoIzquierdo() + this.margenInternoDerecho()
+  );
+  rectangulo.alto -= (2*this._grosorBorde +
+    this.margenInternoSuperior() + this.margenInternoInferior()
+  );
   let resultado = rectangulo;
   if ('_nodoHtml' in this) {
     let xInterno, yInterno;
@@ -203,6 +272,20 @@ Mila.Pantalla._ElementoVisual.prototype.Redimensionar = function(rectanguloCompl
     resultado = this.rectanguloMinimo(resultado, rectanguloCompleto.ancho < 0, rectanguloCompleto.alto < 0);
   }
   return resultado;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.Ocultar = function() {
+  this.CambiarVisibilidadA_(false);
+  if ('_nodoHtml' in this) {
+    this._nodoHtml.style.display = 'none';
+  }
+};
+
+Mila.Pantalla._ElementoVisual.prototype.Mostrar = function() {
+  this.CambiarVisibilidadA_(true);
+  if ('_nodoHtml' in this) {
+    this._nodoHtml.style.display = 'block';
+  }
 };
 
 Mila.Pantalla._ElementoVisual.prototype.ancho = function() {
@@ -335,9 +418,19 @@ Mila.Pantalla._ElementoVisual.prototype.MinimizarAlto = function(altoInvertido, 
   this._nodoHtml.style.height = '';
 };
 
+Mila.Pantalla._ElementoVisual.prototype.visible = function() {
+  Mila.Contrato({
+    Proposito: [
+      "Indicar si este elemento visual es visible",
+      Mila.Tipo.Booleano
+    ],
+  });
+  return this._visible;
+};
+
 Mila.Pantalla._ElementoVisual.prototype.CambiarAnchoA_ = function(nuevoAncho) {
   Mila.Contrato({
-    Proposito: "Reemplazar el ancho de a este elemento visual por el dado",
+    Proposito: "Reemplazar el ancho de este elemento visual por el dado",
     Parametros: [
       [nuevoAncho, Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio])]
     ]
@@ -350,7 +443,7 @@ Mila.Pantalla._ElementoVisual.prototype.CambiarAnchoA_ = function(nuevoAncho) {
 
 Mila.Pantalla._ElementoVisual.prototype.CambiarAltoA_ = function(nuevoAlto) {
   Mila.Contrato({
-    Proposito: "Reemplazar el alto de a este elemento visual por el dado",
+    Proposito: "Reemplazar el alto de este elemento visual por el dado",
     Parametros: [
       [nuevoAlto, Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio])]
     ]
@@ -363,12 +456,181 @@ Mila.Pantalla._ElementoVisual.prototype.CambiarAltoA_ = function(nuevoAlto) {
 
 Mila.Pantalla._ElementoVisual.prototype.CambiarGrosorBordeA_ = function(nuevoGrosorBorde) {
   Mila.Contrato({
-    Proposito: "Reemplazar el grosor del borde de a este elemento visual por el dado",
+    Proposito: "Reemplazar el grosor del borde de este elemento visual por el dado",
     Parametros: [
       [nuevoGrosorBorde, Mila.Tipo.Entero]
     ]
   });
   this._grosorBorde = nuevoGrosorBorde;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.CambiarColorBordeA_ = function(nuevoColorBorde) {
+  Mila.Contrato({
+    Proposito: "Reemplazar el color del borde de este elemento visual por el dado",
+    Parametros: [
+      [nuevoColorBorde, Mila.Tipo.Texto]
+    ]
+  });
+  this._colorBorde = nuevoColorBorde;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.CambiarMargenInternoA_ = function(nuevoMargenInterno) {
+  Mila.Contrato({
+    Proposito: "Reemplazar el margen interno de este elemento visual por el dado",
+    Parametros: [
+      [nuevoMargenInterno, Mila.Tipo.O([Mila.Tipo.Entero,Mila.Tipo.Rectangulo])]
+    ]
+  });
+  this._margenInterno = nuevoMargenInterno;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.CambiarMargenExternoA_ = function(nuevoMargenExterno) {
+  Mila.Contrato({
+    Proposito: "Reemplazar el margen externo de este elemento visual por el dado",
+    Parametros: [
+      [nuevoMargenExterno, Mila.Tipo.O([Mila.Tipo.Entero,Mila.Tipo.Rectangulo])]
+    ]
+  });
+  this._margenExterno = nuevoMargenExterno;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.CambiarCssAdicionalA_ = function(nuevoCss) {
+  Mila.Contrato({
+    Proposito: "Reemplazar el diccionario css de este elemento visual por el dado",
+    Parametros: [
+      [nuevoCss, Mila.Tipo.Registro]
+    ]
+  });
+  this._css = nuevoCss;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.CambiarVisibilidadA_ = function(nuevoValorVisibilidad) {
+  Mila.Contrato({
+    Proposito: "Reemplazar el valor de visibilidad de este elemento visual por el dado",
+    Parametros: [
+      [nuevoValorVisibilidad, Mila.Tipo.Booleano]
+    ]
+  });
+  this._visible = nuevoValorVisibilidad;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.CambiarFuncionA_ = function(nuevaFuncion) {
+  Mila.Contrato({
+    Proposito: "Reemplazar la función de este elemento visual por la dada",
+    Parametros: [
+      [nuevaFuncion, Mila.Tipo.Funcion]
+    ]
+  });
+  this._funcion = nuevaFuncion;
+  if ('_nodoHtml' in this) {
+    this._nodoHtml.addEventListener('click', funcion);
+  }
+};
+
+Mila.Pantalla._ElementoVisualTextual.prototype.CambiarTextoA_ = function(nuevoTexto) {
+  Mila.Contrato({
+    Proposito: "Reemplazar el texto de este elemento visual textual por el dado",
+    Parametros: [
+      [nuevoTexto, Mila.Tipo.Texto]
+    ]
+  });
+  this._texto = nuevoTexto;
+  if ('_nodoHtml' in this) {
+    this._nodoHtml.innerHTML = this._texto;
+  }
+};
+
+Mila.Pantalla._ElementoVisualTextual.prototype.CambiarTamanioLetraA_ = function(nuevoTamanioLetra) {
+  Mila.Contrato({
+    Proposito: "Reemplazar el tamaño de letra de este elemento visual textual por el dado",
+    Parametros: [
+      [nuevoTamanioLetra, Mila.Tipo.Entero]
+    ]
+  });
+  this._tamanioLetra = nuevoTamanioLetra;
+  if ('_nodoHtml' in this) {
+    this._nodoHtml.style['font-size'] = `${this._tamanioLetra}pt`;
+  }
+};
+
+Mila.Pantalla._ElementoVisual.prototype.margenInternoIzquierdo = function() {
+  Mila.Contrato({
+    Proposito: [
+      "Describir el valor de margen interno izquierdo de este elemento visual",
+      Mila.Tipo.Entero
+    ]
+  });
+  return this._margenInterno.esUnNumero() ? this._margenInterno : this._margenInterno.x;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.margenInternoDerecho = function() {
+  Mila.Contrato({
+    Proposito: [
+      "Describir el valor de margen interno derecho de este elemento visual",
+      Mila.Tipo.Entero
+    ]
+  });
+  return this._margenInterno.esUnNumero() ? this._margenInterno : this._margenInterno.ancho;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.margenInternoSuperior = function() {
+  Mila.Contrato({
+    Proposito: [
+      "Describir el valor de margen interno superior de este elemento visual",
+      Mila.Tipo.Entero
+    ]
+  });
+  return this._margenInterno.esUnNumero() ? this._margenInterno : this._margenInterno.y;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.margenInternoInferior = function() {
+  Mila.Contrato({
+    Proposito: [
+      "Describir el valor de margen interno inferior de este elemento visual",
+      Mila.Tipo.Entero
+    ]
+  });
+  return this._margenInterno.esUnNumero() ? this._margenInterno : this._margenInterno.alto;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.margenExternoIzquierdo = function() {
+  Mila.Contrato({
+    Proposito: [
+      "Describir el valor de margen externo izquierdo de este elemento visual",
+      Mila.Tipo.Entero
+    ]
+  });
+  return this._margenExterno.esUnNumero() ? this._margenExterno : this._margenExterno.x;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.margenExternoDerecho = function() {
+  Mila.Contrato({
+    Proposito: [
+      "Describir el valor de margen externo derecho de este elemento visual",
+      Mila.Tipo.Entero
+    ]
+  });
+  return this._margenExterno.esUnNumero() ? this._margenExterno : this._margenExterno.ancho;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.margenExternoSuperior = function() {
+  Mila.Contrato({
+    Proposito: [
+      "Describir el valor de margen externo superior de este elemento visual",
+      Mila.Tipo.Entero
+    ]
+  });
+  return this._margenExterno.esUnNumero() ? this._margenExterno : this._margenExterno.y;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.margenExternoInferior = function() {
+  Mila.Contrato({
+    Proposito: [
+      "Describir el valor de margen externo inferior de este elemento visual",
+      Mila.Tipo.Entero
+    ]
+  });
+  return this._margenExterno.esUnNumero() ? this._margenExterno : this._margenExterno.alto;
 };
 
 Mila.Pantalla._ElementoVisual.prototype.QuitarDelHtml = function() {
@@ -382,6 +644,36 @@ Mila.Pantalla._ElementoVisual.prototype.QuitarDelHtml = function() {
   if ('_nodoHtml' in this) {
     this._nodoHtml.remove();
     delete this._nodoHtml;
+  }
+};
+
+Mila.Pantalla._ElementoVisual.prototype.InicializarHtml = function() {
+  Mila.Contrato({
+    Proposito: "Inicializar el nodo Html de este elemento visual",
+    Precondiciones: [
+      "Se está ejecutando en el navegador",
+      Mila.entorno().enNavegador(),
+      "Hay un elemento html asociado a este elemento visual",
+      '_nodoHtml' in this /* && this._nodoHtml es de tipo nodo dom */
+    ]
+  });
+  this._nodoHtml.style.border = `solid ${this._grosorBorde}px ${this._colorBorde}`;
+  this._nodoHtml.style['padding-left'] = `${this.margenInternoIzquierdo()}px`;
+  this._nodoHtml.style['padding-right'] = `${this.margenInternoDerecho()}px`;
+  this._nodoHtml.style['padding-top'] = `${this.margenInternoSuperior()}px`;
+  this._nodoHtml.style['padding-bottom'] = `${this.margenInternoInferior()}px`;
+  this._nodoHtml.style['margin-left'] = `${this.margenExternoIzquierdo()}px`;
+  this._nodoHtml.style['margin-right'] = `${this.margenExternoDerecho()}px`;
+  this._nodoHtml.style['margin-top'] = `${this.margenExternoSuperior()}px`;
+  this._nodoHtml.style['margin-bottom'] = `${this.margenExternoInferior()}px`;
+  for (let k in this._css) {
+    this._nodoHtml.style[k] = this._css[k];
+  }
+  if (!this._visible) {
+    this._nodoHtml.style.display = 'none';
+  }
+  if ('_funcion' in this) {
+    this._nodoHtml.addEventListener('click', this._funcion);
   }
 };
 
@@ -537,13 +829,50 @@ Mila.Pantalla._Disposicion.prototype.OrganizarElementos_En_ = function(elementos
   let rectanguloRestante = rectangulo.copia();
   this.i = 0;
   this.scrolleable = false;
-  while (elementosRestantes.longitud() > 0) {
+  while (elementosRestantes.longitud() > 0 && !this.scrolleable) {
     let rectanguloActual = this.DividirRectangulo(rectanguloRestante, elementosRestantes.longitud());
     this.RecortarRectangulo(rectanguloRestante, elementosRestantes[0].Redimensionar(rectanguloActual));
     elementosRestantes = elementosRestantes.sinElPrimero();
     this.i++;
   }
+  if (this.scrolleable) { // Tengo que repetir pero minimizando los elementos que se maximizan
+    elementosRestantes = elementos;
+    rectanguloRestante = rectangulo.copia();
+    if (this.eje.esIgualA_(Mila.Pantalla.Eje.Horizontal)) {
+      rectanguloRestante.CambiarAnchoA_(Infinity);
+      rectanguloRestante.CambiarAltoA_(rectanguloRestante.alto - Mila.Pantalla.Constantes.grosorBarraScroll);
+    } else {
+      rectanguloRestante.CambiarAltoA_(Infinity);
+      rectanguloRestante.CambiarAnchoA_(rectanguloRestante.ancho - Mila.Pantalla.Constantes.grosorBarraScroll);
+    }
+    this.i = 0;
+    while (elementosRestantes.longitud() > 0) {
+      let restaurar = [];
+      if (this.eje.esIgualA_(Mila.Pantalla.Eje.Horizontal) && elementosRestantes[0].ancho().esIgualA_(Mila.Pantalla.ComportamientoEspacio.Maximizar)) {
+        elementosRestantes[0].CambiarAnchoA_(Mila.Pantalla.ComportamientoEspacio.Minimizar);
+        restaurar.push(function(elemento) {
+          elemento.CambiarAnchoA_(Mila.Pantalla.ComportamientoEspacio.Maximizar);
+        });
+      }
+      if (this.eje.esIgualA_(Mila.Pantalla.Eje.Vertical) && elementosRestantes[0].alto().esIgualA_(Mila.Pantalla.ComportamientoEspacio.Maximizar)) {
+        elementosRestantes[0].CambiarAltoA_(Mila.Pantalla.ComportamientoEspacio.Minimizar);
+        restaurar.push(function(elemento) {
+          elemento.CambiarAltoA_(Mila.Pantalla.ComportamientoEspacio.Maximizar);
+        });
+      }
+      this.RecortarRectangulo(rectanguloRestante, elementosRestantes[0].Redimensionar(rectanguloRestante));
+      for (let f of restaurar) {
+        f(elementosRestantes[0]);
+      }
+      elementosRestantes = elementosRestantes.sinElPrimero();
+      this.i++;
+    }
+  }
   delete this.i;
+};
+
+Mila.Pantalla.Aviso = function(mensaje) {
+  alert(mensaje);
 };
 
 Mila.Tipo.Registrar({
