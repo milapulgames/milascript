@@ -6,7 +6,7 @@ Mila.Modulo({
 Mila.Tipo.Registrar({
   nombre:'AtributosBoton',
   es: {},
-  subtipoDe: "AtributosElementoVisual",
+  subtipoDe: "AtributosElementoVisualTextual",
   inferible: false
 });
 
@@ -46,7 +46,6 @@ Mila.Pantalla._Boton.prototype.PlasmarEnHtml = function(nodoMadre) {
     this._nodoHtml = document.createElement('a');
     this._nodoHtml.innerHTML = this._texto;
     this._nodoHtml.style.position = 'absolute';
-    this._nodoHtml.style['font-size'] = `${this._tamanioLetra}pt`;
     this._nodoHtml.style['cursor'] = 'pointer';
     nodoMadre.appendChild(this._nodoHtml);
     this.InicializarHtml();

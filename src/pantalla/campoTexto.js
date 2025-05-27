@@ -5,7 +5,7 @@ Mila.Modulo({
 Mila.Tipo.Registrar({
   nombre:'AtributosCampoTexto',
   es: {},
-  subtipoDe: "AtributosElementoVisual",
+  subtipoDe: "AtributosElementoVisualTextual",
   inferible: false
 });
 
@@ -68,7 +68,6 @@ Mila.Pantalla._CampoTexto.prototype.PlasmarEnHtml = function(nodoMadre) {
     this._nodoHtml = document.createElement('input');
     this._nodoHtml.style.position = 'absolute';
     this._nodoHtml.value = this._texto;
-    this._nodoHtml.style['font-size'] = `${this._tamanioLetra}pt`;
     nodoMadre.appendChild(this._nodoHtml);
     this.InicializarHtml();
   }

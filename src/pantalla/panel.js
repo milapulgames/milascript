@@ -26,7 +26,7 @@ Mila.Pantalla.nuevoPanel = function(atributos={}) {
   nuevoPanel.Inicializar(atributos, {
     ancho:Mila.Pantalla.ComportamientoEspacio.Maximizar,
     alto:Mila.Pantalla.ComportamientoEspacio.Maximizar,
-    grosorBorde:1, colorBorde:"#fff"
+    grosorBorde:1, colorBorde:"#0000"
   });
   nuevoPanel.CambiarElementosA_('elementos' in atributos
     ? atributos.elementos

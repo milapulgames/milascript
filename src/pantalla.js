@@ -65,6 +65,7 @@ Mila.Tipo.Registrar({
   es: {
     "?ancho":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio]),
     "?alto":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio]),
+    "?colorFondo":Mila.Tipo.Texto,
     "?grosorBorde":Mila.Tipo.Entero,
     "?colorBorde":Mila.Tipo.Texto, // ¿Color?
     "?margenInterno":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Tipo.Rectangulo]),
@@ -80,10 +81,11 @@ Mila.Tipo.Registrar({
 Mila.Pantalla.AtributosElementoVisualPorDefecto = {
   ancho:Mila.Pantalla.ComportamientoEspacio.Minimizar,
   alto:Mila.Pantalla.ComportamientoEspacio.Minimizar,
+  colorFondo:"#0000",
   grosorBorde:0,
   margenInterno:0,
   margenExterno:0,
-  colorBorde:"#000",
+  colorBorde:"#0000",
   cssAdicional:{},
   visible:true
 };
@@ -101,6 +103,7 @@ Mila.Pantalla._ElementoVisual.prototype.Inicializar = function(atributos, porDef
   const todosLosAtributos = Object.assign({}, Mila.Pantalla.AtributosElementoVisualPorDefecto, porDefecto, atributos);
   this.CambiarAnchoA_(todosLosAtributos.ancho);
   this.CambiarAltoA_(todosLosAtributos.alto);
+  this.CambiarColorFondoA_(todosLosAtributos.colorFondo);
   this.CambiarGrosorBordeA_(todosLosAtributos.grosorBorde);
   this.CambiarColorBordeA_(todosLosAtributos.colorBorde);
   this.CambiarMargenInternoA_(todosLosAtributos.margenInterno);
@@ -127,14 +130,16 @@ Mila.Tipo.Registrar({
   nombre:'AtributosElementoVisualTextual',
   es: {
     "?texto":Mila.Tipo.Texto,
-    "?tamanioLetra":Mila.Tipo.Entero
+    "?tamanioLetra":Mila.Tipo.Entero,
+    "?colorTexto":Mila.Tipo.Texto,
   },
   subtipoDe: "AtributosElementoVisual",
   inferible: false
 });
 
 Mila.Pantalla.AtributosElementoVisualTextualPorDefecto = {
-  tamanioLetra: 12
+  tamanioLetra: 12,
+  colorTexto: "#000"
 };
 
 Mila.Pantalla._ElementoVisualTextual = function ElementoVisualTextual() {};
@@ -151,6 +156,7 @@ Mila.Pantalla._ElementoVisualTextual.prototype.Inicializar = function(atributos,
   Mila.Pantalla._ElementoVisual.prototype.Inicializar.call(this, atributos, porDefecto);
   const todosLosAtributos = Object.assign({}, Mila.Pantalla.AtributosElementoVisualTextualPorDefecto, porDefecto, atributos);
   this.CambiarTamanioLetraA_(todosLosAtributos.tamanioLetra);
+  this.CambiarColorTextoA_(todosLosAtributos.colorTexto);
   this.CambiarTextoA_('texto' in todosLosAtributos
     ? todosLosAtributos.texto
     : ''
@@ -168,9 +174,12 @@ Mila.Pantalla._ElementoVisual.prototype.rectanguloInterno = function(rectanguloC
     ]
   });
   let rectangulo = rectanguloCompleto.copia();
+  let mHorizontal = 1;
+  let mVertical = 1;
   if (this.ancho().esUnNumero()) {
     if (rectangulo.ancho < 0) {
       rectangulo.ancho = maximoEntre_Y_(-this.ancho(), rectangulo.ancho);
+      mHorizontal = -1;
     } else {
       rectangulo.ancho = minimoEntre_Y_(this.ancho(), rectangulo.ancho);
     }
@@ -178,15 +187,20 @@ Mila.Pantalla._ElementoVisual.prototype.rectanguloInterno = function(rectanguloC
   if (this.alto().esUnNumero()) {
     if (rectangulo.alto < 0) {
       rectangulo.alto = maximoEntre_Y_(-this.alto(), rectangulo.alto);
+      mVertical = -1;
     } else {
       rectangulo.alto = minimoEntre_Y_(this.alto(), rectangulo.alto);
     }
   }
-  rectangulo.ancho -= (2*this._grosorBorde +
-    this.margenInternoIzquierdo() + this.margenInternoDerecho()
+  // rectangulo.x += mHorizontal*(this.margenInternoIzquierdo() -2*this._grosorBorde);
+  // rectangulo.y += mVertical*(this.margenInternoSuperior() - 2*this._grosorBorde);
+  rectangulo.ancho -= mHorizontal*(2*this._grosorBorde +
+    this.margenInternoIzquierdo() + this.margenInternoDerecho() +
+    this.margenExternoIzquierdo() + this.margenExternoDerecho()
   );
-  rectangulo.alto -= (2*this._grosorBorde +
-    this.margenInternoSuperior() + this.margenInternoInferior()
+  rectangulo.alto -= mVertical*(2*this._grosorBorde +
+    this.margenInternoSuperior() + this.margenInternoInferior() +
+    this.margenExternoSuperior() + this.margenExternoInferior()
   );
   let resultado = rectangulo;
   if ('_nodoHtml' in this) {
@@ -253,7 +267,12 @@ Mila.Pantalla._ElementoVisual.prototype.rectanguloMinimo = function(rectanguloCo
   } else if (this.alto().esIgualA_(Mila.Pantalla.ComportamientoEspacio.Maximizar)) {
     this._nodoHtml.style.height = `${rectanguloCompleto.alto}px`;
   }
-  return Mila.Geometria.areaDom_(this._nodoHtml);
+  const resultado = Mila.Geometria.areaDom_(this._nodoHtml);
+  resultado.x -= this.margenExternoIzquierdo();
+  resultado.y -= this.margenExternoSuperior();
+  resultado.ancho += this.margenExternoDerecho();
+  resultado.alto += this.margenExternoInferior();
+  return resultado;
 };
 
 Mila.Pantalla._ElementoVisual.prototype.Redimensionar = function(rectanguloCompleto) {
@@ -271,6 +290,10 @@ Mila.Pantalla._ElementoVisual.prototype.Redimensionar = function(rectanguloCompl
   if ('_nodoHtml' in this) {
     resultado = this.rectanguloMinimo(resultado, rectanguloCompleto.ancho < 0, rectanguloCompleto.alto < 0);
   }
+  resultado.x -= this.margenExternoIzquierdo();
+  resultado.y -= this.margenExternoSuperior();
+  resultado.ancho += this.margenExternoDerecho();
+  resultado.alto += this.margenExternoInferior();
   return resultado;
 };
 
@@ -317,7 +340,8 @@ Mila.Pantalla._ElementoVisual.prototype.anchoHtml = function() {
       '_nodoHtml' in this /* && this._nodoHtml es de tipo nodo dom */
     ]
   });
-  return Mila.Geometria.areaDom_(this._nodoHtml).ancho + this._grosorBorde;
+  return Mila.Geometria.areaDom_(this._nodoHtml).ancho + this._grosorBorde +
+    this.margenExternoDerecho() + this.margenExternoIzquierdo();
 };
 
 Mila.Pantalla._ElementoVisual.prototype.anchoBarraScroll = function() {
@@ -382,7 +406,8 @@ Mila.Pantalla._ElementoVisual.prototype.altoHtml = function() {
       '_nodoHtml' in this /* && this._nodoHtml es de tipo nodo dom */
     ]
   });
-  return Mila.Geometria.areaDom_(this._nodoHtml).alto + this._grosorBorde;
+  return Mila.Geometria.areaDom_(this._nodoHtml).alto + this._grosorBorde +
+    this.margenExternoSuperior() + this.margenExternoInferior();
 };
 
 Mila.Pantalla._ElementoVisual.prototype.altoBarraScroll = function() {
@@ -452,6 +477,16 @@ Mila.Pantalla._ElementoVisual.prototype.CambiarAltoA_ = function(nuevoAlto) {
     ? Mila.Pantalla.ComportamientoEspacio[nuevoAlto]
     : nuevoAlto
   ;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.CambiarColorFondoA_ = function(nuevoColorFondo) {
+  Mila.Contrato({
+    Proposito: "Reemplazar el color de fondo de este elemento visual por el dado",
+    Parametros: [
+      [nuevoColorFondo, Mila.Tipo.Texto]
+    ]
+  });
+  this._colorFondo = nuevoColorFondo;
 };
 
 Mila.Pantalla._ElementoVisual.prototype.CambiarGrosorBordeA_ = function(nuevoGrosorBorde) {
@@ -524,6 +559,7 @@ Mila.Pantalla._ElementoVisual.prototype.CambiarFuncionA_ = function(nuevaFuncion
   this._funcion = nuevaFuncion;
   if ('_nodoHtml' in this) {
     this._nodoHtml.addEventListener('click', funcion);
+    this._nodoHtml.style['cursor'] = 'pointer';
   }
 };
 
@@ -550,6 +586,19 @@ Mila.Pantalla._ElementoVisualTextual.prototype.CambiarTamanioLetraA_ = function(
   this._tamanioLetra = nuevoTamanioLetra;
   if ('_nodoHtml' in this) {
     this._nodoHtml.style['font-size'] = `${this._tamanioLetra}pt`;
+  }
+};
+
+Mila.Pantalla._ElementoVisualTextual.prototype.CambiarColorTextoA_ = function(nuevoColorTexto) {
+  Mila.Contrato({
+    Proposito: "Reemplazar el color de texto de este elemento visual textual por el dado",
+    Parametros: [
+      [nuevoColorTexto, Mila.Tipo.Texto]
+    ]
+  });
+  this._colorTexto = nuevoColorTexto;
+  if ('_nodoHtml' in this) {
+    this._nodoHtml.style.color = `${this._colorTexto}pt`;
   }
 };
 
@@ -658,6 +707,7 @@ Mila.Pantalla._ElementoVisual.prototype.InicializarHtml = function() {
     ]
   });
   this._nodoHtml.style.border = `solid ${this._grosorBorde}px ${this._colorBorde}`;
+  this._nodoHtml.style['background-color'] = this._colorFondo;
   this._nodoHtml.style['padding-left'] = `${this.margenInternoIzquierdo()}px`;
   this._nodoHtml.style['padding-right'] = `${this.margenInternoDerecho()}px`;
   this._nodoHtml.style['padding-top'] = `${this.margenInternoSuperior()}px`;
@@ -674,7 +724,23 @@ Mila.Pantalla._ElementoVisual.prototype.InicializarHtml = function() {
   }
   if ('_funcion' in this) {
     this._nodoHtml.addEventListener('click', this._funcion);
+    this._nodoHtml.style['cursor'] = 'pointer';
   }
+};
+
+Mila.Pantalla._ElementoVisualTextual.prototype.InicializarHtml = function() {
+  Mila.Contrato({
+    Proposito: "Inicializar el nodo Html de este elemento visual textual",
+    Precondiciones: [
+      "Se está ejecutando en el navegador",
+      Mila.entorno().enNavegador(),
+      "Hay un elemento html asociado a este elemento visual textual",
+      '_nodoHtml' in this /* && this._nodoHtml es de tipo nodo dom */
+    ]
+  });
+  this._nodoHtml.style['font-size'] = `${this._tamanioLetra}pt`;
+  this._nodoHtml.style.color = this._colorTexto;
+  Mila.Pantalla._ElementoVisual.prototype.InicializarHtml.call(this);
 };
 
 Mila.Pantalla._Redimensionar = function() {
@@ -869,6 +935,19 @@ Mila.Pantalla._Disposicion.prototype.OrganizarElementos_En_ = function(elementos
     }
   }
   delete this.i;
+};
+
+Mila.Pantalla._solicitudesRedimension = 0;
+Mila.Pantalla._ProgramarRedimension = function(nodo) {
+  Mila.Pantalla._solicitudesRedimension++;
+  nodo.addEventListener('load', Mila.Pantalla._cargadoNodoQueRequiereRedimensionar);
+};
+
+Mila.Pantalla._cargadoNodoQueRequiereRedimensionar = function() {
+  Mila.Pantalla._solicitudesRedimension--;
+  if (Mila.Pantalla._solicitudesRedimension == 0) {
+    Mila.Pantalla._Redimensionar();
+  }
 };
 
 Mila.Pantalla.Aviso = function(mensaje) {

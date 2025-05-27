@@ -5,7 +5,7 @@ Mila.Modulo({
 Mila.Tipo.Registrar({
   nombre:'AtributosEtiqueta',
   es: {},
-  subtipoDe: "AtributosElementoVisual",
+  subtipoDe: "AtributosElementoVisualTextual",
   inferible: false
 });
 
@@ -44,7 +44,6 @@ Mila.Pantalla._Etiqueta.prototype.PlasmarEnHtml = function(nodoMadre) {
     this._nodoHtml.style.position = 'absolute';
     this._nodoHtml.style['text-align'] = 'center';
     this._nodoHtml.style['text-wrap-mode'] = 'nowrap';
-    this._nodoHtml.style['font-size'] = `${this._tamanioLetra}pt`;
     nodoMadre.appendChild(this._nodoHtml);
     this.InicializarHtml();
   }
