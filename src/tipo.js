@@ -70,7 +70,7 @@ Mila.Tipo._Registrar = function(dataTipo) {
     let supertipo = null;
     if ('subtipoDe' in nuevoTipo) {
       supertipo = Mila.Tipo.esUnTipo(nuevoTipo.subtipoDe) ? nuevoTipo.subtipoDe : Mila.Tipo._tipos[nuevoTipo.subtipoDe];
-      for (let clave of ['igualdad','orden','strInstancia']) { // Claves heredadas a los subtipos
+      for (let clave of ['igualdad','orden','strInstancia','copia']) { // Claves heredadas a los subtipos
         if (!(clave in nuevoTipo)) {
           nuevoTipo[clave] = supertipo[clave];
         }
@@ -469,7 +469,7 @@ Mila.Tipo.esInferible = function(tipoOIdentificadorDeTipo) {
 Mila.Tipo.esUnTipo = function(elemento) {
   Mila.Contrato({
     Proposito: [
-      "Indicar si el elememto dado es un tipo.",
+      "Indicar si el elemento dado es un tipo.",
       Mila.Tipo.Booleano
     ],
     Parametros: [
@@ -891,6 +891,15 @@ Mila.Tipo.estaEntre_Y_Inclusive = function(elemento, limiteInferior, limiteSuper
 };
 Mila.Tipo._Definir_EnPrototipo_('estaEntre_Y_Inclusive', Object);
 
+Mila.Tipo.copia = function(elemento) {
+  // Describe una copia del elemento dado
+  const tipo = Mila.Tipo.tipo(elemento);
+  if (tipo.defineLaClavePropia_('copia')) {
+    return tipo.copia(elemento);
+  }
+  return elemento;
+}
+
 // Tipo Tipo: el tipo de los tipos.
 
 Mila.Tipo.Registrar({
@@ -903,7 +912,8 @@ Mila.Tipo.Registrar({
   },
   strInstancia: function(elemento) {
     return elemento.strTipo(elemento);
-  }
+  },
+  copia: Mila.Objeto.copia
 });
 
 // Tipo Cualquiera: usado en contratos para indicar que puede ser de cualquier tipo.
@@ -1020,7 +1030,8 @@ Mila.Tipo.Registrar({
   },
   strInstancia: function(elemento) {
     return `[${elemento.transformados(Mila.Tipo.aTexto).join(",")}]`;
-  }
+  },
+  copia: Mila.Lista.copia
 });
 
 // Tipo ListaDe: el tipo de las listas cuyos elementos son todos del mismo tipo
@@ -1067,7 +1078,8 @@ Mila.Tipo.Registrar({
     return `{${Mila.Objeto.clavesDefinidas(elemento).map(function(k) {
       return `${k}:${Mila.Tipo.aTexto(elemento[k])}`
     }).join(', ')}}`;
-  }
+  },
+  copia: Mila.Objeto.copia
 });
 
 // Tipo RegistroCon: el tipo de los registros con campos específicos
@@ -1212,7 +1224,7 @@ Mila.Tipo.Registrar({
       'igualdad', 'orden',
       'strTipo', 'strInstancia',
       'parametros', 'puedeSer', 'tipoPara', 'inicializacion',
-      'inferible'
+      'inferible', 'copia'
     ].includes(x)) &&
     // Debe incluir el campo nombre, una cadena de texto correspondiente al nombre del tipo.
     elemento.defineLaClave_('nombre') && Mila.Tipo.esDeTipo_(elemento.nombre, Mila.Tipo.Texto) &&
@@ -1328,6 +1340,12 @@ Mila.Tipo.Registrar({
       // En caso de no inlcuirse este campo, se asume que sí.
       (!elemento.defineLaClave_('inferible') ||
         Mila.Tipo.esDeTipo_(elemento.inferible, Mila.Tipo.Booleano)
+      ) &&
+    // Puede incluir el campo copia, una función que tome un elemento de este tipo
+      // y devuelva un nuevo elemento idéntico.
+      // En caso de no inlcuirse este campo, se devuelve al mismo elemento.
+      (!elemento.defineLaClave_('copia') ||
+        Mila.Tipo.esDeTipo_(elemento.copia, Mila.Tipo.Funcion)
       )
     ;
   }

@@ -415,7 +415,7 @@ Mila.Lista._Definir_EnPrototipo_('SacarElementosHasta_', Array);
 
 Mila.Lista.copia = function(lista) {
   // Describe una lista igual a la dada.
-  return Mila.Lista.fold(lista, function(x, rec) { return Mila.Lista.cons(rec, x); }, []);
+  return Mila.Lista.fold(lista, function(x, rec) { return Mila.Lista.cons(rec, Mila.Tipo.copia(x)); }, []);
 };
 Mila.Lista._Definir_EnPrototipo_('copia', Array);
 

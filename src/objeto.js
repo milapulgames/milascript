@@ -62,6 +62,24 @@ Mila.Objeto.sinLaClave_ = function(objeto, clave) {
 };
 Mila.Objeto._Definir_EnPrototipo_('sinLaClave_', Object);
 
+Mila.Objeto.sabeResponder_ = function(objeto, clave) {
+  // Indica si el objeto dado sabe responder a la clave dada.
+    // objeto puede ser cualquier dato.
+    // clave es una cadena de texto correspondiente a la clave que se consulta.
+  return clave in objeto && Mila.Tipo.esAlgo(objeto[clave]);
+};
+Mila.Objeto._Definir_EnPrototipo_('sabeResponder_', Object);
+
+Mila.Objeto.defineLaClavePropia_ = function(objeto, clave) {
+  // Indica si el objeto dado tiene definida la clave dada.
+    // objeto puede ser cualquier dato.
+    // clave es una cadena de texto correspondiente a la clave que se consulta.
+  return objeto.hasOwnProperty(clave) && Mila.Tipo.esAlgo(objeto[clave]);
+};
+Mila.Objeto._Definir_EnPrototipo_('defineLaClavePropia_', Object);
+
+// TODO: Esta eliminarla y buscar cada vez que la invoco
+  // si en realidad quiero sabeResponder_ o defineLaClavePropia_
 Mila.Objeto.defineLaClave_ = function(objeto, clave) {
   // Indica si el objeto dado tiene definida la clave dada.
     // objeto puede ser cualquier dato.
@@ -128,6 +146,14 @@ Mila.Objeto.cantidadDeClaves = function(objeto) {
   return Mila.Lista.longitud(Mila.Objeto.clavesDefinidas(objeto));
 };
 Mila.Objeto._Definir_EnPrototipo_('cantidadDeClaves', Object);
+
+Mila.Objeto.copia = function(objeto) {
+  // Describe un objeto igual al dado.
+  return Mila.Objeto.fold(objeto, function(clave, valor, rec) {
+    return Mila.Objeto.conLaClave_YElValor_(rec, clave, Mila.Tipo.copia(valor));
+  }, {});
+};
+Mila.Objeto._Definir_EnPrototipo_('copia', Object);
 
 Mila.Objeto.transformados = function(objeto, funcion) {
   // Describe el resultado de aplicarle la función dada a cada valor del objeto dado.

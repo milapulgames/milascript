@@ -180,7 +180,12 @@ Mila.AST._NodoAST.prototype.fold = function(mapaDeFunciones) {
   if (!mapaDeFunciones.defineLaClave_(clave)) {
     clave = "Nodo";
   }
-  return mapaDeFunciones[clave](this, this.hijos.transformados((clave, valor) => valor.fold(mapaDeFunciones)));
+  return mapaDeFunciones[clave](this, this.hijos.transformados(function(clave, valor) {
+    return valor.esUnaLista()
+      ? valor.transformados(function(x) { return x.fold(mapaDeFunciones); })
+      : valor.fold(mapaDeFunciones)
+    ;
+  }));
 };
 
 // Esto podría reemplazarse por una composición entre transformación a árbol (crear el tipo Arbol) y aTexto:
