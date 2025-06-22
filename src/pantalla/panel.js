@@ -59,7 +59,18 @@ Mila.Pantalla._Panel.prototype.CambiarElementosA_ = function(nuevosElementos) {
       [nuevosElementos, Mila.Tipo.O([Mila.Tipo.ElementoVisual, Mila.Tipo.ListaDe_(Mila.Tipo.ElementoVisual)])]
     ]
   });
+  if ('_nodoHtml' in this) {
+    for (let e of this._elementos) {
+      e.QuitarDelHtml();
+    }
+  }
   this._elementos = nuevosElementos.esUnaLista() ? nuevosElementos : [nuevosElementos];
+  if ('_nodoHtml' in this) {
+    for (let e of this._elementos) {
+      e.PlasmarEnHtml(this._nodoHtml);
+    }
+    Mila.Pantalla._Redimensionar();
+  }
 };
 
 Mila.Pantalla._Panel.prototype.CambiarDisposicionA_ = function(nuevaDisposicion) {

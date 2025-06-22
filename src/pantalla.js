@@ -72,7 +72,7 @@ Mila.Tipo.Registrar({
     "?margenExterno":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Tipo.Rectangulo]),
     "?cssAdicional":Mila.Tipo.Registro,
     "?visible":Mila.Tipo.Booleano,
-    "?funcion":Mila.Tipo.Funcion,
+    "?funcion":Mila.Tipo.Funcion, // Este elemento queda ligado a this
     "?destino":Mila.Tipo.Texto
   },
   inferible: false
@@ -112,7 +112,7 @@ Mila.Pantalla._ElementoVisual.prototype.Inicializar = function(atributos, porDef
   this.CambiarVisibilidadA_(todosLosAtributos.visible);
   let funcion = Mila.Nada;
   if ('funcion' in atributos) {
-    funcion = atributos.funcion;
+    funcion = atributos.funcion.bind(this);
   }
   if ('destino' in atributos) {
     let funcionDestino = function() { open(atributos.destino); };
