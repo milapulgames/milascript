@@ -4,7 +4,9 @@ Mila.Modulo({
 
 Mila.Tipo.Registrar({
   nombre:'AtributosAreaTexto',
-  es: {},
+  es: {
+    "?editable":Mila.Tipo.Booleano
+  },
   subtipoDe: "AtributosElementoVisualTextual",
   inferible: false
 });
@@ -25,6 +27,10 @@ Mila.Pantalla.nuevaAreaTexto = function(atributos={}) {
     alto:Mila.Pantalla.ComportamientoEspacio.Maximizar,
     grosorBorde: 1
   });
+  nuevaAreaTexto.CambiarEditableA_('editable' in atributos
+    ? atributos.editable
+    : true
+  );
   return nuevaAreaTexto;
 };
 
@@ -44,6 +50,19 @@ Mila.Pantalla._AreaTexto.prototype.CambiarTextoA_ = function(nuevoTexto) {
   }
 };
 
+Mila.Pantalla._AreaTexto.prototype.CambiarEditableA_ = function(nuevoValorEditable) {
+  Mila.Contrato({
+    Proposito: "Reemplazar la propiedad de editabilidad de esta área de ingreso de texto por la dada",
+    Parametros: [
+      [nuevoValorEditable, Mila.Tipo.Booleano]
+    ]
+  });
+  this._editable = nuevoValorEditable;
+  if ('_nodoHtml' in this) {
+    this._nodoHtml.readonly = !this._editable;
+  }
+};
+
 Mila.Pantalla._AreaTexto.prototype.texto = function() {
   Mila.Contrato({
     Proposito: [
@@ -55,6 +74,16 @@ Mila.Pantalla._AreaTexto.prototype.texto = function() {
     this._texto = this._nodoHtml.value;
   }
   return this._texto;
+};
+
+Mila.Pantalla._AreaTexto.prototype.esEditable = function() {
+  Mila.Contrato({
+    Proposito: [
+      "Indicar si esta área de texto es editable",
+      Mila.Tipo.Booleano
+    ]
+  });
+  return this._editable;
 };
 
 Mila.Pantalla._AreaTexto.prototype.PlasmarEnHtml = function(nodoMadre) {
@@ -75,6 +104,7 @@ Mila.Pantalla._AreaTexto.prototype.PlasmarEnHtml = function(nodoMadre) {
     this._nodoHtml.style.margin = '0';
     this._nodoHtml.style.padding = '0';
     this._nodoHtml.value = this._texto;
+    this._nodoHtml.readonly = !this._editable;
     nodoMadre.appendChild(this._nodoHtml);
     this.InicializarHtml();
   }
