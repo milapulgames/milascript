@@ -59,7 +59,11 @@ Mila.Pantalla._AreaTexto.prototype.CambiarEditableA_ = function(nuevoValorEditab
   });
   this._editable = nuevoValorEditable;
   if ('_nodoHtml' in this) {
-    this._nodoHtml.setAttribute('readonly', !this._editable);
+    if (this._editable) {
+      this._nodoHtml.removeAttribute('readonly');
+    } else {
+      this._nodoHtml.setAttribute('readonly', "");
+    }
   }
 };
 
@@ -104,7 +108,11 @@ Mila.Pantalla._AreaTexto.prototype.PlasmarEnHtml = function(nodoMadre) {
     this._nodoHtml.style.margin = '0';
     this._nodoHtml.style.padding = '0';
     this._nodoHtml.value = this._texto;
-    this._nodoHtml.setAttribute('readonly', !this._editable);
+    if (this._editable) {
+      this._nodoHtml.removeAttribute('readonly');
+    } else {
+      this._nodoHtml.setAttribute('readonly', "");
+    }
     nodoMadre.appendChild(this._nodoHtml);
     this.InicializarHtml();
   }
