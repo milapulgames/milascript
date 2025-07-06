@@ -645,7 +645,10 @@ Mila.Tipo.esSubtipoDe_ = function(tipo1, tipo2) {
     ]
   });
   return tipo2.subtipos.includes(tipo1.nombre) ||
-    Mila.Lista.algunoCumple_(tipo2.subtipos, x => Mila.Tipo.esSubtipoDe_(tipo1, Mila.Tipo[x])) ||
+    Mila.Lista.algunoCumple_(tipo2.subtipos, x =>
+      Mila.Tipo.esUnTipo(Mila.Tipo[x]) &&
+      Mila.Tipo.esSubtipoDe_(tipo1, Mila.Tipo[x])
+    ) ||
     (tipo1.hasOwnProperty('esSubtipoDe_') && tipo1.esSubtipoDe_(tipo2));
 };
 Mila.Tipo._Definir_EnPrototipo_('esSubtipoDe_', Mila.Tipo._Tipo);
