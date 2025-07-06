@@ -199,8 +199,8 @@ Mila.Pantalla._Panel.prototype.Redimensionar = function(rectanguloCompleto) {
     this._nodoHtml.style.height = `${Math.abs(resultado.alto)}px`;
     this._disposicion.OrganizarElementos_En_(this._elementos,
       Mila.Geometria.rectanguloEn__De_x_(
-        0,
-        0,
+        this.margenInternoIzquierdo(),
+        this.margenInternoSuperior(),
         resultado.ancho,
         resultado.alto
       )
