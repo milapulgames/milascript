@@ -38,6 +38,9 @@ Mila.Pantalla._Imagen.prototype.CambiarRutaA_ = function(nuevaRuta) {
     ]
   });
   this._ruta = nuevaRuta;
+  if ('_nodoHtml' in this) {
+    this._nodoHtml.setAttribute('src', this._ruta);
+  }
 }
 
 Mila.Pantalla._Imagen.prototype.PlasmarEnHtml = function(nodoMadre) {
@@ -53,7 +56,7 @@ Mila.Pantalla._Imagen.prototype.PlasmarEnHtml = function(nodoMadre) {
   });
   if (!('_nodoHtml' in this)) {
     this._nodoHtml = document.createElement('img');
-    this._nodoHtml.setAttribute('src', this._ruta)
+    this._nodoHtml.setAttribute('src', this._ruta);
     this._nodoHtml.style.position = 'absolute';
     this._nodoHtml.style['text-wrap-mode'] = 'nowrap';
     Mila.Pantalla._ProgramarRedimension(this._nodoHtml);

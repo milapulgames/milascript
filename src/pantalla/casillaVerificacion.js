@@ -65,6 +65,9 @@ Mila.Pantalla._CasillaVerificacion.prototype.marcada = function() {
       Mila.Tipo.Booleano
     ],
   });
+  if ('_nodoHtml' in this) {
+    this._marcada = this._nodoHtml.checked;
+  }
   return this._marcada;
 };
 

@@ -108,6 +108,10 @@ Mila.Pantalla._AreaTexto.prototype.PlasmarEnHtml = function(nodoMadre) {
     this._nodoHtml.style.margin = '0';
     this._nodoHtml.style.padding = '0';
     this._nodoHtml.value = this._texto;
+    this._nodoHtml.setAttribute('autocomplete', "off");
+    this._nodoHtml.setAttribute('autocorrect', "off");
+    this._nodoHtml.setAttribute('autocapitalize', "off");
+    this._nodoHtml.setAttribute('spellcheck', "false");
     if (this._editable) {
       this._nodoHtml.removeAttribute('readonly');
     } else {

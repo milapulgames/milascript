@@ -21,11 +21,35 @@ Mila.Pantalla.nuevoDeslizador = function(atributos={}) {
   });
   let nuevoDeslizador = new Mila.Pantalla._Deslizador();
   nuevoDeslizador.Inicializar(atributos);
+  nuevoDeslizador.CambiarValorA_(50);
   return nuevoDeslizador;
 };
 
 Mila.Pantalla._Deslizador = function Deslizador() {};
 Object.setPrototypeOf(Mila.Pantalla._Deslizador.prototype, Mila.Pantalla._ElementoVisual.prototype);
+
+Mila.Pantalla._Deslizador.prototype.CambiarValorA_ = function(nuevoValor) {
+  Mila.Contrato({
+    Proposito: "Reemplazar el valor de este deslizador por el dado",
+    Parametros: [
+      [nuevoValor, Mila.Tipo.Numero]
+    ]
+  });
+  this._valor = nuevoValor;
+  if ('_nodoHtml' in this) {
+    this._nodoHtml.value = `'${this._valor}'`;
+  }
+};
+
+Mila.Pantalla._Deslizador.prototype.valor = function() {
+  Mila.Contrato({
+    Proposito: ["Describir el valor de este deslizador", Mila.Tipo.Numero]
+  });
+  if ('_nodoHtml' in this) {
+    this._valor = Number.parseInt(this._nodoHtml.value);
+  }
+  return this._valor;
+};
 
 Mila.Pantalla._Deslizador.prototype.PlasmarEnHtml = function(nodoMadre) {
   Mila.Contrato({
@@ -42,6 +66,7 @@ Mila.Pantalla._Deslizador.prototype.PlasmarEnHtml = function(nodoMadre) {
     this._nodoHtml = document.createElement('input');
     this._nodoHtml.setAttribute("type","range");
     this._nodoHtml.style.position = 'absolute';
+    this._nodoHtml.value = `'${this._valor}'`;
     nodoMadre.appendChild(this._nodoHtml);
     this.InicializarHtml();
   }
