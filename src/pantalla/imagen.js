@@ -37,6 +37,7 @@ Mila.Pantalla._Imagen.prototype.CambiarRutaA_ = function(nuevaRuta) {
       [nuevaRuta, Mila.Tipo.Texto]
     ]
   });
+  if (this._ruta == nuevaRuta) { return; }
   this._ruta = nuevaRuta;
   if ('_nodoHtml' in this) {
     this._nodoHtml.setAttribute('src', this._ruta);
