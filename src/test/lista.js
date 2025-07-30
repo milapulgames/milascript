@@ -148,6 +148,9 @@ Mila.alIniciar(() => {
   {i:"let a=[NaN,NaN,NaN];a.cantidadQueCumple_(isFinite)", o:0,           d:"cantidadQueCumple_ devuelve 0 si ninguno cumple"},
   {i:"let a=[2,NaN,5];a.cantidadQueCumple_(isFinite)", o:2,               d:"cantidadQueCumple_ devuelve la cantidad de elementos que cumplen"},
   {i:"let a=[2,NaN,5];a.cantidadQueCumple_(isFinite);a", o:[2,NaN,5],     d:"cantidadQueCumple_ no modifica la lista"},
+  
+  // cantidadQueNoCumple_
+  
   {i:"let a=[6,2,6];a.minimo()", o:2,                                     d:"minimo devuelve el mínimo de la lista"},
   {i:"let a=[6,2,6];a.minimo();a", o:[6,2,6],                             d:"minimo no modifica la lista"},
   {i:"let a=[2,6,2];a.maximo()", o:6,                                     d:"maximo devuelve el máximo de la lista"},

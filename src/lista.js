@@ -536,6 +536,14 @@ Mila.Lista.cantidadQueCumple_ = function(lista, condicion) {
 };
 Mila.Lista._Definir_EnPrototipo_('cantidadQueCumple_', Array);
 
+Mila.Lista.cantidadQueNoCumple_ = function(lista, condicion) {
+  // Describe la cantidad de elementos de la lista dada que no cumplen la condición dada.
+    // lista es una lista de elementos, para la cual se describe su cantidad de elementos que no cumplen la condición dada.
+    // condicion es una función que toma un elemento y devuelve un booleano.
+  return Mila.Lista.fold(lista, function(x, rec) { return rec + unoSi_CeroSiNo(!condicion(x)); }, 0);
+};
+Mila.Lista._Definir_EnPrototipo_('cantidadQueNoCumple_', Array);
+
 Mila.Lista.minimo = function(lista) {
   // Describe el mínimo elemento de la lista dada.
     // lista es una lista de elementos, para la cual se describe su mínimo elemento.
