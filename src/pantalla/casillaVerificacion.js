@@ -26,12 +26,12 @@ Mila.Pantalla.nuevaCasillaVerificacion = function(atributos={}) {
   if ('funcion' in atributos) {
     const funcionOriginal = atributos.funcion;
     atributos.funcion = function() {
-      this.CambiarMarcaA_(!this.marcada());
+      this.CambiarMarcaA_(this.marcada());
       funcionOriginal.call(this);
     }
   } else {
     atributos.funcion = function() {
-      this.CambiarMarcaA_(!this.marcada());
+      this.CambiarMarcaA_(this.marcada());
     }
   }
   nuevaCasillaVerificacion.Inicializar(atributos);
