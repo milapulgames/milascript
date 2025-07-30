@@ -190,7 +190,7 @@ Mila.Tipo.Registrar({
 Mila.Lienzo._dibujables = {
   rectangulo: {
     es: function(elemento) { // PRE: elemento tiene imagen.clase = 'rectangulo'
-      return elemento.imagen.defineLaClave_("rectangulo") &&
+      return elemento.imagen.defineLaClavePropia_("rectangulo") &&
         elemento.imagen.rectangulo.esUnRectangulo()
     },
     Dibujar: function(elemento, lienzo) {
@@ -206,7 +206,7 @@ Mila.Lienzo._dibujables = {
   },
   circulo: {
     es: function(elemento) { // PRE: elemento tiene imagen.clase = 'circulo'
-      return elemento.imagen.defineLaClave_("circulo") &&
+      return elemento.imagen.defineLaClavePropia_("circulo") &&
         elemento.imagen.circulo.esUnCirculo()
     },
     Dibujar: function(elemento, lienzo) {
@@ -229,9 +229,9 @@ Mila.Lienzo.esDibujable = function(elemento) {
       elemento // Cualquier tipo
     ]
   });
-  return elemento.defineLaClave_('imagen') &&
-    elemento.imagen.defineLaClave_('clase') &&
-    Mila.Lienzo._dibujables.defineLaClave_(elemento.imagen.clase) &&
+  return elemento.defineLaClavePropia_('imagen') &&
+    elemento.imagen.defineLaClavePropia_('clase') &&
+    Mila.Lienzo._dibujables.defineLaClavePropia_(elemento.imagen.clase) &&
     Mila.Lienzo._dibujables[elemento.imagen.clase].es(elemento)
   ;
 };

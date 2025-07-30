@@ -25,7 +25,7 @@ Mila.Evento.RegistrarContexto = function(identificador) {
     Proposito: "Registrar un nuevo contexto a partir del identificador dado",
     Precondiciones: [
       "No hay definido un contexto con el identificador dado",
-      !Mila.Evento.Contexto.defineLaClave_(identificador)
+      !Mila.Evento.Contexto.defineLaClavePropia_(identificador)
     ],
     Parametros: [
       [identificador, Mila.Tipo.Texto]
@@ -47,7 +47,7 @@ Mila.Evento.Registrar = function(nombre, evento, funcion, contexto=Mila.Evento.c
       [contexto, Mila.Evento.Contexto]
     ]
   });
-  if (Mila.Evento._registroAcciones[contexto].defineLaClave_(nombre)) {
+  if (Mila.Evento._registroAcciones[contexto].defineLaClavePropia_(nombre)) {
     for (let iniciadorAnterior of Mila.Evento._registroAcciones[contexto][nombre]) {
       delete Mila.Evento._registroEventos[contexto][iniciadorAnterior][nombre];
       if (Mila.Evento._registroEventos[contexto][iniciadorAnterior].clavesDefinidas().length == 0) {
@@ -58,7 +58,7 @@ Mila.Evento.Registrar = function(nombre, evento, funcion, contexto=Mila.Evento.c
   Mila.Evento._registroAcciones[contexto][nombre] = [];
   for (let iniciador of evento.iniciadores()) {
     const claveIniciador = iniciador.clase();
-    if (!Mila.Evento._registroEventos[contexto].defineLaClave_(claveIniciador)) {
+    if (!Mila.Evento._registroEventos[contexto].defineLaClavePropia_(claveIniciador)) {
       Mila.Evento._registroEventos[contexto][claveIniciador] = {};
     }
     Mila.Evento._registroEventos[contexto][claveIniciador][nombre] = {
@@ -86,7 +86,7 @@ Mila.Evento.Atender = function(evento) {
     Parametros: [evento, Mila.Tipo.Evento]
   });
   let clave = evento.clase();
-  if (Mila.Evento._eventosIntermediosEnProgreso.defineLaClave_(clave)) {
+  if (Mila.Evento._eventosIntermediosEnProgreso.defineLaClavePropia_(clave)) {
     const eventosIntermediosEnProgreso = Mila.Evento._eventosIntermediosEnProgreso[clave];
     delete Mila.Evento._eventosIntermediosEnProgreso[clave];
     for (let eventoIntermedio of eventosIntermediosEnProgreso) {
@@ -96,7 +96,7 @@ Mila.Evento.Atender = function(evento) {
     }
   }
   const registro = Mila.Evento._registroEventos[Mila.Evento.contextoActual];
-  if (registro.defineLaClave_(clave)) {
+  if (registro.defineLaClavePropia_(clave)) {
     for (let nombre in registro[clave]) {
       let eventoEnRegistro = registro[clave][nombre];
       if (Mila.Evento.coincideCon_(evento, eventoEnRegistro.atributos)) {
@@ -114,7 +114,7 @@ Mila.Evento.Procesar = function(eventoEnRegistro, eventoOriginal) {
       [eventoOriginal, Mila.Tipo.Evento]
     ]
   });
-  const eventosAnteriores = eventoEnRegistro.defineLaClave_('eventosAnteriores') ? eventoEnRegistro.eventosAnteriores : [];
+  const eventosAnteriores = eventoEnRegistro.defineLaClavePropia_('eventosAnteriores') ? eventoEnRegistro.eventosAnteriores : [];
   eventosAnteriores.push(eventoOriginal);
   if (eventoEnRegistro.proximoEvento.esNada()) {
     Mila.Evento.Ejecutar(eventoEnRegistro.funcion, eventosAnteriores);

@@ -123,7 +123,7 @@ Mila.Base.ReemplazarFuncion_De_Por_ = function(nombreFuncion, objeto, nuevaFunci
     Proposito: "Reemplazar la función con el nombre dado en el objeto dado por la función dada",
     Precondiciones: [
       "El objeto dado tiene definida una función con el nombre dado",
-      objeto.defineLaClave_(nombreFuncion)
+      objeto.sabeResponder_(nombreFuncion)
     ],
     Parametros: [
       [nombreFuncion, Mila.Tipo.Texto],

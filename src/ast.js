@@ -155,7 +155,7 @@ Mila.AST.nuevoNodoDeTipo_ = function(tipoNodo) {
 Mila.AST._Nodo.prototype.CambiarHijosA_ = function(nuevosHijos) {
   for (let hijoViejo in this.hijos) {
     if (
-      !nuevosHijos.defineLaClave_(hijoViejo) ||
+      !nuevosHijos.defineLaClavePropia_(hijoViejo) ||
       (nuevosHijos[hijoViejo].esUnaLista() && this[hijoViejo].length == 0) ||
       (!nuevosHijos[hijoViejo].esUnaLista() && this[hijoViejo].length != 0)
     ) {
@@ -163,7 +163,7 @@ Mila.AST._Nodo.prototype.CambiarHijosA_ = function(nuevosHijos) {
     }
   }
   for (let hijoNuevo in nuevosHijos) {
-    if (!this.hijos.defineLaClave_(hijoNuevo)) {
+    if (!this.hijos.defineLaClavePropia_(hijoNuevo)) {
       if (nuevosHijos[hijoNuevo].esUnaLista()) {
         this[hijoNuevo] = function(i) {
           if (Mila.Tipo.esNada(i)) {
@@ -224,12 +224,12 @@ Mila.AST._Nodo.prototype.CambiarCampo_A_ = function(clave, nuevoValor) {
 
 Mila.AST._Nodo.prototype.CambiarCamposA_ = function(nuevosCampos) {
   for (let campoViejo in this.campos) {
-    if (!nuevosCampos.defineLaClave_(campoViejo)) {
+    if (!nuevosCampos.defineLaClavePropia_(campoViejo)) {
       delete this[campoViejo];
     }
   }
   for (let campoNuevo in nuevosCampos) {
-    if (!this.campos.defineLaClave_(campoNuevo)) {
+    if (!this.campos.defineLaClavePropia_(campoNuevo)) {
       this[campoNuevo] = function() {
         return this.campos[campoNuevo];
       }
@@ -259,7 +259,7 @@ Mila.AST._NodoAST.prototype.NivelarHijo_ = function(clave) {
 
 Mila.AST._Nodo.prototype.fold = function(mapaDeFunciones) {
   let clave = this.tipoNodo.aTexto();
-  if (!mapaDeFunciones.defineLaClave_(clave)) {
+  if (!mapaDeFunciones.defineLaClavePropia_(clave)) {
     clave = "Nodo";
   }
   return mapaDeFunciones[clave](this, this.hijos.transformados(function(clave, valor) {
@@ -286,7 +286,7 @@ Mila.AST._NodoAST.prototype.aTextoCompleto = function() {
 // Esto podría ir en un módulo aparte:
 Mila.AST.idActual = {};
 Mila.AST.nuevoIdPara_ = function(categoria) {
-  if (!Mila.AST.idActual.defineLaClave_(categoria)) {
+  if (!Mila.AST.idActual.defineLaClavePropia_(categoria)) {
     Mila.AST.idActual[categoria] = 0;
   }
   Mila.AST.idActual[categoria]++;

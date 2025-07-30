@@ -122,7 +122,7 @@ Mila.Geometria._Figura.prototype.Trasladar_En_ = function(cantidad, eje) {
       [eje, Mila.Tipo.Texto]
     ]
   });
-  if (!this.defineLaClave_(eje)) {
+  if (!this.defineLaClavePropia_(eje)) {
     this[eje] = 0;
   }
   this[eje] += cantidad;
