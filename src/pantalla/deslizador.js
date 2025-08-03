@@ -4,7 +4,9 @@ Mila.Modulo({
 
 Mila.Tipo.Registrar({
   nombre:'AtributosDeslizador',
-  es: {},
+  es: {
+    "?valor":Mila.Tipo.Numero
+  },
   subtipoDe: "AtributosElementoVisual",
   inferible: false
 });
@@ -21,7 +23,10 @@ Mila.Pantalla.nuevoDeslizador = function(atributos={}) {
   });
   let nuevoDeslizador = new Mila.Pantalla._Deslizador();
   nuevoDeslizador.Inicializar(atributos);
-  nuevoDeslizador.CambiarValorA_(50);
+  nuevoDeslizador.CambiarValorA_('valor' in atributos
+    ? atributos.valor
+    : 50
+  );
   return nuevoDeslizador;
 };
 
@@ -66,7 +71,7 @@ Mila.Pantalla._Deslizador.prototype.PlasmarEnHtml = function(nodoMadre) {
     this._nodoHtml = document.createElement('input');
     this._nodoHtml.setAttribute("type","range");
     this._nodoHtml.style.position = 'absolute';
-    this._nodoHtml.value = `'${this._valor}'`;
+    this._nodoHtml.value = `${this._valor}`;
     nodoMadre.appendChild(this._nodoHtml);
     this.InicializarHtml();
   }
