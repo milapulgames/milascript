@@ -258,14 +258,22 @@ Mila.Pantalla._ElementoVisual.prototype.rectanguloMinimo = function(rectanguloCo
   } else if (this.ancho().esIgualA_(Mila.Pantalla.ComportamientoEspacio.Minimizar)) {
     this.MinimizarAncho(anchoInvertido, rectanguloCompleto);
   } else if (this.ancho().esIgualA_(Mila.Pantalla.ComportamientoEspacio.Maximizar)) {
-    this._nodoHtml.style.width = `${rectanguloCompleto.ancho}px`;
+    if (isFinite(rectanguloCompleto.alto)) {
+      this._nodoHtml.style.width = `${rectanguloCompleto.ancho}px`;
+    } else {
+      this.MinimizarAncho(anchoInvertido, rectanguloCompleto);
+    }
   }
   if (this.alto().esUnNumero()) {
     this._nodoHtml.style.height = `${this.alto()}px`;
   } else if (this.alto().esIgualA_(Mila.Pantalla.ComportamientoEspacio.Minimizar)) {
     this.MinimizarAlto(altoInvertido, rectanguloCompleto);
   } else if (this.alto().esIgualA_(Mila.Pantalla.ComportamientoEspacio.Maximizar)) {
-    this._nodoHtml.style.height = `${rectanguloCompleto.alto}px`;
+    if (isFinite(rectanguloCompleto.alto)) {
+      this._nodoHtml.style.height = `${rectanguloCompleto.alto}px`;
+    } else {
+      this.MinimizarAlto(altoInvertido, rectanguloCompleto);
+    }
   }
   const resultado = Mila.Geometria.areaDom_(this._nodoHtml);
   resultado.x -= this.margenExternoIzquierdo();

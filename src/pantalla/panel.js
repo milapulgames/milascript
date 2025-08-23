@@ -195,8 +195,12 @@ Mila.Pantalla._Panel.prototype.Redimensionar = function(rectanguloCompleto) {
   });
   let resultado = this.rectanguloInterno(rectanguloCompleto);
   if ('_nodoHtml' in this) {
-    this._nodoHtml.style.width = `${Math.abs(resultado.ancho)}px`;
-    this._nodoHtml.style.height = `${Math.abs(resultado.alto)}px`;
+    if (isFinite(resultado.alto)) {
+      this._nodoHtml.style.height = `${Math.abs(resultado.alto)}px`;
+    }
+    if (isFinite(resultado.ancho)) {
+      this._nodoHtml.style.width = `${Math.abs(resultado.ancho)}px`;
+    }
     this._disposicion.OrganizarElementos_En_(this._elementos,
       Mila.Geometria.rectanguloEn__De_x_(
         this.margenInternoIzquierdo(),
