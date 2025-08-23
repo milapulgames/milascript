@@ -299,16 +299,10 @@ Mila.Pantalla._ElementoVisual.prototype.Redimensionar = function(rectanguloCompl
 
 Mila.Pantalla._ElementoVisual.prototype.Ocultar = function() {
   this.CambiarVisibilidadA_(false);
-  if ('_nodoHtml' in this) {
-    this._nodoHtml.style.display = 'none';
-  }
 };
 
 Mila.Pantalla._ElementoVisual.prototype.Mostrar = function() {
   this.CambiarVisibilidadA_(true);
-  if ('_nodoHtml' in this) {
-    this._nodoHtml.style.display = 'block';
-  }
 };
 
 Mila.Pantalla._ElementoVisual.prototype.ancho = function() {
@@ -487,6 +481,9 @@ Mila.Pantalla._ElementoVisual.prototype.CambiarColorFondoA_ = function(nuevoColo
     ]
   });
   this._colorFondo = nuevoColorFondo;
+  if ('_nodoHtml' in this) {
+    this._nodoHtml.style['background-color'] = this._colorFondo;
+  }
 };
 
 Mila.Pantalla._ElementoVisual.prototype.CambiarGrosorBordeA_ = function(nuevoGrosorBorde) {
@@ -497,6 +494,9 @@ Mila.Pantalla._ElementoVisual.prototype.CambiarGrosorBordeA_ = function(nuevoGro
     ]
   });
   this._grosorBorde = nuevoGrosorBorde;
+  if ('_nodoHtml' in this) {
+    this._nodoHtml.style['borderWidth'] = this._grosorBorde;
+  }
 };
 
 Mila.Pantalla._ElementoVisual.prototype.CambiarColorBordeA_ = function(nuevoColorBorde) {
@@ -507,6 +507,9 @@ Mila.Pantalla._ElementoVisual.prototype.CambiarColorBordeA_ = function(nuevoColo
     ]
   });
   this._colorBorde = nuevoColorBorde;
+  if ('_nodoHtml' in this) {
+    this._nodoHtml.style['borderColor'] = this._colorBorde;
+  }
 };
 
 Mila.Pantalla._ElementoVisual.prototype.CambiarMargenInternoA_ = function(nuevoMargenInterno) {
@@ -547,6 +550,9 @@ Mila.Pantalla._ElementoVisual.prototype.CambiarVisibilidadA_ = function(nuevoVal
     ]
   });
   this._visible = nuevoValorVisibilidad;
+  if ('_nodoHtml' in this) {
+    this._nodoHtml.style.display = this._visible ? 'block' : 'none';
+  }
 };
 
 Mila.Pantalla._ElementoVisual.prototype.CambiarFuncionA_ = function(nuevaFuncion) {
