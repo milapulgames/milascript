@@ -41,9 +41,13 @@ if (Mila.entorno().enNodeJs()) {
       let archivoSeleccionado = e.target.files[0];
       let lector = new FileReader();
       lector.readAsText(archivoSeleccionado, 'UTF-8');
-      reader.onload = readerEvent => {
+      lector.onload = readerEvent => {
         let contenidoArchivo = readerEvent.target.result;
-        funcion(contenidoArchivo);
+        if (funcion.length == 2) {
+          funcion(archivoSeleccionado.name, contenidoArchivo);
+        } else {
+          funcion(contenidoArchivo);
+        }
       };
     };
     selector.click();
@@ -62,14 +66,15 @@ Mila.Archivo.AbrirArchivo_YLuego_ = function(ruta, funcion) {
 Mila.Archivo.Escribir_EnElArchivo_ = function(contenido, ruta, funcionFalla) {
   // Toma una primera cadena de texto correspondiente al contenido a escribir, una segunda cadena de texto correspondiente
   //   a la ruta de un archivo y una función de un parámetro. Abre el archivo en la ruta dada y escribe en él el contenido dado.
-  //   En caso de error invoca a la función pasándole como argumento un objeto que representa el resultado de la operación.
-  //   El objeto tendrá el campo 'error' cuyo valor será el error que ocurrió.
-  //   No funciona en el navegador.
+  // En caso de error invoca a la función pasándole como argumento un objeto que representa el resultado de la operación.
+  // El objeto tendrá el campo 'error' cuyo valor será el error que ocurrió.
+  // No funciona en el navegador.
   Mila.Archivo._escrituraArchivo(ruta, contenido, funcionFalla);
 };
 
 Mila.Archivo.SolicitarArchivoYLuego_ = function(funcion) {
   // Solicita al usuario seleccionar una ruta. Toma una función de un parámetro, correspondiente a la función a ejecutar
   //   con el contenido (como texto) del archivo seleccionado.
+  // Si la función es de dos paráemtros se pasa primero el nombre del archivo seleccionado y luego su contenido.
   Mila.Archivo._solicitudArchivo(funcion);
 };
