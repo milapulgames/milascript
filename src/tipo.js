@@ -1,6 +1,7 @@
 Mila.Modulo({
   define:"Mila.Tipo",
-  necesita:["documentacion","js","objeto","lista"]
+  necesita:["documentacion","js","objeto","lista"],
+  usa:["error"]
 });
 
 Mila.Tipo._Definir_EnPrototipo_ = function(nombre, prototipo, posicionDeThis=0) {
@@ -57,12 +58,12 @@ Mila.Tipo.Registrar = function(dataTipo) {
 
 Mila.Tipo._Registrar = function(dataTipo) {
   if (dataTipo.nombre in Mila.Tipo._tipos) {
-    Mila.Error(`Ya se registró un tipo con el nombre ${dataTipo.nombre}.`);
+    Mila.Fallar(`Ya se registró un tipo con el nombre ${dataTipo.nombre}.`);
   } else if (dataTipo.nombre in Mila.Tipo) {
-    Mila.Error(`No se puede registrar un tipo con el nombre ${dataTipo.nombre} porque ese campo ya está en uso.`);
+    Mila.Fallar(`No se puede registrar un tipo con el nombre ${dataTipo.nombre} porque ese campo ya está en uso.`);
   } else {
     if ('parametros' in dataTipo && 'prototipo' in dataTipo) {
-      Mila.Error(`No se puede registrar un tipo paramétrico con prototipo.`);
+      Mila.Fallar(`No se puede registrar un tipo paramétrico con prototipo.`);
     }
     const nuevoTipo = Object.assign({}, dataTipo);
     nuevoTipo.subtipos = [];
@@ -81,13 +82,13 @@ Mila.Tipo._Registrar = function(dataTipo) {
     nuevoTipo.esOriginal = nuevoTipo.es;
     if ('prototipo' in nuevoTipo) {
       if (!('name' in nuevoTipo.prototipo) || (nuevoTipo.prototipo.name.length == 0)) {
-        Mila.Error(`Prototipo inválido: debe tener un nombre (la función se debe definir "... .NOMBRE = function NOMBRE() {...")`);
+        Mila.Fallar(`Prototipo inválido: debe tener un nombre (la función se debe definir "... .NOMBRE = function NOMBRE() {...")`);
       }
       if (nuevoTipo.prototipo.name in Mila.Tipo._tiposPorPrototipo) {
-        Mila.Error(`Ya se registró un tipo con el prototipo ${nuevoTipo.prototipo.name}.`);
+        Mila.Fallar(`Ya se registró un tipo con el prototipo ${nuevoTipo.prototipo.name}.`);
       }
       Mila.Tipo._tiposPorPrototipo[nuevoTipo.prototipo.name] = nuevoTipo.nombre;
-      if ('strInstancia' in nuevoTipo) {
+      if ('strInstancia' in nuevoTipo) { //
         Mila.JS.DefinirFuncionDeInstancia_({
           prototipo: nuevoTipo.prototipo,
           nombre: 'toString',
@@ -160,11 +161,11 @@ Mila.Tipo._Registrar = function(dataTipo) {
       }
     } else {
       // nuevoTipo.igualdad = (elemento1, elemento2) =>
-      //   Mila.Error(`Los elementos de tipo ${nuevoTipo.nombre} no se pueden comparar por igualdad.`);
+      //   Mila.Fallar(`Los elementos de tipo ${nuevoTipo.nombre} no se pueden comparar por igualdad.`);
     }
     if (!('orden' in nuevoTipo)) {
       // nuevoTipo.orden = (elemento1, elemento2) =>
-      //   Mila.Error(`Los elementos de tipo ${nuevoTipo.nombre} no tienen relación de orden.`);
+      //   Mila.Fallar(`Los elementos de tipo ${nuevoTipo.nombre} no tienen relación de orden.`);
     }
     if ('strTipo' in nuevoTipo) {
       if (typeof nuevoTipo.strTipo == 'string') {
@@ -434,9 +435,9 @@ Mila.Tipo._esTipoRegistro = function(modelo) {
     return Mila.Objeto.todosCumplen_(modelo, function(clave, valor) {
       return (
         clave.startsWith("?") &&
-        (!elemento.defineLaClavePropia_(clave.substr(1)) || Mila.Tipo.esDeTipo_(elemento[clave.substr(1)], valor)))
+        (!Mila.Objeto.defineLaClavePropia_(elemento, clave.substr(1)) || Mila.Tipo.esDeTipo_(elemento[clave.substr(1)], valor)))
       || (
-        !clave.startsWith("?") && elemento.defineLaClavePropia_(clave) && Mila.Tipo.esDeTipo_(elemento[clave], valor)
+        !clave.startsWith("?") && Mila.Objeto.defineLaClavePropia_(elemento, clave) && Mila.Tipo.esDeTipo_(elemento[clave], valor)
       );
     });
   };
@@ -1221,7 +1222,7 @@ Mila.Tipo.Registrar({
 Mila.Tipo.Registrar({
   nombre:"DataTipo",
   es: function(elemento) {
-    return elemento.clavesDefinidas().todosCumplen_(x => [
+    return Mila.Objeto.clavesDefinidas(elemento).todosCumplen_(x => [
       'nombre', 'prototipo', 'es',
       'subtipoDe', 'esSubtipoDe_',
       'igualdad', 'orden',
@@ -1230,21 +1231,21 @@ Mila.Tipo.Registrar({
       'inferible', 'copia'
     ].includes(x)) &&
     // Debe incluir el campo nombre, una cadena de texto correspondiente al nombre del tipo.
-    elemento.defineLaClavePropia_('nombre') && Mila.Tipo.esDeTipo_(elemento.nombre, Mila.Tipo.Texto) &&
+    Mila.Objeto.defineLaClavePropia_(elemento, 'nombre') && Mila.Tipo.esDeTipo_(elemento.nombre, Mila.Tipo.Texto) &&
     // Puede incluir el campo prototipo, un objeto a cuyo prototipo asociar el tipo definido.
       // En caso de no inlcuirse este campo, el tipo no se asocia a ningún prototipo.
     // Puede incluir el campo subtipoDe, un tipo o un identificador de tipo correspondiente al
       // tipo del cual el tipo que se está registrando es subtipo. Los campos que no se declaren
       // se heredan de él (excepto prototipo).
-      (!elemento.defineLaClavePropia_('subtipoDe') ||
+      (!Mila.Objeto.defineLaClavePropia_(elemento, 'subtipoDe') ||
         (Mila.Tipo.esUnTipo(elemento.subtipoDe) || Mila.Tipo.esElIdentificadorDeUnTipo(elemento.subtipoDe))
       ) &&
     // Si incluye el campo subtipoDe puede incluir también el campo esSubtipoDe_, una función
       // que tome un tipo y devuelva si el tipo  que se está registrando es subtipo de él.
       // En caso de no inlcuirse este campo, la función simplemente verifica que el tipo dado
         // pertenezca a la lista de subtipos de este.
-      (!elemento.defineLaClavePropia_('esSubtipoDe_') || (
-        elemento.defineLaClavePropia_('subtipoDe') &&
+      (!Mila.Objeto.defineLaClavePropia_(elemento, 'esSubtipoDe_') || (
+        Mila.Objeto.defineLaClavePropia_(elemento, 'subtipoDe') &&
         Mila.Tipo.esDeTipo_(elemento.esSubtipoDe_, Mila.Tipo.Funcion)
       )) &&
     // Puede incluir el campo es que permita determinar si un elemento es del tipo.
@@ -1254,14 +1255,14 @@ Mila.Tipo.Registrar({
         // cadena de texto correspondiente al nombre de la función que determina si un elemento
         // es del tipo (la implementación de la función únicamente verificará que el elemento
         // tenga el prototipo adecuado). Omitir este campo tiene el mismo efecto que pasar una cadena de texto.
-      (elemento.defineLaClavePropia_('prototipo') && (
-        !elemento.defineLaClavePropia_('es') ||
+      (Mila.Objeto.defineLaClavePropia_(elemento, 'prototipo') && (
+        !Mila.Objeto.defineLaClavePropia_(elemento, 'es') ||
         Mila.Tipo.esDeTipo_(elemento.es, Mila.Tipo.Funcion) ||
         Mila.Tipo.esDeTipo_(elemento.es, Mila.Tipo.Texto)
       // Si no se incluye el campo prototipo, el campo es no se puede omitir.
-      )) || (!elemento.defineLaClavePropia_('prototipo') && elemento.defineLaClavePropia_('es') && (
+      )) || (!Mila.Objeto.defineLaClavePropia_(elemento, 'prototipo') && Mila.Objeto.defineLaClavePropia_(elemento, 'es') && (
         // Si se incluye el campo subtipoDe,
-        (elemento.defineLaClavePropia_('subtipoDe') && (
+        (Mila.Objeto.defineLaClavePropia_(elemento, 'subtipoDe') && (
           // debe ser una función que tome un elemento del supertipo y devuelva si el elemento
             // es también del tipo que se está registrando.
           Mila.Tipo.esDeTipo_(elemento.es, Mila.Tipo.Funcion) ||
@@ -1276,7 +1277,7 @@ Mila.Tipo.Registrar({
         // Si no, puede ser una función que tome un elemento y devuelva si el elemento es del tipo
           // o un objeto cuyas claves sean los campos que el elemento debe tener y sus significados los
           // tipos de dichos campos.
-        (!elemento.defineLaClavePropia_('subtipoDe') && (
+        (!Mila.Objeto.defineLaClavePropia_(elemento, 'subtipoDe') && (
           Mila.Tipo.esDeTipo_(elemento.es, Mila.Tipo.Funcion) ||
           Mila.Tipo.esDeTipo_(elemento.es, "MapaTipos"))
         )
@@ -1286,21 +1287,21 @@ Mila.Tipo.Registrar({
       // tipo y devuelva si los elementos son observacionalmente iguales o una lista de nombres
       // de campos correspondientes a los campos que deben ser iguales.
       // En caso de no inlcuirse este campo, se asume que el tipo no tiene relación de equivalencia.
-      (!elemento.defineLaClavePropia_('igualdad') ||
+      (!Mila.Objeto.defineLaClavePropia_(elemento, 'igualdad') ||
         Mila.Tipo.esDeTipo_(elemento.igualdad, Mila.Tipo.Funcion) ||
         Mila.Tipo.esDeTipo_(elemento.igualdad, Mila.Tipo.ListaDe_(Mila.Tipo.Texto))
       ) &&
     // Puede incluir el campo orden, una función que toma dos elementos del tipo y devuelve si el
       // primero está antes que el segundo en la relación de orden del tipo.
       // En caso de no inlcuirse este campo, se asume que el tipo no tiene relación de orden.
-      (!elemento.defineLaClavePropia_('orden') ||
+      (!Mila.Objeto.defineLaClavePropia_(elemento, 'orden') ||
         Mila.Tipo.esDeTipo_(elemento.orden, Mila.Tipo.Funcion)
       ) &&
     // Puede incluir el campo strTipo que puede ser un texto correspondiente a la representación
       // textual del tipo o una función que tome como parámetro al tipo y devuelva dicha representación.
       // En caso de no inlcuirse este campo, se asume que la representación textual del tipo es
       // igual a su nombre.
-      (!elemento.defineLaClavePropia_('strTipo') ||
+      (!Mila.Objeto.defineLaClavePropia_(elemento, 'strTipo') ||
         Mila.Tipo.esDeTipo_(elemento.strTipo, Mila.Tipo.Texto) ||
         Mila.Tipo.esDeTipo_(elemento.strTipo, Mila.Tipo.Funcion)
       ) &&
@@ -1309,45 +1310,45 @@ Mila.Tipo.Registrar({
       // En caso de no inlcuirse este campo, si se incluye el campo prototipo (ya sea en este o
         // en alguno de sus supertipos) se utiliza en su lugar la función toString del prototipo
         // y si no, se utiliza la función strInstancia del tipo Registro.
-      (!elemento.defineLaClavePropia_('strInstancia') ||
+      (!Mila.Objeto.defineLaClavePropia_(elemento, 'strInstancia') ||
         Mila.Tipo.esDeTipo_(elemento.strInstancia, Mila.Tipo.Funcion)
       ) &&
     // Puede incluir el campo parametros, una lista de textos correspondientes a los nombres
       // de los parámetros en caso de que se esté registrando un tipo paramétrico.
-      (!elemento.defineLaClavePropia_('parametros') ||
+      (!Mila.Objeto.defineLaClavePropia_(elemento, 'parametros') ||
         Mila.Tipo.esDeTipo_(elemento.parametros, Mila.Tipo.ListaDe_(Mila.Tipo.Texto))
       ) &&
     // Si incluye el campo parametros puede incluir también:
       // * el campo puedeSer (una función que toma un elemento y devuelve un booleano
         // correspondiente a si el elemento puede ser del tipo paramétrico, para alguna
         // combinación de parámetros)
-      (!elemento.defineLaClavePropia_('puedeSer') || (
-        elemento.defineLaClavePropia_('parametros') &&
+      (!Mila.Objeto.defineLaClavePropia_(elemento, 'puedeSer') || (
+        Mila.Objeto.defineLaClavePropia_(elemento, 'parametros') &&
         Mila.Tipo.esDeTipo_(elemento.puedeSer, Mila.Tipo.Funcion)
       )) &&
       // * el campo tipoPara (una función que toma un elemento y, asumiendo que el resultado
         // de puedeSer con dicho elemento es verdadero, devuelve una instanciación del tipo
         // paramétrico para tal elemento).
-      (!elemento.defineLaClavePropia_('tipoPara') || (
-        elemento.defineLaClavePropia_('parametros') &&
+      (!Mila.Objeto.defineLaClavePropia_(elemento, 'tipoPara') || (
+        Mila.Objeto.defineLaClavePropia_(elemento, 'parametros') &&
         Mila.Tipo.esDeTipo_(elemento.tipoPara, Mila.Tipo.Funcion)
       )) &&
       // * el campo inicializacion, un texto que se  agregará como código a la función
         // de inicialización del tipo cuando se parametrice.
-      (!elemento.defineLaClavePropia_('inicializacion') || (
-        elemento.defineLaClavePropia_('parametros') &&
+      (!Mila.Objeto.defineLaClavePropia_(elemento, 'inicializacion') || (
+        Mila.Objeto.defineLaClavePropia_(elemento, 'parametros') &&
         Mila.Tipo.esDeTipo_(elemento.inicializacion, Mila.Tipo.Texto)
       )) &&
     // Puede incluir el campo inferible, un booleano que indique si este tipo se debe
       // tener en cuenta al inferir el tipo de una expresión.
       // En caso de no inlcuirse este campo, se asume que sí.
-      (!elemento.defineLaClavePropia_('inferible') ||
+      (!Mila.Objeto.defineLaClavePropia_(elemento, 'inferible') ||
         Mila.Tipo.esDeTipo_(elemento.inferible, Mila.Tipo.Booleano)
       ) &&
     // Puede incluir el campo copia, una función que tome un elemento de este tipo
       // y devuelva un nuevo elemento idéntico.
       // En caso de no inlcuirse este campo, se devuelve al mismo elemento.
-      (!elemento.defineLaClavePropia_('copia') ||
+      (!Mila.Objeto.defineLaClavePropia_(elemento, 'copia') ||
         Mila.Tipo.esDeTipo_(elemento.copia, Mila.Tipo.Funcion)
       )
     ;
