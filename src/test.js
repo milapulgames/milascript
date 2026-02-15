@@ -1,11 +1,11 @@
 Mila.Modulo({
   define:"Mila.Test",
-  usa:["lista"]
+  usa:["base"]
 });
 
 /*  Estructura de los tests (TODO: registrarlo como tipo)
   d: Descripción (string) - Descripción del test.
-  i: Entrada (string) - El código a ejecutar.
+  i: Entrada (string | function) - El código a ejecutar.
   o (opcional): Salida (any) - El valor que se espera obtener como resultado de la ejecución.
   oX (opcional; sólo si no está 'o'): Salida (string) - Un texto que al evaluarlo se obtiene el resultado esperado.
   e (opcional): Errores a generar (string | [string]) - Los mensajes de error que se espera que genere la ejecución.
@@ -15,18 +15,18 @@ Mila.Modulo({
 Mila.Test.Evaluar_ = function(tests) {
   const advertencias = [];
   const errores = [];
-  const Advertencia = Mila.Advertencia;
-  const Error = Mila.Error;
-  Mila.Advertencia = function(advertencia) {
+  const Advertir = Mila.Advertir;
+  const Fallar = Mila.Fallar;
+  Mila.Advertir = function(advertencia) {
     advertencias.push(advertencia);
   }
-  Mila.Error = function(error) {
+  Mila.Fallar = function(error) {
     errores.push(error);
   }
   for (let test of tests) {
     advertencias.splice(0,advertencias.length);
     errores.splice(0,errores.length);
-    let resultado = eval(test.i);
+    let resultado = test.i.esUnaFuncion() ? test.i() : eval(test.i);
     if ('w' in test) {
       const advertenciasEsperadas = Array.isArray(test.w) ? test.w : [test.w];
       for (let w of advertenciasEsperadas) {
@@ -35,7 +35,7 @@ Mila.Test.Evaluar_ = function(tests) {
         if (cantidadObtenida != cantidadEsperada) {
           let vecesObtenida = `${cantidadObtenida} ${cantidadObtenida == 1 ? 'vez' : 'veces'}`
           let vecesEsperada = `${cantidadEsperada} ${cantidadEsperada == 1 ? 'vez' : 'veces'}`;
-          Error(`Falló el test ${test.d}\n\tSe esperaba la advertencia ${w} ${vecesEsperada} pero ocurrió ${vecesObtenida}`);
+          Fallar(`Falló el test ${test.d}\n\tSe esperaba la advertencia ${w} ${vecesEsperada} pero ocurrió ${vecesObtenida}`);
         }
         advertencias.SacarLosQueCumplen(x => x == w);
       }
@@ -48,7 +48,7 @@ Mila.Test.Evaluar_ = function(tests) {
         if (cantidadObtenida != cantidadEsperada) {
           let vecesObtenida = `${cantidadObtenida} ${cantidadObtenida == 1 ? 'vez' : 'veces'}`
           let vecesEsperada = `${cantidadEsperada} ${cantidadEsperada == 1 ? 'vez' : 'veces'}`;
-          Error(`Falló el test ${test.d}\n\tSe esperaba el error ${e} ${vecesEsperada} pero ocurrió ${vecesObtenida}`);
+          Fallar(`Falló el test ${test.d}\n\tSe esperaba el error ${e} ${vecesEsperada} pero ocurrió ${vecesObtenida}`);
         }
         errores.SacarLosQueCumplen(x => x == e);
       }
@@ -61,7 +61,7 @@ Mila.Test.Evaluar_ = function(tests) {
       if (advertencias.length > 0) {
         mensaje += `Ocurrieron las siguientes advertencias no esperadas:\n\t\t${advertencias.join('\n\t\t')}\n\t\t`;
       }
-      Error(mensaje);
+      Fallar(mensaje);
     }
     let esperado = null;
     if ('o' in test) {
@@ -71,12 +71,12 @@ Mila.Test.Evaluar_ = function(tests) {
     }
     if (esperado !== null) {
       if (Mila.Tipo.esDeOtroTipoQue_(resultado, esperado)) {
-        Error(`Falló el test ${test.d}\n\tSe esperaba algo de tipo <${Mila.Tipo.tipo(esperado)}> (${esperado}) pero se obtuvo algo de tipo <${Mila.Tipo.tipo(resultado)}> (${resultado})`);
+        Fallar(`Falló el test ${test.d}\n\tSe esperaba algo de tipo <${Mila.Tipo.tipo(esperado)}> (${esperado}) pero se obtuvo algo de tipo <${Mila.Tipo.tipo(resultado)}> (${resultado})`);
       } else if (Mila.Tipo.esDistintoA_(resultado, esperado)) {
-        Error(`Falló el test ${test.d}\n\tSe esperaba "${esperado}" pero se obtuvo "${resultado}"`);
+        Fallar(`Falló el test ${test.d}\n\tSe esperaba "${esperado}" pero se obtuvo "${resultado}"`);
       }
     }
   }
-  Mila.Advertencia = Advertencia;
-  Mila.Error = Error;
+  Mila.Advertir = Advertir;
+  Mila.Fallar = Fallar;
 };

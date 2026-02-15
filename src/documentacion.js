@@ -1,6 +1,6 @@
 Mila.Modulo({
   define:"Mila.Documentacion",
-  usa:["tipo","lista"]
+  usa:["tipo","lista","error"]
 });
 
 Mila.Documentacion.mensajes = {
@@ -22,7 +22,7 @@ Mila.Documentacion.ajustes = {
   analizarContratos: false
 };
 
-Mila.Contrato = function(dataContrato) {
+Mila.Contrato = function(dataContratoOFunción) {
   // Directiva para declarar el contrato de una función o un procedimiento.
 
   if (!Mila.Documentacion.analizandoContratos()) { return; }
@@ -30,7 +30,11 @@ Mila.Contrato = function(dataContrato) {
   // Deshabilito para evitar recursión infinita
   Mila.Documentacion.DejarDeAnalizarContratos();
 
-  const estado = Mila.Documentacion.estadoEjecucion();
+  const dataContrato = (typeof dataContratoOFunción == typeof (()=>{}))
+    ? dataContratoOFunción()
+    : dataContratoOFunción
+  ;
+  const estado = Mila.Documentacion.estadoEjecucion(dataContrato);
 
   Mila.Documentacion._contratoMalFormado(dataContrato, estado) ||
   Mila.Documentacion._hayErroresDeTiposEnArgumentos(
@@ -54,20 +58,20 @@ Mila.Documentacion._parametrosEn_ = function(dataContrato) {
       resultado = resultado.concat(dataContrato[clave]);
     }
   }
+  if (
+    (resultado.length == 1 || resultado.length == 2)
+    && !Array.isArray(resultado[0])
+  ) {
+    resultado = [resultado];
+  }
   return resultado;
 };
 Mila.Documentacion._hayErroresDeTiposEnArgumentos = function(parametros, estado) {
-  if (
-    (parametros.length == 1 || parametros.length == 2)
-    && !Array.isArray(parametros[0])
-  ) {
-    parametros = [parametros];
-  }
   let i=0;
   for (let parametro of parametros) {
     i++;
     if (Mila.Documentacion._hayErrorDeTipoEnArgumento(parametro)) {
-      Mila.Documentacion.Advertencia(estado, Mila.Documentacion.mensajes.errorTipoArgumento
+      Mila.Documentacion.Advertir(estado, Mila.Documentacion.mensajes.errorTipoArgumento
         .replace("%I", i).replace("%ARG", Mila.Tipo.aTexto(parametro[0])).replace("%TYPE", Mila.Tipo.aTexto(parametro[1]))
       );
       return true;
@@ -98,16 +102,16 @@ Mila.Documentacion._precondicionesEn_ = function(dataContrato) {
 Mila.Documentacion._seCumplenLasPrecondiciones = function(precondiciones, estado) {
   for (let precondicion of precondiciones) {
     if (typeof precondicion == typeof true && !precondicion) {
-      Mila.Documentacion.Advertencia(estado, Mila.Documentacion.mensajes.precondicionNoSeCumple)
+      Mila.Documentacion.Advertir(estado, Mila.Documentacion.mensajes.precondicionNoSeCumple + Mila.Documentacion._informeArgumentos(estado))
       return true;
     } else if (typeof precondicion == typeof (()=>true)) {
       try {
         if (!precondicion()) {
-          Mila.Documentacion.Advertencia(estado, Mila.Documentacion.mensajes.precondicionNoSeCumple)
+          Mila.Documentacion.Advertir(estado, Mila.Documentacion.mensajes.precondicionNoSeCumple)
           return true;
         }
       } catch (error) {
-        Mila.Documentacion.Advertencia(estado, Mila.Documentacion.mensajes.precondicionNoSePuedeVerificar)
+        Mila.Documentacion.Advertir(estado, Mila.Documentacion.mensajes.precondicionNoSePuedeVerificar)
         return true;
       }
     }
@@ -130,7 +134,7 @@ Mila.Documentacion._contratoMalFormado = function(dataContrato, estado) {
         return true;
       }
     } else {
-      Mila.Documentacion.Advertencia(estado, `Clave desconocida en el contrato: ${clave}`)
+      Mila.Documentacion.Advertir(estado, `Clave desconocida en el contrato: ${clave}`)
       return true;
     }
   }
@@ -142,27 +146,27 @@ Mila.Documentacion._propositoMalFormado = function(proposito, estado) {
     proposito = [proposito];
   }
   if (proposito.length == 0) {
-    Mila.Documentacion.Advertencia(estado, Mila.Documentacion.mensajes.propositoVacio)
+    Mila.Documentacion.Advertir(estado, Mila.Documentacion.mensajes.propositoVacio)
     return true;
   } else if (proposito.length == 1) {
     if (typeof proposito[0] != typeof "") {
-      Mila.Documentacion.Advertencia(estado, Mila.Documentacion.mensajes.proposito1NoEsTexto)
+      Mila.Documentacion.Advertir(estado, Mila.Documentacion.mensajes.proposito1NoEsTexto)
       return true;
     }
   } else if (proposito.length == 2) {
     if (typeof proposito[0] != typeof "") {
-      Mila.Documentacion.Advertencia(estado, Mila.Documentacion.mensajes.proposito2Pero1NoEsTexto)
+      Mila.Documentacion.Advertir(estado, Mila.Documentacion.mensajes.proposito2Pero1NoEsTexto)
       return true;
     }
     if (
       !Mila.Tipo.esUnTipo(proposito[1]) &&
       !Mila.Tipo.esElIdentificadorDeUnTipo(proposito[1])
     ) {
-      Mila.Documentacion.Advertencia(estado, Mila.Documentacion.mensajes.proposito2Pero2NoEsTipo)
+      Mila.Documentacion.Advertir(estado, Mila.Documentacion.mensajes.proposito2Pero2NoEsTipo)
       return true;
     }
   } else {
-    Mila.Documentacion.Advertencia(estado, Mila.Documentacion.mensajes.propositoMasDe2)
+    Mila.Documentacion.Advertir(estado, Mila.Documentacion.mensajes.propositoMasDe2)
     return true;
   }
   return false;
@@ -170,7 +174,7 @@ Mila.Documentacion._propositoMalFormado = function(proposito, estado) {
 
 Mila.Documentacion._parametrosMalFormados = function(parametros, estado) {
   if (!Array.isArray(parametros)) {
-    Mila.Documentacion.Advertencia(estado, Mila.Documentacion.mensajes.parametrosNoEsLista)
+    Mila.Documentacion.Advertir(estado, Mila.Documentacion.mensajes.parametrosNoEsLista)
     return true;
   }
   if (
@@ -186,7 +190,7 @@ Mila.Documentacion._parametrosMalFormados = function(parametros, estado) {
       parametro = [parametro];
     }
     if (parametro.length > 3) {
-      Mila.Documentacion.Advertencia(estado, Mila.Documentacion.mensajes.parametroMasDe3
+      Mila.Documentacion.Advertir(estado, Mila.Documentacion.mensajes.parametroMasDe3
         .replace("%I", i)
       );
       return true;
@@ -195,7 +199,7 @@ Mila.Documentacion._parametrosMalFormados = function(parametros, estado) {
         !Mila.Tipo.esUnTipo(parametro[1]) &&
         !Mila.Tipo.esElIdentificadorDeUnTipo(parametro[1])
       ) {
-        Mila.Documentacion.Advertencia(estado, Mila.Documentacion.mensajes.parametro2NoEsTipo
+        Mila.Documentacion.Advertir(estado, Mila.Documentacion.mensajes.parametro2NoEsTipo
           .replace("%I", i).replace("%EXPR", Mila.Tipo.aTexto(parametro[1]))
         );
         return true;
@@ -215,21 +219,35 @@ Mila.Documentacion._precondicionesMalFormadas = function(precondiciones, estado)
       typeof precondicion != typeof true &&
       typeof precondicion != typeof (()=>true)
     ) {
-      Mila.Documentacion.Advertencia(estado, Mila.Documentacion.mensajes.precondicionNoEsTipoNiCondicion)
+      Mila.Documentacion.Advertir(estado, Mila.Documentacion.mensajes.precondicionNoEsTipoNiCondicion)
       return true;
     }
   }
   return false;
 };
 
-Mila.Documentacion.estadoEjecucion = function() {
-  return {funcion: new Error().stack.split("\n    ").splice(3,1)
-    .map(x => x.substring(3, x.indexOf(" ",3)))[0]
+Mila.Documentacion.estadoEjecucion = function(dataContrato) {
+  let stack = new Error().stack;
+  stack = stack.substring(stack.indexOf("\n",stack.indexOf("at Mila.Contrato")));
+  return {
+    funcion: stack.substring(8, stack.indexOf(" ",8)),
+    dataContrato,
+    stack
   };
 };
 
-Mila.Documentacion.Advertencia = function(estado, mensaje) {
-  Mila.Advertencia(`[${estado.funcion}] ${mensaje}`);
+Mila.Documentacion.Advertir = function(estado, mensaje) {
+  Mila.Advertir(`[${estado.funcion}] ${mensaje}\n   Stack:${estado.stack}`);
+};
+
+Mila.Documentacion._informeArgumentos = function(estado) {
+  let resultado = [];
+  for (let parametro of Mila.Documentacion._parametrosEn_(estado.dataContrato)) {
+    if (parametro.length <= 2) {
+      resultado.push(parametro[0]);
+    }
+  }
+  return `\n   Argumentos: < ${resultado.join(" >, < ")} >`;
 };
 
 Mila.Documentacion.analizandoContratos = function() {

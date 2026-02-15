@@ -1,6 +1,6 @@
 Mila.Modulo({
   define:"Mila.Base",
-  necesita:["documentacion","tipo","js","objeto","lista"]
+  necesita:["documentacion","tipo","js","objeto","lista","error"]
 });
 
 // Funciones útiles
@@ -39,7 +39,7 @@ Mila.Base.RegistrarFuncion_ = function(funcion) {
   });
   let nombre = funcion.name;
   if (nombre in Mila.entorno().universo) {
-    Mila.Error(`Ya se registró una función global con el nombre ${nombre}`);
+    Mila.Fallar(`Ya se registró una función global con el nombre ${nombre}`);
   } else {
     Mila.entorno().universo[nombre] = funcion;
   }
