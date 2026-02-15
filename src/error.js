@@ -25,7 +25,7 @@ Mila.Advertir = function(advertencia) {
   Mila.Contrato({
     Proposito: "Falla e informa la advertencia dada.",
     Parámetros: [
-      [error, Mila.Tipo.O([Mila.Tipo.Texto, Mila.Tipo.Error])]
+      [advertencia, Mila.Tipo.O([Mila.Tipo.Texto, Mila.Tipo.Error])]
     ]
   });
   console.warn(advertencia);
