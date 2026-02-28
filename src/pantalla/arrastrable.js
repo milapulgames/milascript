@@ -1,7 +1,7 @@
 Mila.Modulo({
   define:"Mila.Pantalla.Arrastrable",
   necesita:["../tipo","../pantalla"],
-  usa:"../evento/mouse"
+  usa:"../evento"
 });
 
 Mila.Tipo.Registrar({
