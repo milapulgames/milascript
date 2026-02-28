@@ -1,7 +1,7 @@
 Mila.Modulo({
   define:"Mila.Evento",
   necesita:["tipo"],
-  usa:["lista","evento/tecla"]
+  usa:["lista","pantalla","evento/tecla","evento/mouse"]
 });
 
 Mila.Evento.contextoGlobal = "GLOBAL";
@@ -48,14 +48,17 @@ Mila.Evento.Registrar = function(nombre, evento, funcion, contexto=Mila.Evento.c
     ]
   });
   if (Mila.Evento._registroAcciones[contexto].defineLaClavePropia_(nombre)) {
-    for (let iniciadorAnterior of Mila.Evento._registroAcciones[contexto][nombre]) {
+    for (let iniciadorAnterior of Mila.Evento._registroAcciones[contexto][nombre].iniciadores) {
       delete Mila.Evento._registroEventos[contexto][iniciadorAnterior][nombre];
       if (Mila.Evento._registroEventos[contexto][iniciadorAnterior].clavesDefinidas().length == 0) {
         delete Mila.Evento._registroEventos[contexto][iniciadorAnterior];
       }
     }
   }
-  Mila.Evento._registroAcciones[contexto][nombre] = [];
+  Mila.Evento._registroAcciones[contexto][nombre] = {
+    habilitado:true,
+    iniciadores:[]
+  };
   for (let iniciador of evento.iniciadores()) {
     const claveIniciador = iniciador.clase();
     if (!Mila.Evento._registroEventos[contexto].defineLaClavePropia_(claveIniciador)) {
@@ -66,8 +69,38 @@ Mila.Evento.Registrar = function(nombre, evento, funcion, contexto=Mila.Evento.c
       proximoEvento: evento.proximoEvento(iniciador),
       funcion
     };
-    Mila.Evento._registroAcciones[contexto][nombre].push(claveIniciador);
+    Mila.Evento._registroAcciones[contexto][nombre].iniciadores.push(claveIniciador);
   }
+};
+
+Mila.Evento.Habilitar = function(nombre, contexto=Mila.Evento.contextoGlobal) {
+  Mila.Contrato({
+    Proposito: "Habilita la acción con el nombre dado en el contexto dado",
+    Precondiciones:[
+      "Hay registrada una acción con el nombre dado en el contexto dado",
+      Mila.Evento._registroAcciones[contexto].defineLaClavePropia_(nombre)
+    ],
+    Parametros: [
+      [nombre, Mila.Tipo.Texto],
+      [contexto, Mila.Evento.Contexto]
+    ]
+  });
+  Mila.Evento._registroAcciones[contexto][nombre].habilitado = true;
+};
+
+Mila.Evento.Deshabilitar = function(nombre, contexto=Mila.Evento.contextoGlobal) {
+  Mila.Contrato({
+    Proposito: "Deshabilita la acción con el nombre dado en el contexto dado",
+    Precondiciones:[
+      "Hay registrada una acción con el nombre dado en el contexto dado",
+      Mila.Evento._registroAcciones[contexto].defineLaClavePropia_(nombre)
+    ],
+    Parametros: [
+      [nombre, Mila.Tipo.Texto],
+      [contexto, Mila.Evento.Contexto]
+    ]
+  });
+  Mila.Evento._registroAcciones[contexto][nombre].habilitado = false;
 };
 
 Mila.Evento.AtenderJs = function(eventoJs) {
@@ -98,9 +131,11 @@ Mila.Evento.Atender = function(evento) {
   const registro = Mila.Evento._registroEventos[Mila.Evento.contextoActual];
   if (registro.defineLaClavePropia_(clave)) {
     for (let nombre in registro[clave]) {
-      let eventoEnRegistro = registro[clave][nombre];
-      if (Mila.Evento.coincideCon_(evento, eventoEnRegistro.atributos)) {
-        Mila.Evento.Procesar(eventoEnRegistro, evento);
+      if (Mila.Evento._registroAcciones[Mila.Evento.contextoActual][nombre].habilitado) {
+        let eventoEnRegistro = registro[clave][nombre];
+        if (Mila.Evento.coincideCon_(evento, eventoEnRegistro.atributos)) {
+          Mila.Evento.Procesar(eventoEnRegistro, evento);
+        }
       }
     }
   }
@@ -145,23 +180,44 @@ Mila.Evento.coincideCon_ = function(evento, atributos) {
     case "Tecla":
       return coincidenAtributos(evento, atributos, ['presionada','codigoTecla']);
     case "BotonMouse":
-      return coincidenAtributos(evento, atributos, ['presionado','numeroDeBoton']);
+      return coincidenAtributos(evento, atributos, ['presionado','numeroDeBoton']) &&
+        (
+          atributos.elementosCliqueados.esVacia()
+          ||
+          atributos.elementosCliqueados.algunoCumple_(x => evento.atributo_('elementosCliqueados').contieneA_(x))
+        )
+      ;
     case "MovimientoMouse":
-      return coincidenAtributos(evento, atributos, ['movimientoEnX','movimientoEnY']);
+      return coincidenAtributos(evento, atributos, ['posiciónEnX','posiciónEnY']);
     case "Tiempo":
       return coincidenAtributos(evento, atributos, ['cantidadDeMilisegundos']);
   }
   return false;
 };
 
-// TODO: ver si en lugar de la lista de eventos le puedo pasar el evento reconstruido (no sé si se puede...)
 Mila.Evento.Ejecutar = function(funcion, eventos) { 
-  funcion(eventos);
+  if (eventos.length == 1) {
+    funcion(eventos[0]);
+  } else {
+    Mila.Fallar(Mila.Error.deTamañoListaDistinto(eventos,1));
+  }
 };
 
 Mila.Evento._Evento = function Evento(clase, atributos) {
   this._clase = clase;
   this._atributos = atributos;
+};
+
+Mila.Evento.nuevo = function(clase, atributos) {
+  Mila.Contrato({
+    Proposito: ["Describir un nuevo evento genérico a partir de la clase dada y los atributos dados", Mila.Tipo.Evento],
+    Parametros: [
+      [clase, Mila.Tipo.Texto],
+      [atributos]
+    ]
+  });
+  const nuevo = new Mila.Evento._Evento(clase, atributos);
+  return nuevo;
 };
 
 Mila.Evento.deTextoIngresado = function(textoIngresado) {
@@ -171,8 +227,7 @@ Mila.Evento.deTextoIngresado = function(textoIngresado) {
       [textoIngresado, Mila.Tipo.Texto]
     ]
   });
-  const nuevo = new Mila.Evento._Evento("TextoIngresado", {textoIngresado});
-  return nuevo;
+  return Mila.Evento.nuevo("TextoIngresado", {textoIngresado});
 };
 
 Mila.Evento.deTecla = function(codigoTecla, presionada=true) {
@@ -183,8 +238,7 @@ Mila.Evento.deTecla = function(codigoTecla, presionada=true) {
       [presionada, Mila.Tipo.Booleano, "Si fue presionada o liberada"]
     ]
   });
-  const nuevo = new Mila.Evento._Evento("Tecla", {codigoTecla, presionada});
-  return nuevo;
+  return Mila.Evento.nuevo("Tecla", {codigoTecla, presionada});
 };
 
 Mila.Evento.deBotonMouse = function(numeroDeBoton, presionado=true) {
@@ -195,20 +249,37 @@ Mila.Evento.deBotonMouse = function(numeroDeBoton, presionado=true) {
       [presionado, Mila.Tipo.Booleano, "Si fue presionado o liberada"]
     ]
   });
-  const nuevo = new Mila.Evento._Evento("BotonMouse", {numeroDeBoton, presionado});
-  return nuevo;
+  return Mila.Evento.nuevo("BotonMouse", {numeroDeBoton, presionado, elementosCliqueados:[],
+    posiciónEnX: Mila.Nada, posiciónEnY: Mila.Nada
+  });
 };
 
-Mila.Evento.deMovimientoMouse = function(movimientoEnX, movimientoEnY) {
+Mila.Evento.deClicSobreElementos = function(elementosCliqueados, numeroDeBoton=Mila.Evento.Mouse.clicIzquierdo, presionado=true) {
+  Mila.Contrato({
+    Proposito: ["Describir un nuevo evento que indica que se hizo clic sobre alguno de los elementos dados", Mila.Tipo.Evento],
+    Parametros: [
+      [elementosCliqueados, Mila.Tipo.O([Mila.Tipo.ElementoVisual, Mila.Tipo.ListaDe_(Mila.Tipo.ElementoVisual)]),
+        "El elemento cliqueado o la lista de elementos cliqueados"
+      ],
+      [numeroDeBoton, Mila.Tipo.Entero, "El número del botón presionado"],
+      [presionado, Mila.Tipo.Booleano, "Si fue presionado o liberada"]
+    ]
+  });
+  return Mila.Evento.nuevo("BotonMouse", {numeroDeBoton, presionado,
+    elementosCliqueados: elementosCliqueados.esUnaLista() ? elementosCliqueados : [elementosCliqueados],
+    posiciónEnX: Mila.Nada, posiciónEnY: Mila.Nada
+  });
+};
+
+Mila.Evento.deMovimientoMouse = function(posiciónEnX, posiciónEnY) {
   Mila.Contrato({
     Proposito: ["Describir un nuevo evento que indica que el mouse se movió", Mila.Tipo.Evento],
     Parametros: [
-      [movimientoEnX, Mila.Tipo.Entero, "Cuánto se movió horizontalmente"],
-      [movimientoEnY, Mila.Tipo.Booleano, "Cuánto se movió verticalmente"]
+      [posiciónEnX, Mila.Tipo.Entero, "Posición horizontal del puntero tras moverse"],
+      [posiciónEnY, Mila.Tipo.Entero, "Posición vertical del puntero tras moverse"]
     ]
   });
-  const nuevo = new Mila.Evento._Evento("MovimientoMouse", {movimientoEnX, movimientoEnY});
-  return nuevo;
+  return Mila.Evento.nuevo("MovimientoMouse", {posiciónEnX, posiciónEnY});
 };
 
 Mila.Evento.deTiempoTranscurrido = function(cantidadDeMilisegundos) {
@@ -218,8 +289,7 @@ Mila.Evento.deTiempoTranscurrido = function(cantidadDeMilisegundos) {
       [cantidadDeMilisegundos, Mila.Tipo.Entero, "Cuántos milisegundos transcurrieron"]
     ]
   });
-  const nuevo = new Mila.Evento._Evento("Tiempo", {cantidadDeMilisegundos});
-  return nuevo;
+  return Mila.Evento.nuevo("Tiempo", {cantidadDeMilisegundos});
 };
 
 Mila.Evento.aLaVez = function(eventos) {
@@ -229,8 +299,7 @@ Mila.Evento.aLaVez = function(eventos) {
       [eventos, Mila.Tipo.ListaDe_(Mila.Tipo.Evento)]
     ]
   });
-  const nuevo = new Mila.Evento._Evento("Conjuncion", {eventos});
-  return nuevo;
+  return Mila.Evento.nuevo("Conjuncion", {eventos});
 };
 
 Mila.Evento.juntoA = function(modificador, evento) {
@@ -241,8 +310,7 @@ Mila.Evento.juntoA = function(modificador, evento) {
       [evento, Mila.Tipo.Evento]
     ]
   });
-  const nuevo = new Mila.Evento._Evento("Modificacion", {modificador, evento});
-  return nuevo;
+  return Mila.Evento.nuevo("Modificacion", {modificador, evento});
 };
 
 Mila.Evento.algunoDe = function(eventos) {
@@ -252,13 +320,12 @@ Mila.Evento.algunoDe = function(eventos) {
       [eventos, Mila.Tipo.ListaDe_(Mila.Tipo.Evento)]
     ]
   });
-  const nuevo = new Mila.Evento._Evento("Disyuncion", {eventos});
-  return nuevo;
+  return Mila.Evento.nuevo("Disyuncion", {eventos});
 };
 
 
 Mila.Evento.desdeJs = function(eventoJs) {
-  Mila.Contrato({ // TODO: Ya no hace falta generar todas variantes porque valido si un evento "coincideCon_" en lugar de validar si es idéntico así que esto podría ser el evento directamente (en lugar de una lista de eventos)
+  Mila.Contrato({
     Proposito: ["Describir una lista de eventos a partir del evento js dado", Mila.Tipo.ListaDe_(Mila.Tipo.Evento)],
     Parametros: [
       [eventoJs /* Event */] 
@@ -266,13 +333,38 @@ Mila.Evento.desdeJs = function(eventoJs) {
   });
   switch (eventoJs.type) {
     case "keydown":
-      return [
+      return [ // Ya no hace falta generar todas variantes porque valido si un evento "coincideCon_" en lugar de validar si es idéntico así que esto podría ser el evento directamente (en lugar de una lista de eventos)
         // Mila.Evento.deTecla(Mila.Nada, Mila.Nada), // Evento de tecla genérico
         // Mila.Evento.deTecla(Mila.Nada, true), // Tecla presionada
         Mila.Evento.deTecla(Mila.Evento.Tecla.codigoEventoJs(eventoJs), true) // Evento real
-      ]
+      ];
+    case "keyup":
+      return [Mila.Evento.deTecla(Mila.Evento.Tecla.codigoEventoJs(eventoJs), false)];
+    case "pointerdown":
+      return [Mila.Evento.nuevo("BotonMouse", {
+        numeroDeBoton:Mila.Evento.Mouse.codigoEventoJs(eventoJs),
+        presionado:true,
+        elementosCliqueados:Mila.Evento.elementosCliqueadosJs(eventoJs),
+        posiciónEnX: eventoJs.clientX, posiciónEnY: eventoJs.clientY
+      })];
+    case "pointermove":
+      return [Mila.Evento.deMovimientoMouse(eventoJs.clientX, eventoJs.clientY)];
+    case "pointerup":
+      return [Mila.Evento.nuevo("BotonMouse", {
+        numeroDeBoton:Mila.Evento.Mouse.codigoEventoJs(eventoJs),
+        presionado:false,
+        elementosCliqueados:[],
+        posiciónEnX: eventoJs.clientX, posiciónEnY: eventoJs.clientY
+      })];
   }
   return [];
+};
+
+Mila.Evento.elementosCliqueadosJs = function(eventoJs) {
+  return (Mila.Tipo.esAlgo(eventoJs.target))
+    ? [Mila.Pantalla.elementoDeId_(eventoJs.target.getAttribute('id'))] // TODO: agregar también los elementos que lo contienen a este
+    : []
+  ;
 };
 
 Mila.Evento._Evento.prototype.clase = function() {
@@ -312,9 +404,13 @@ Mila.Evento._Evento.prototype.serializado = function() {
     case "Tecla":
       return `TECLA_${this._atributos.presionada ? "PRESIONADA" : "SOLTADA"}(${this._atributos.codigoTecla})`;
     case "BotonMouse":
-      return `MOUSE_${this._atributos.presionado ? "PRESIONADO" : "SOLTADO"}(${this._atributos.numeroDeBoton})`;
+      return `MOUSE_${this._atributos.presionado ? "PRESIONADO" : "SOLTADO"}(${this._atributos.numeroDeBoton})${
+        !this._atributos.elementosCliqueados.esVacia() ? " : " + this._atributos.elementosCliqueados.transformados(
+          x=>x._idÚnico
+        ).join(" ") : ""
+      }`;
     case "MovimientoMouse":
-      return `MOUSE_MOVIDO`;
+      return `MOUSE_MOVIDO(${this._atributos.posiciónEnX},${this._atributos.posiciónEnY})`;
     case "Tiempo":
       return `TIEMPO(${this._atributos.cantidadDeMilisegundos})`;
     case "Conjuncion":
@@ -384,11 +480,16 @@ Mila.Evento._Evento.prototype.proximoEvento = function(eventoAnterior) {
 Mila.Tipo.Registrar({
   nombre:'Evento',
   prototipo: Mila.Evento._Evento,
+  strInstancia: (elemento) => elemento.serializado()
 });
 
 Mila.alIniciar(function() {
   if (Mila.entorno().enNavegador()) {
     document.addEventListener('keydown', Mila.Evento.AtenderJs);
+    document.addEventListener('keyup', Mila.Evento.AtenderJs);
+    document.addEventListener('pointerdown', Mila.Evento.AtenderJs);
+    document.addEventListener('pointermove', Mila.Evento.AtenderJs);
+    document.addEventListener('pointerup', Mila.Evento.AtenderJs);
   } else {
     // TODO
   }

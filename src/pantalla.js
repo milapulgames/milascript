@@ -1,3 +1,5 @@
+// TODO: separar 'ancho' y 'alto' de 'comportamientoAncho' y 'comportamientoAlto' (como hice con la posición)
+
 Mila.Modulo({
   define:"Mila.Pantalla",
   usa:["base","pantalla/panel"],
@@ -10,7 +12,7 @@ Mila.Pantalla._pantallaActual = Mila.Nada;
 Mila.Pantalla.Constantes = {
   grosorBarraScroll: 15.5,
   offsetVentana: 2 // Ojo: En Firefox es 3
-}
+};
 
 Mila.Pantalla.ComportamientoEspacio = Mila.Tipo.Variante("ComportamientoEspacio",
   ["Maximizar","Minimizar"]
@@ -63,6 +65,8 @@ Mila.Pantalla.ClaveDisposicion = Mila.Tipo.Registrar({
 Mila.Tipo.Registrar({
   nombre:'AtributosElementoVisual',
   es: {
+    "?posiciónX":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Tipo.Nada]),
+    "?posiciónY":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Tipo.Nada]),
     "?ancho":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio]),
     "?alto":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio]),
     "?colorFondo":Mila.Tipo.Texto,
@@ -79,6 +83,8 @@ Mila.Tipo.Registrar({
 });
 
 Mila.Pantalla.AtributosElementoVisualPorDefecto = {
+  posiciónX:Mila.Nada,
+  posiciónY:Mila.Nada,
   ancho:Mila.Pantalla.ComportamientoEspacio.Minimizar,
   alto:Mila.Pantalla.ComportamientoEspacio.Minimizar,
   colorFondo:"#0000",
@@ -101,6 +107,8 @@ Mila.Pantalla._ElementoVisual.prototype.Inicializar = function(atributos, porDef
     ]
   });
   const todosLosAtributos = Object.assign({}, Mila.Pantalla.AtributosElementoVisualPorDefecto, porDefecto, atributos);
+  this.CambiarPosiciónXA_(todosLosAtributos.posiciónX);
+  this.CambiarPosiciónYA_(todosLosAtributos.posiciónY);
   this.CambiarAnchoA_(todosLosAtributos.ancho);
   this.CambiarAltoA_(todosLosAtributos.alto);
   this.CambiarColorFondoA_(todosLosAtributos.colorFondo);
@@ -124,6 +132,8 @@ Mila.Pantalla._ElementoVisual.prototype.Inicializar = function(atributos, porDef
   if (funcion.esAlgo()) {
     this.CambiarFuncionA_(funcion);
   }
+  this._idÚnico = Mila.Pantalla.nuevoId();
+  Mila.Pantalla.mapaElementos[this._idÚnico] = this;
 };
 
 Mila.Tipo.Registrar({
@@ -174,6 +184,12 @@ Mila.Pantalla._ElementoVisual.prototype.rectanguloInterno = function(rectanguloC
     ]
   });
   let rectangulo = rectanguloCompleto.copia();
+  if (this.comportamientoPosiciónX().esUnNumero()) {
+    rectangulo.x = this.posiciónX();
+  }
+  if (this.comportamientoPosiciónY().esUnNumero()) {
+    rectangulo.y = this.posiciónY();
+  }
   let mHorizontal = 1;
   let mVertical = 1;
   if (this.ancho().esUnNumero()) {
@@ -229,6 +245,12 @@ Mila.Pantalla._ElementoVisual.prototype.rectanguloInterno = function(rectanguloC
       Math.abs(rectangulo.ancho),
       Math.abs(rectangulo.alto)
     );
+  }
+  if (this.comportamientoPosiciónX.esNada()) {
+    this._posiciónX = resultado.x;
+  }
+  if (this.comportamientoPosiciónY.esNada()) {
+    this._posiciónY = resultado.y;
   }
   return resultado;
 };
@@ -311,6 +333,48 @@ Mila.Pantalla._ElementoVisual.prototype.Ocultar = function() {
 
 Mila.Pantalla._ElementoVisual.prototype.Mostrar = function() {
   this.CambiarVisibilidadA_(true);
+};
+
+Mila.Pantalla._ElementoVisual.prototype.comportamientoPosiciónX = function() {
+  Mila.Contrato({
+    Proposito: [
+      "Describir el comportamiento de la posición en el eje X de este elemento visual.\
+        Puede ser un número o nada.",
+      Mila.Tipo.O([Mila.Tipo.Entero, Mila.Tipo.Nada])
+    ],
+  });
+  return this._comportamientoPosiciónX;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.posiciónX = function() {
+  Mila.Contrato({
+    Proposito: [
+      "Describir la posición en el eje X de este elemento visual.",
+      Mila.Tipo.Entero
+    ],
+  });
+  return this._posiciónX;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.comportamientoPosiciónY = function() {
+  Mila.Contrato({
+    Proposito: [
+      "Describir el comportamiento de la posición en el eje Y de este elemento visual.\
+        Puede ser un número o nada.",
+      Mila.Tipo.O([Mila.Tipo.Entero, Mila.Tipo.Nada])
+    ],
+  });
+  return this._comportamientoPosiciónY;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.posiciónY = function() {
+  Mila.Contrato({
+    Proposito: [
+      "Describir la posición en el eje Y de este elemento visual.",
+      Mila.Tipo.Entero
+    ],
+  });
+  return this._posiciónY;
 };
 
 Mila.Pantalla._ElementoVisual.prototype.ancho = function() {
@@ -453,6 +517,36 @@ Mila.Pantalla._ElementoVisual.prototype.visible = function() {
     ],
   });
   return this._visible;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.CambiarPosiciónXA_ = function(nuevaPosiciónX) {
+  Mila.Contrato({
+    Proposito: "Reemplazar (el comportamiento para) la posición X de este elemento visual por la dada",
+    Parametros: [
+      [nuevaPosiciónX, Mila.Tipo.O([Mila.Tipo.Entero,Mila.Tipo.Nada])]
+    ]
+  });
+  this._comportamientoPosiciónX = nuevaPosiciónX;
+  this._posiciónX = Mila.Tipo.esNada(nuevaPosiciónX) ? 0 : nuevaPosiciónX;
+  // TODO: Si es Nada, redimensionar
+  if ('_nodoHtml' in this) {
+    this._nodoHtml.style.left = Mila.Tipo.esNada(nuevaPosiciónX) ? '' : `${nuevaPosiciónX}px`;
+  }
+};
+
+Mila.Pantalla._ElementoVisual.prototype.CambiarPosiciónYA_ = function(nuevaPosiciónY) {
+  Mila.Contrato({
+    Proposito: "Reemplazar la posición Y de este elemento visual por la dada",
+    Parametros: [
+      [nuevaPosiciónY, Mila.Tipo.O([Mila.Tipo.Entero,Mila.Tipo.Nada])]
+    ]
+  });
+  this._comportamientoPosiciónY = nuevaPosiciónY;
+  this._posiciónY = Mila.Tipo.esNada(nuevaPosiciónY) ? 0 : nuevaPosiciónY;
+  // TODO: Si es Nada, redimensionar
+  if ('_nodoHtml' in this) {
+    this._nodoHtml.style.top = Mila.Tipo.esNada(nuevaPosiciónY) ? '' : `${nuevaPosiciónY}px`;
+  }
 };
 
 Mila.Pantalla._ElementoVisual.prototype.CambiarAnchoA_ = function(nuevoAncho) {
@@ -740,6 +834,7 @@ Mila.Pantalla._ElementoVisual.prototype.InicializarHtml = function() {
     this._nodoHtml.addEventListener('click', this._funcion);
     this._nodoHtml.style['cursor'] = 'pointer';
   }
+  this._nodoHtml.setAttribute('id', this._idÚnico);
 };
 
 Mila.Pantalla._ElementoVisualTextual.prototype.InicializarHtml = function() {
@@ -977,3 +1072,13 @@ Mila.Tipo.Registrar({
   nombre:'ElementoVisual',
   prototipo: Mila.Pantalla._ElementoVisual
 });
+
+Mila.Pantalla.mapaElementos = {}; // Mapa de elementos por id
+
+Mila.Pantalla.elementoDeId_ = function(idBuscado) {
+  return Mila.Pantalla.mapaElementos[idBuscado];
+};
+
+Mila.Pantalla.nuevoId = function() {
+  return `_${Mila.Base.nuevoIdPara_('Pantalla')}`;
+};
