@@ -49,13 +49,16 @@ const build = function(nombre, ubicacionMila, argumentos) {
     Mila.alIniciar(function() {
       let nombreFinal = (('name' in argumentos) ? argumentos.name : nombre);
       let rutaDestino = (('dst' in argumentos) ? argumentos.dst : '');
-      let rutaFinal = Mila.Archivo.rutaAPartirDe_([rutaDestino, nombreFinal])
+      let rutaFinal = Mila.Archivo.rutaAPartirDe_([rutaDestino, nombreFinal]);
       if (data.usandoDestinoBuild) {
         for (let nombreProyecto in Mila._proyectos) {
           Mila._proyectos[nombreProyecto] = Mila.Archivo.ruta_Absoluta(Mila.Archivo.rutaAPartirDe_([argumentos.dst, nombreProyecto, 'src']));
         }
         archivosInlcuidos[0].ruta = Mila.Archivo.rutaAPartirDe_(['$milascript', 'mila']);
       }
+      const dataProyectos = `  <script type="module">\n${Mila._proyectos.clavesDefinidas().map(
+        proyecto => `    Mila._proyectos.${proyecto} = "${Mila.Archivo.ruta_RelativaA_(Mila._proyectos[proyecto], rutaDestino)}";`
+      ).join('\n')}\n  </script>`;
       const rutaRealDe_ = (data.usandoDestinoBuild)
         ? function(rutaOriginal) {
           return Mila._ruta_NavegandoProyectos(rutaOriginal)
@@ -67,12 +70,14 @@ const build = function(nombre, ubicacionMila, argumentos) {
           ;
         }
       ;
+      const scripts = archivosInlcuidos.transformados(function(archivo) {
+        return `  <script${archivo.tipo == "Mila" ? ' type="module"' : ''} src="${
+          Mila.Archivo.ruta_RelativaA_((rutaRealDe_(archivo.ruta)), rutaDestino)
+        }.js"></script>`;
+      });
+      scripts.Insertar_EnPosicion_(dataProyectos, 2);
       const contenido = `<!DOCTYPE HTML>\n<html>\n<head>\n  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">\n  <script type="module">window.compilado = true;window.sinContratos = ${!conContratos};</script>\n`
-        + archivosInlcuidos.transformados(function(archivo) {
-          return `  <script${archivo.tipo == "Mila" ? ' type="module"' : ''} src="${
-            Mila.Archivo.ruta_RelativaA_((rutaRealDe_(archivo.ruta)), rutaDestino)
-          }.js"></script>`;
-        }).join("\n")
+        + scripts.join("\n")
         + '\n  <style media="screen">\n    body {\n      margin: 0;\n      padding: 0;\n    }\n  </style>\n</head>\n<body>\n</body>\n</html>';
       // console.log(Mila._archivos.clavesDefinidas().transformados(x => `${x} :: ${
       //   'aliasDe' in Mila._archivos[x]
@@ -110,11 +115,12 @@ const buildearConDestino = function(optRutaDestino, argumentos) {
   }
   ubicacionMila = Mila.Archivo.ruta_Absoluta(ubicacionMila);
   ubicacionMila = Mila.Archivo.ruta_Relativa(ubicacionMila);
-  Mila._proyectos["milascript"] = Mila.Archivo.ruta_Absoluta("./" + ubicacionMila);
+  Mila._proyectos["milascript"] = Mila.Archivo.ruta_Absoluta(ubicacionMila);
+
   Mila.Archivo.SiExisteArchivo_Entonces_YSiNo_(
     Mila.Archivo.rutaAPartirDe_([ubicacionMila, 'mila.js']),
       build(nombre, ubicacionMila, argumentos),
-      () => Mila.Fallar("No se encuentran los fuentes de milascript en la ruta destino.")
+      () => Mila.Fallar(`No se encuentran los fuentes de milascript en la ruta destino ${ubicacionMila}.`)
   );
 };
 

@@ -7,7 +7,7 @@ Mila.Idioma._traduccionesPorIdioma = {};
 
 Mila.Idioma.actual = Mila.Nada;
 
-Mila.Idioma.Seleccionar = function(claveIdioma) {
+Mila.Idioma.Seleccionar_ = function(claveIdioma) {
   Mila.Contrato({
     Propósito:"Cambia el idioma actual por el dado.",
     Precondiciones:[
@@ -17,8 +17,22 @@ Mila.Idioma.Seleccionar = function(claveIdioma) {
       [claveIdioma, Mila.Tipo.Texto]
     ]
   });
+  Mila.Idioma.Seleccionar_YLuego_(claveIdioma, x=>x);
+};
+
+Mila.Idioma.Seleccionar_YLuego_ = function(claveIdioma, función) {
+  Mila.Contrato({
+    Propósito:"Cambia el idioma actual por el dado. Cuando termina de cargar todos los archivos necesarios invoca a la función dada.",
+    Precondiciones:[
+      "El idioma dado ya fue declarado antes.", claveIdioma in Mila.Idioma._traduccionesPorIdioma
+    ],
+    Parámetros:[
+      [claveIdioma, Mila.Tipo.Texto]
+      [función, Mila.Tipo.Funcion]
+    ]
+  });
   Mila.Idioma.actual = claveIdioma;
-  Mila.Idioma.AgregarDesdeDirectorios();
+  Mila.Idioma.AgregarDesdeDirectorios(función);
 };
 
 Mila.Idioma.idiomaSeleccionado = function() {
@@ -206,31 +220,59 @@ Mila.Idioma.AgregarDirectorio_ = function(ruta, optPrefijo="") {
       [optPrefijo, Mila.Tipo.Texto]
     ]
   });
+  Mila.Idioma.AgregarDirectorio_YLuego_(ruta, x=>x, optPrefijo);
+};
+
+Mila.Idioma.AgregarDirectorio_YLuego_ = function(ruta, función, optPrefijo="") {
+  Mila.Contrato({
+    Propósito:"Agrega el directorio en la ruta dada a la lista de directorios con archivos de traducción. Cuando termina de cargar todos los archivos necesarios invoca a la función dada. Si se pasa un tercer argumento, se usa como prefijo de todas las claves definidas en los archivos dentro del directorio",
+    Precondiciones:[
+      "Existe un directorio en la ruta dada",
+    ],
+    Parámetros:[
+      [ruta, Mila.Tipo.Texto],
+      [función, Mila.Tipo.Funcion],
+      [optPrefijo, Mila.Tipo.Texto]
+    ]
+  });
   let prefijo = optPrefijo.length > 0 ? `${optPrefijo}_` : '';
   const registroDirectorio = {ruta, prefijo, cargados:[]};
   Mila.Idioma._directorios.push(registroDirectorio);
   if (Mila.Idioma.idiomaSeleccionado().esAlgo()) {
-    Mila.Idioma.AgregarDesdeDirectorio_(registroDirectorio);
+    Mila.Idioma.AgregarDesdeDirectorio_(registroDirectorio, función);
   }
 };
 
-Mila.Idioma.AgregarDesdeDirectorios = function() {
+Mila.Idioma.AgregarDesdeDirectorios = function(función) {
   Mila.Contrato({
-    Propósito:"Agrega los traducibles definidos en los archivo de traducción para el idioma actual en los directorios registrados",
+    Propósito:"Agrega los traducibles definidos en los archivo de traducción para el idioma actual en los directorios registrados. Cuando termina invoca a la función dada.",
     Precondiciones:[
       "Hay un idioma seleccionado.", Mila.Tipo.esAlgo(Mila.Idioma.actual),
+    ],
+    Parámetros: [
+      [función, Mila.Tipo.Funcion]
     ]
   });
+  const contadorRestantes = {k:0};
   for (let registroDirectorio of Mila.Idioma._directorios) {
     if (!registroDirectorio.cargados.includes(Mila.Idioma.idiomaSeleccionado())) {
-      Mila.Idioma.AgregarDesdeDirectorio_(registroDirectorio);
+      contadorRestantes.k ++;
+      Mila.Idioma.AgregarDesdeDirectorio_(registroDirectorio, function() {
+        contadorRestantes.k --;
+        if (contadorRestantes.k == 0) {
+          función();
+        }
+      });
     }
+  }
+  if (contadorRestantes.k == 0) {
+    función();
   }
 };
 
-Mila.Idioma.AgregarDesdeDirectorio_ = function(registroDirectorio) {
+Mila.Idioma.AgregarDesdeDirectorio_ = function(registroDirectorio, función) {
   Mila.Contrato({
-    Propósito:"Agrega los traducibles definidos en el archivo de traducción para el idioma actual en el directorio correspondiente al registro dado",
+    Propósito:"Agrega los traducibles definidos en el archivo de traducción para el idioma actual en el directorio correspondiente al registro dado. Cuando termina de cargar todos los archivos necesarios invoca a la función dada.",
     Precondiciones:[
       "Hay un idioma seleccionado.", Mila.Tipo.esAlgo(Mila.Idioma.actual),
     ],
@@ -239,7 +281,8 @@ Mila.Idioma.AgregarDesdeDirectorio_ = function(registroDirectorio) {
         "ruta":Mila.Tipo.Texto,
         "prefijo":Mila.Tipo.Texto,
         "cargados":Mila.Tipo.ListaDe_(Mila.Tipo.Texto)
-      })]
+      })],
+      [función, Mila.Tipo.Funcion]
     ]
   });
   const rutaArchivo = Mila.Archivo.rutaAPartirDe_([registroDirectorio.ruta, `${Mila.Idioma.idiomaSeleccionado()}.js`]);
@@ -254,8 +297,41 @@ Mila.Idioma.AgregarDesdeDirectorio_ = function(registroDirectorio) {
             traducciones.fold((clave, valor, rec) => rec.conLaClave_YElValor_(`${registroDirectorio.prefijo}${clave}`, valor), {})
           );
         }
+        función();
       }
-    ), () => {}
+    ), función
   );
   registroDirectorio.cargados.Agregar_SiNoEstá(Mila.Idioma.idiomaSeleccionado());
+};
+
+Mila.Idioma.Inicializar = function(listaDeIdiomas=['es','en']) {
+  Mila.Contrato({
+    Propósito:"Inicializa el módulo con la lista de idiomas dada. Si no se pasa ninguna lista se inicializa con Español e Inglés",
+    Precondiciones: [
+      "La lista tiene al menos un elemento",
+      listaDeIdiomas.length > 0
+    ],
+    Parámetros:[
+      [listaDeIdiomas, Mila.Tipo.ListaDe_(Mila.Tipo.Texto)]
+    ]
+  });
+  Mila.Idioma.InicializarYLuego_(x=>x, listaDeIdiomas);
+};
+
+Mila.Idioma.InicializarYLuego_ = function(función, listaDeIdiomas=['es','en']) {
+  Mila.Contrato({
+    Propósito:"Inicializa el módulo con la lista de idiomas dada y luego se invoca a la función dada. Si no se pasa ninguna lista se inicializa con Español e Inglés",
+    Precondiciones: [
+      "La lista tiene al menos un elemento",
+      listaDeIdiomas.length > 0
+    ],
+    Parámetros:[
+      [función, Mila.Tipo.Funcion],
+      [listaDeIdiomas, Mila.Tipo.ListaDe_(Mila.Tipo.Texto)]
+    ]
+  });
+  for (let claveIdioma of listaDeIdiomas) {
+    Mila.Idioma.Declarar_SiNoExiste(claveIdioma);
+  }
+  Mila.Idioma.Seleccionar_YLuego_(listaDeIdiomas[0], función);
 };

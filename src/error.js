@@ -36,8 +36,11 @@ Mila.Error.declarados = {}; // Mapa de errores declarados
 
 Mila.Error._descripción = function(error) {
   let clase = error.name;
-  if (Mila.Idioma.idiomaSeleccionado().esAlgo() && Mila.Idioma.existeLaClave_(`ERROR_${clase}`)) {
-    return Mila.Idioma.traducciónDeClave_(`ERROR_${clase}`).aplicandoReemplazosCon_({
+  if (clase in Mila.Error.declarados) {
+    return ((Mila.Idioma.idiomaSeleccionado().esAlgo() && Mila.Idioma.existeLaClave_(`ERROR_${clase}`))
+      ? Mila.Idioma.traducciónDeClave_(`ERROR_${clase}`)
+      : clase + Mila.Error.declarados[clase].parámetros.map((parámetro) => " " + error[parámetro[0]].aTexto()).join("")
+    ).aplicandoReemplazosCon_({
       indicadorInicioAgujero:"{",
       escapeInicioAgujero:"{{",
       indicadorFinAgujero:"}",
@@ -45,7 +48,7 @@ Mila.Error._descripción = function(error) {
       mapaReemplazos:(claveAgujero) => error[claveAgujero]
     });
   }
-  return error.toString();
+  return clase;
 };
 Mila.JS.DefinirFuncionDeInstanciaAPartirDe_({
   prototipo: Error,
@@ -131,7 +134,7 @@ Mila.Error._ResultadoParcial.prototype.falló = function() {
   return 'error' in this;
 };
 
-Mila.Idioma.AgregarDirectorio_(Mila.Archivo.rutaAPartirDe_(['src','msg','error']), "ERROR");
+Mila.Idioma.AgregarDirectorio_(Mila.Archivo.rutaAPartirDe_(['$milascript','msg','error']), "ERROR");
 
 Mila.Error.Declarar('TamañoListaDistinto', 'deTamañoListaDistinto', [
   ['lista', Mila.Tipo.Lista],

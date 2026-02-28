@@ -916,10 +916,22 @@ Mila._SiExisteArchivo_Entonces_YSiNo_ = function(ruta, funcionSi, funcionNo) {
 
 Mila._rutaAPartirDe_ = function(rutas) {
   // Describe la ruta resultante de concatenar las rutas en la lista de rutas dada.
-  return (entorno.enNodeJs())
-    ? Mila.path().join(...rutas)
-    : rutas.join('/')
-  ;
+  let rutaPorAhora = "";
+  if (entorno.enNodeJs()) {
+    rutaPorAhora = Mila.path().join(...rutas);
+  } else {
+    rutaPorAhora = rutas[0];
+    for (let ruta of rutas.splice(1)) {
+      if (!rutaPorAhora.endsWith('/')) {
+        rutaPorAhora += '/';
+      }
+      rutaPorAhora += ruta.substring(ruta.startsWith('/') ? 1 : 0);
+    }
+    if (rutaPorAhora.endsWith('/')) {
+      rutaPorAhora = rutaPorAhora.substring(0, rutaPorAhora.length-2);
+    }
+  }
+  return Mila._ruta_NavegandoProyectos(rutaPorAhora);
 };
 
 Mila._rutaActual = function() {
@@ -930,8 +942,10 @@ Mila._rutaActual = function() {
 
 Mila._ruta_Absoluta = function(ruta) {
   // Describe la ruta absoluta correspondiente a la ruta dada.
-  // No funciona en el navegador.
-  return Mila.path().resolve(ruta);
+  return (entorno.enNodeJs())
+    ? Mila.path().resolve(ruta)
+    : ruta
+  ;
 };
 
 // MAIN
