@@ -8,7 +8,7 @@
 Mila.Modulo({
   define:"Mila.Error",
   usa:["base"],
-  necesita:["tipo","js"]
+  necesita:["tipo","js","idioma","archivo"]
 });
 
 Mila.Fallar = function(error) {
@@ -18,6 +18,7 @@ Mila.Fallar = function(error) {
       [error, Mila.Tipo.O([Mila.Tipo.Texto, Mila.Tipo.Error])]
     ]
   });
+  console.log(error.descripción());
   console.error(error);
 };
 
@@ -31,6 +32,51 @@ Mila.Advertir = function(advertencia) {
   console.warn(advertencia);
 };
 
+Mila.Error.declarados = {}; // Mapa de errores declarados
+
+Mila.Error._descripción = function(error) {
+  let clase = error.name;
+  if (Mila.Idioma.idiomaSeleccionado().esAlgo() && Mila.Idioma.existeLaClave_(`ERROR_${clase}`)) {
+    return Mila.Idioma.traducciónDeClave_(`ERROR_${clase}`).aplicandoReemplazosCon_({
+      indicadorInicioAgujero:"{",
+      escapeInicioAgujero:"{{",
+      indicadorFinAgujero:"}",
+      escapeFinAgujero:"}}",
+      mapaReemplazos:(claveAgujero) => error[claveAgujero]
+    });
+  }
+  return error.toString();
+};
+Mila.JS.DefinirFuncionDeInstanciaAPartirDe_({
+  prototipo: Error,
+  nombre: 'descripción',
+  cantidadDeParametros: 0,
+  posicionDeThis: 0,
+  funcionAInvocar: 'Mila.Error._descripción'
+});
+
+Mila.Error.Declarar = function(nombreTipo, nombreFunción, parámetros=[], optDescripción) {
+  Mila.Error.declarados[nombreTipo] = {
+    parámetros
+  };
+  eval(`Mila.Error._${nombreTipo} = function ${nombreTipo}() {};`);
+  eval(`Object.setPrototypeOf(Mila.Error._${nombreTipo}.prototype, Error.prototype);`);
+  eval(`Mila.Error.${nombreFunción} = function(${parámetros.map(p => p[0]).join(", ")}) {\n` +
+    `  const nuevoError = new Mila.Error._${nombreTipo}();\n` +
+    `  nuevoError.name = '${nombreTipo}';\n` +
+    parámetros.map(p => `  nuevoError.${p[0]} = ${p[0]};\n`).join("") +
+    `  return nuevoError;\n` +
+    `};`
+  );
+  if (Mila.Tipo.esAlgo(optDescripción)) {
+    if (Mila.Idioma.idiomaSeleccionado().esAlgo()) {
+      Mila.Idioma.AgregarTraducibles_({
+        [`ERROR_${nombreTipo}`]: optDescripción
+      });
+    }
+  }
+};
+
 Mila.Error._Error = Error
 
 Mila.Tipo.Registrar({
@@ -38,9 +84,7 @@ Mila.Tipo.Registrar({
   prototipo: Mila.Error._Error,
   es: 'esUnError',
   strTipo: "Error",
-  strInstancia: function(elemento) {
-    return `${elemento.name}`;
-  }
+  strInstancia: Mila.Error._descripción
 });
 
 Mila.Error._ResultadoParcial = function ResultadoParcial() {};
@@ -86,3 +130,10 @@ Mila.Error._ResultadoParcial.prototype.falló = function() {
   });
   return 'error' in this;
 };
+
+Mila.Idioma.AgregarDirectorio_(Mila.Archivo.rutaAPartirDe_(['src','msg','error']), "ERROR");
+
+Mila.Error.Declarar('TamañoListaDistinto', 'deTamañoListaDistinto', [
+  ['lista', Mila.Tipo.Lista],
+  ['tamañoEsperado', Mila.Tipo.Entero]
+]);

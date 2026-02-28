@@ -1,7 +1,7 @@
 Mila.Modulo({
   define:"Mila.Lista",
   necesita:["documentacion","js"],
-  usa:"tipo"
+  usa:["tipo","error"]
 });
 
 Mila.Lista._Definir_EnPrototipo_ = function(nombre, prototipo, posicionDeThis=0) {
@@ -228,6 +228,16 @@ Mila.Lista.Agregar_AlFinal = function(lista, elemento) {
   lista.push(elemento);
 };
 Mila.Lista._Definir_EnPrototipo_('Agregar_AlFinal', Array);
+
+Mila.Lista.Agregar_SiNoEstá = function(lista, elemento) {
+  // Agrega el elemento dado a la lista dada si no estaba ya.
+    // lista es una lista de elementos, aquella a la cual se agrega el elemento.
+    // elemento puede ser cualquier dato.
+  if (!Mila.Lista.contieneA_(lista, elemento)) {
+    lista.push(elemento);
+  }
+};
+Mila.Lista._Definir_EnPrototipo_('Agregar_SiNoEstá', Array);
 
 Mila.Lista.Insertar_EnPosicion_ = function(lista, elemento, posicion) {
   // Inserta el elemento dado en la posición dada de la lista dada.

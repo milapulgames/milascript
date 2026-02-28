@@ -101,23 +101,28 @@ if (entorno.enNodeJs()) {
   Mila.exec = exec;
 } else {
   Mila._accesoArchivo = function(ruta, funcion) {
-    let pedido = new XMLHttpRequest();
-    try {
-      pedido.open("GET", ruta, true);
-      pedido.onreadystatechange = function() {
-        if (pedido.readyState == 4) {
-          const resultado = {};
-          if (pedido.status == 200) {
-            resultado.contenido = pedido.responseText;
-          } else {
-            resultado.error = pedido.status;
+    if (Mila._contenidoArchivoTemporal.ruta === ruta) {
+      // Tengo el contenido cacheado
+      funcion({contenido:Mila._contenidoArchivoTemporal.contenido});
+    } else {
+      let pedido = new XMLHttpRequest();
+      try {
+        pedido.open("GET", ruta, true);
+        pedido.onreadystatechange = function() {
+          if (pedido.readyState == 4) {
+            const resultado = {};
+            if (pedido.status == 200) {
+              resultado.contenido = pedido.responseText;
+            } else {
+              resultado.error = pedido.status;
+            }
+            funcion(resultado);
           }
-          funcion(resultado);
-        }
-      };
-      pedido.send("");
-    } catch (e) {
-      funcion({error: e});
+        };
+        pedido.send("");
+      } catch (e) {
+        funcion({error: e});
+      }
     }
   };
   Mila._AgregarCódigo = function(código, tipo) {
@@ -804,6 +809,19 @@ Mila.alIniciar = function(funcion) {
 
 Mila._Inicializar = function() {
   // Inicializa el sistema.
+  if (entorno.universo.compilado) {
+    // Actualizo los campos privados para reflejar la carga de los archivos como si se hubieran cargado con Mila.Cargar.
+    for (let script of document.getElementsByTagName("script")) {
+      let ruta = script.getAttribute('src');
+      if (ruta !== null) {
+        ruta = ruta.substring(0, ruta.length-3);
+        let tipoScript = script.getAttribute('type') === 'module' ? 'Mila' : "JS";
+        Mila._DeclararNuevoArchivo(ruta, tipoScript);
+        Mila._DeclararNuevaRutaDeArchivo(ruta, ruta);
+        Mila._AsignarEstadoArchivo(ruta, ESTADO_CONTENIDO_EJECUTADO);
+      }
+    }
+  }
   Mila.EjecutarInicializacionesPendientes();
 };
 
@@ -871,21 +889,37 @@ Mila._nombreDe_ = function(rutaOriginal) {
   return rutaOriginal.substring(ultimaDiagonal+1);
 };
 
+Mila._contenidoArchivoTemporal = {}; // En el navegador necesito dos accesos así que cachéo el contenido en el primero para devolverlo en el segundo.
+
 Mila._SiExisteArchivo_Entonces_YSiNo_ = function(ruta, funcionSi, funcionNo) {
   // Determina si existe un archivo en la ruta dada. En caso afirmativo invoca a la primera función dada.
   //   En caso negativo invoca a la segunda función dada.
-  // No funciona en el navegador.
-  Mila.fs().stat(ruta, (error, stats) => {
-    (error !== null && error !== undefined) || stats.isDirectory()
-    ? funcionNo()
-    : funcionSi()
-  });
+  if (entorno.enNodeJs()) {
+    Mila.fs().stat(ruta, (error, stats) => {
+      (error !== null && error !== undefined) || stats.isDirectory()
+      ? funcionNo()
+      : funcionSi()
+    });
+  } else {
+    Mila._accesoArchivo(ruta, function(resultado) {
+      if ('contenido' in resultado) {
+        Mila._contenidoArchivoTemporal = {
+          ruta, contenido:resultado.contenido
+        }
+        funcionSi();
+      } else {
+        funcionNo();
+      }
+    });
+  }
 };
 
 Mila._rutaAPartirDe_ = function(rutas) {
   // Describe la ruta resultante de concatenar las rutas en la lista de rutas dada.
-  // No funciona en el navegador.
-  return Mila.path().join(...rutas);
+  return (entorno.enNodeJs())
+    ? Mila.path().join(...rutas)
+    : rutas.join('/')
+  ;
 };
 
 Mila._rutaActual = function() {
