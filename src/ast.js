@@ -137,9 +137,16 @@ Mila.AST.nuevaRegEx = function(clase, atributos={}) {
 };
 
 Mila.AST.nuevoNodo = function(atributos={}) {
+  Mila.Contrato({
+    Propósito: ["Describe un nuevo nodo a partir de los atributos dados", Mila.Tipo.NodoAST],
+    Parámetros: [
+      [atributos, Mila.Tipo.AtributosNodoAST]
+    ]
+  });
+  let tipoNodo = 'tipoNodo' in atributos ? atributos.tipoNodo : "Nodo";
   let nuevoNodo = new Mila.AST._NodoAST(
-    'id' in atributos ? atributos.id : Mila.AST.nuevoIdPara_("Nodo"),
-    'tipoNodo' in atributos ? atributos.tipoNodo : "Nodo",
+    'id' in atributos ? atributos.id : Mila.AST.nuevoIdPara_(tipoNodo),
+    tipoNodo,
     'textoOriginal' in atributos ? atributos.textoOriginal : Mila.Nada
   );
   nuevoNodo.CambiarHijosA_('hijos' in atributos ? atributos.hijos : {});
@@ -283,12 +290,6 @@ Mila.AST._NodoAST.prototype.aTextoCompleto = function() {
     `\n${hijos.clavesDefinidas().transformados(x => `${s(nodo.hijos[x].nivel)}${x}:${hijos[x]}`).join('\n')}`}`});
 };
 
-// Esto podría ir en un módulo aparte:
-Mila.AST.idActual = {};
 Mila.AST.nuevoIdPara_ = function(categoria) {
-  if (!Mila.AST.idActual.defineLaClavePropia_(categoria)) {
-    Mila.AST.idActual[categoria] = 0;
-  }
-  Mila.AST.idActual[categoria]++;
-  return `_${Mila.AST.idActual[categoria]}`;
+  return `${categoria}_${Mila.Base.nuevoIdPara_(`AST_${categoria}`)}`;
 };
