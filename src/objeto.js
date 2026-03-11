@@ -19,40 +19,50 @@ Mila.Objeto._Definir_EnPrototipo_ = function(nombre, prototipo, posicionDeThis=0
   });
 };
 
-Mila.Objeto.clavesDefinidas = function(objeto, tambiénLasNoEnumerables=false) {
+Mila.Objeto.clavesDefinidas = function(objeto, tambiénLasNoEnumerables) {
   // Describe la lista de claves definidas en el objeto dado (no incluye las de su cadena de prototipos).
   // Si el segundo argumento es verdadero, incluye también las no enumerables (pero nuevamente, sólo las propias).
     // objeto puede ser cualquier dato.
-  return Object.keys(objeto);
+  return Object[
+    (tambiénLasNoEnumerables === true) ? 'getOwnPropertyNames' : 'keys'
+  ](objeto);
 };
 Mila.Objeto._Definir_EnPrototipo_('clavesDefinidas', Object);
 
-Mila.Objeto.valoresContenidos = function(objeto, tambiénLosNoEnumerables=false) {
+Mila.Objeto.valoresContenidos = function(objeto, tambiénLosNoEnumerables) {
   // Describe la lista de valores contenidos en el objeto dado (no incluye los de su cadena de prototipos).
   // Si el segundo argumento es verdadero, incluye también los de claves no enumerables (pero nuevamente, sólo las propias).
     // objeto puede ser cualquier dato.
-  return Object.keys(objeto).transformados(x => objeto[x]);
+  return Mila.Objeto.clavesDefinidas(objeto, (tambiénLosNoEnumerables === true)).transformados(x => objeto[x]);
 };
 Mila.Objeto._Definir_EnPrototipo_('valoresContenidos', Object);
 
-Mila.Objeto.mensajesQueSabeResponder = function(objeto, tambiénLosNoEnumerables=false) {
+Mila.Objeto.mensajesQueSabeResponder = function(objeto, tambiénLosNoEnumerables) {
   // Describe la lista de mensajes que el objeto dado sabe responder.
   // Si el segundo argumento es verdadero, incluye también los no enumerables.
     // objeto puede ser cualquier dato.
   let resultado = [];
-  for (let clave in objeto) {
-    resultado.push(clave);
+  if (tambiénLosNoEnumerables === true) {
+    let objetoActual = objeto;
+    do {
+      resultado.ConcatenarCon_SinRepetidos(Mila.Objeto.clavesDefinidas(objetoActual, true));
+      objetoActual = Object.getPrototypeOf(objetoActual);
+    } while (objetoActual !== null)
+  } else {
+    for (let clave in objeto) {
+      resultado.push(clave);
+    }
   }
-  return clave;
+  return resultado;
 };
 Mila.Objeto._Definir_EnPrototipo_('mensajesQueSabeResponder', Object);
 
-Mila.Objeto.clavesDefinidasYSusTipos = function(objeto, tambiénLasNoEnumerables=false) {
+Mila.Objeto.clavesDefinidasYSusTipos = function(objeto, tambiénLasNoEnumerables) {
   // Describe un objeto cuyas claves son las claves definidas en el objeto dado y sus valores son los
     // tipos de los campos correspondientes a cada clave.
   // Si el segundo argumento es verdadero, incluye también las no enumerables.
     // objeto puede ser cualquier dato.
-  return Mila.Objeto.transformados(objeto, (clave, valor) => valor.tipo());
+  return Mila.Objeto.transformados(objeto, (clave, valor) => valor.tipo(), (tambiénLasNoEnumerables === true));
 };
 Mila.Objeto._Definir_EnPrototipo_('clavesDefinidasYSusTipos', Object);
 
@@ -155,52 +165,56 @@ Mila.Objeto.cantidadDeClaves = function(objeto) {
   // Describe la cantidad de claves definidas por el objeto dado (no incluye las claves de sus cadena
     // de prototipos pero sí las no enumerables).
     // objeto puede ser cualquier dato.
-  return Mila.Lista.longitud(Mila.Objeto.clavesDefinidas(objeto));
+  return Mila.Lista.longitud(Mila.Objeto.clavesDefinidas(objeto, true));
 };
 Mila.Objeto._Definir_EnPrototipo_('cantidadDeClaves', Object);
 
-Mila.Objeto.copia = function(objeto, tambiénLasNoEnumerables=false) {
+Mila.Objeto.copia = function(objeto, tambiénLasNoEnumerables) {
   // Describe un objeto igual (con las mismas claves y valores y con el mismo prototipo) al dado.
   // Si el segundo argumento es verdadero, incluye también las claves no enumerables.
-  return Mila.Objeto.fold(objeto, function(clave, valor, rec) {
+  const resultado = Mila.Objeto.fold(objeto, function(clave, valor, rec) {
     return Mila.Objeto.conLaClave_YElValor_(rec, clave, Mila.Tipo.copia(valor));
-  }, {});
+  }, {}, (tambiénLasNoEnumerables === true));
+  Object.setPrototypeOf(resultado, Object.getPrototypeOf(objeto));
+  return resultado;
 };
 Mila.Objeto._Definir_EnPrototipo_('copia', Object);
 
-Mila.Objeto.transformados = function(objeto, funcion, tambiénLosNoEnumerables=false) {
+Mila.Objeto.transformados = function(objeto, funcion, tambiénLosNoEnumerables) {
   // Describe el resultado de aplicarle la función dada a cada valor del objeto dado.
   // Si el tercer argumento es verdadero, procesa también las claves no enumerables.
     // objeto puede ser cualquier dato.
     // funcion es una función que toma una cadena de texto (correspondiente a la clave) y un elemento (correspondiente al valor) y devuelve otro elemento.
   return Mila.Objeto.fold(objeto, function(clave, valor, rec) {
     return Mila.Objeto.conLaClave_YElValor_(rec, clave, funcion(clave, valor));
-  }, {});
+  }, {}, (tambiénLosNoEnumerables === true));
 };
 Mila.Objeto._Definir_EnPrototipo_('transformados', Object);
 
-Mila.Objeto.todosCumplen_ = function(objeto, condicion, tambiénLasNoEnumerables=false) {
+Mila.Objeto.todosCumplen_ = function(objeto, condicion, tambiénLasNoEnumerables) {
   // Indica si todos los pares clave-valor del objeto dado cumplen la condicion dada.
   // Si el tercer argumento es verdadero, procesa también las claves no enumerables.
     // objeto puede ser cualquier dato.
     // condicion es una función que toma una cadena de texto (correspondiente a la clave) y un elemento (correspondiente al valor) y devuelve un booleano.
-  return Mila.Objeto.fold(objeto, function(clave, valor, rec) { return condicion(clave, valor) && rec; }, true);
+  return Mila.Objeto.fold(objeto, function(clave, valor, rec) {
+    return condicion(clave, valor) && rec;
+  }, true, (tambiénLasNoEnumerables === true));
 };
 Mila.Objeto._Definir_EnPrototipo_('todosCumplen_', Object);
 
-Mila.Objeto.fold = function(objeto, funcion, casoBase, tambiénLasNoEnumerables=false) {
+Mila.Objeto.fold = function(objeto, funcion, casoBase, tambiénLasNoEnumerables) {
   // Describe el resultado de la recursión estructural sobre el objeto dado con *casoBase* como caso base y la función dada como caso recursivo.
   // Si el cuarto argumento es verdadero, procesa también las claves no enumerables.
     // objeto puede ser cualquier dato.
     // funcion es una función que toma una cadena de texto (correspondiente a la clave), un elemento (correspondiente al valor) y el resultado del llamado recursivo y devuelve un nuevo resultado.
     // casoBase puede ser cualquier dato.
-  let clavesRestantes = Mila.Objeto.clavesDefinidas(objeto);
+  let clavesRestantes = Mila.Objeto.clavesDefinidas(objeto, (tambiénLasNoEnumerables === true));
   return Mila.Lista.esVacia(clavesRestantes)
     ? casoBase
     : funcion(
       Mila.Lista.primero(clavesRestantes),
       objeto[Mila.Lista.primero(clavesRestantes)],
-      Mila.Objeto.fold(Mila.Objeto.sinLaClave_(objeto, Mila.Lista.primero(clavesRestantes)), funcion, casoBase)
+      Mila.Objeto.fold(Mila.Objeto.sinLaClave_(objeto, Mila.Lista.primero(clavesRestantes)), funcion, casoBase, (tambiénLasNoEnumerables === true))
     )
   ;
 };

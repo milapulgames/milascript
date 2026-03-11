@@ -292,6 +292,15 @@ Mila.Lista.ConcatenarCon_ = function(lista1, lista2) {
 };
 Mila.Lista._Definir_EnPrototipo_('ConcatenarCon_', Array);
 
+Mila.Lista.ConcatenarCon_SinRepetidos = function(lista1, lista2) {
+  // Concatena los elementos de la segunda lista dada (que no están en la primera) al final de la primera lista dada.
+    // Tanto lista1 como lista2 son listas de elementos.
+  lista2.forEach(function(elemento) {
+    Mila.Lista.Agregar_SiNoEstá(lista1, elemento);
+  });
+};
+Mila.Lista._Definir_EnPrototipo_('ConcatenarCon_SinRepetidos', Array);
+
 Mila.Lista.concatenadas = function(listaDeListas) {
   // Describe la concatenación entre las listas de la lista dada.
     // listaDeListas es una lista cuyos elementos también son listas.

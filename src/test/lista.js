@@ -84,6 +84,7 @@ Mila.alIniciar(() => {
   {i:"let a=[1,2,3];a.ConcatenarCon_([4,5,6]);a", o:[1,2,3,4,5,6],        d:"ConcatenarCon_ concatena la segunda lista a la primera lista"},
   {i:"let a=[1,2,3];let b=[4,5,6];a.ConcatenarCon_(b);b", o:[4,5,6],      d:"ConcatenarCon_ no modifica la segunda lista"},
 
+  // ConcatenarCon_SinRepetidos
   // concatenadas
   // mismosElementosQue_
 
