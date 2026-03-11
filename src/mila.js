@@ -453,7 +453,8 @@ Mila._IntentarCargarProximo = function() {
   // Intenta cargar uno de los archivos pendientes (si es que hay alguno).
     // PRE: Hay al menos uno por cargar.
   let stackARevisar = [];
-  Mila._CopiarDe_A_(Mila._archivosPendientes.siguientes, stackARevisar);
+  let yaRevisados = [];
+  Mila._CopiarDe_A_SinRepetidos(Mila._archivosPendientes.siguientes, stackARevisar);
   while (!( // Hasta que:
     stackARevisar.length == 0 // Ya los miré todos
       ||
@@ -461,8 +462,15 @@ Mila._IntentarCargarProximo = function() {
       ||
     Mila._hayQueEsperarParaAnalizar_(stackARevisar[0]) // Encuentro uno que no puedo analizar todavía
   )) {
-    Mila._CopiarDe_A_(Mila._dependenciasDe_(stackARevisar[0]), stackARevisar);
-    stackARevisar.shift(); // Saco el primero
+    Mila._CopiarDe_A_SinRepetidos(
+      Mila._dependenciasDe_(stackARevisar[0]).filter(x => // Agrego las dependecias ...
+        // (!yaRevisados.includes(x)) // que no haya revisado ya
+        //   &&
+        (Mila._archivosPendientes.siguientes.includes(x)) // y que estaba originalmente entre los pendientes
+      ),
+      stackARevisar
+    );
+    yaRevisados.push(stackARevisar.shift()); // Saco el primero y lo agrego a los ya revisados
   }
   if (stackARevisar.length > 0 && Mila._sePuedeAgregar_AlEntorno(stackARevisar[0])) {
     Mila._Agregar_AlEntorno(stackARevisar[0]);
@@ -541,10 +549,12 @@ Mila._esta_SiendoCargadoAhora = function(rutaArchivo) {
   return Mila._archivosPendientes.cargandoAhora.includes(rutaArchivo);
 };
 
-Mila._CopiarDe_A_ = function(listaFuente, listaDestino) {
+Mila._CopiarDe_A_SinRepetidos = function(listaFuente, listaDestino) {
   // Copiar todos los elementos de la primera lista dada a la segunda lista dada.
   for (let elemento of listaFuente) {
-    listaDestino.push(elemento);
+    // if (!listaDestino.includes(elemento)) {
+      listaDestino.push(elemento);
+    // }
   }
 };
 

@@ -25,7 +25,7 @@ Mila.Evento.RegistrarContexto = function(identificador) {
     Proposito: "Registrar un nuevo contexto a partir del identificador dado",
     Precondiciones: [
       "No hay definido un contexto con el identificador dado",
-      !Mila.Evento.Contexto.defineLaClavePropia_(identificador)
+      !Mila.Evento.Contexto.defineLaClave_(identificador)
     ],
     Parametros: [
       [identificador, Mila.Tipo.Texto]
@@ -47,7 +47,7 @@ Mila.Evento.Registrar = function(nombre, evento, funcion, contexto=Mila.Evento.c
       [contexto, Mila.Evento.Contexto]
     ]
   });
-  if (Mila.Evento._registroAcciones[contexto].defineLaClavePropia_(nombre)) {
+  if (Mila.Evento._registroAcciones[contexto].defineLaClave_(nombre)) {
     for (let iniciadorAnterior of Mila.Evento._registroAcciones[contexto][nombre].iniciadores) {
       delete Mila.Evento._registroEventos[contexto][iniciadorAnterior][nombre];
       if (Mila.Evento._registroEventos[contexto][iniciadorAnterior].clavesDefinidas().length == 0) {
@@ -61,7 +61,7 @@ Mila.Evento.Registrar = function(nombre, evento, funcion, contexto=Mila.Evento.c
   };
   for (let iniciador of evento.iniciadores()) {
     const claveIniciador = iniciador.clase();
-    if (!Mila.Evento._registroEventos[contexto].defineLaClavePropia_(claveIniciador)) {
+    if (!Mila.Evento._registroEventos[contexto].defineLaClave_(claveIniciador)) {
       Mila.Evento._registroEventos[contexto][claveIniciador] = {};
     }
     Mila.Evento._registroEventos[contexto][claveIniciador][nombre] = {
@@ -78,7 +78,7 @@ Mila.Evento.Habilitar = function(nombre, contexto=Mila.Evento.contextoGlobal) {
     Proposito: "Habilita la acción con el nombre dado en el contexto dado",
     Precondiciones:[
       "Hay registrada una acción con el nombre dado en el contexto dado",
-      Mila.Evento._registroAcciones[contexto].defineLaClavePropia_(nombre)
+      Mila.Evento._registroAcciones[contexto].defineLaClave_(nombre)
     ],
     Parametros: [
       [nombre, Mila.Tipo.Texto],
@@ -93,7 +93,7 @@ Mila.Evento.Deshabilitar = function(nombre, contexto=Mila.Evento.contextoGlobal)
     Proposito: "Deshabilita la acción con el nombre dado en el contexto dado",
     Precondiciones:[
       "Hay registrada una acción con el nombre dado en el contexto dado",
-      Mila.Evento._registroAcciones[contexto].defineLaClavePropia_(nombre)
+      Mila.Evento._registroAcciones[contexto].defineLaClave_(nombre)
     ],
     Parametros: [
       [nombre, Mila.Tipo.Texto],
@@ -119,7 +119,7 @@ Mila.Evento.Atender = function(evento) {
     Parametros: [evento, Mila.Tipo.Evento]
   });
   let clave = evento.clase();
-  if (Mila.Evento._eventosIntermediosEnProgreso.defineLaClavePropia_(clave)) {
+  if (Mila.Evento._eventosIntermediosEnProgreso.defineLaClave_(clave)) {
     const eventosIntermediosEnProgreso = Mila.Evento._eventosIntermediosEnProgreso[clave];
     delete Mila.Evento._eventosIntermediosEnProgreso[clave];
     for (let eventoIntermedio of eventosIntermediosEnProgreso) {
@@ -129,7 +129,7 @@ Mila.Evento.Atender = function(evento) {
     }
   }
   const registro = Mila.Evento._registroEventos[Mila.Evento.contextoActual];
-  if (registro.defineLaClavePropia_(clave)) {
+  if (registro.defineLaClave_(clave)) {
     for (let nombre in registro[clave]) {
       if (Mila.Evento._registroAcciones[Mila.Evento.contextoActual][nombre].habilitado) {
         let eventoEnRegistro = registro[clave][nombre];
@@ -149,7 +149,7 @@ Mila.Evento.Procesar = function(eventoEnRegistro, eventoOriginal) {
       [eventoOriginal, Mila.Tipo.Evento]
     ]
   });
-  const eventosAnteriores = eventoEnRegistro.defineLaClavePropia_('eventosAnteriores') ? eventoEnRegistro.eventosAnteriores : [];
+  const eventosAnteriores = eventoEnRegistro.defineLaClave_('eventosAnteriores') ? eventoEnRegistro.eventosAnteriores : [];
   eventosAnteriores.push(eventoOriginal);
   if (eventoEnRegistro.proximoEvento.esNada()) {
     Mila.Evento.Ejecutar(eventoEnRegistro.funcion, eventosAnteriores);

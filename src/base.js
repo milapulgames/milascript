@@ -137,7 +137,7 @@ Mila.Base.ReemplazarFuncion_De_Por_ = function(nombreFuncion, objeto, nuevaFunci
 
 Mila.Base.idActual = {};
 Mila.Base.nuevoIdPara_ = function(categoria) {
-  if (!Mila.Base.idActual.defineLaClavePropia_(categoria)) {
+  if (!Mila.Base.idActual.defineLaClave_(categoria)) {
     Mila.Base.idActual[categoria] = 0;
   }
   Mila.Base.idActual[categoria]++;

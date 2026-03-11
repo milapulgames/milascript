@@ -162,7 +162,7 @@ Mila.AST.nuevoNodoDeTipo_ = function(tipoNodo) {
 Mila.AST._Nodo.prototype.CambiarHijosA_ = function(nuevosHijos) {
   for (let hijoViejo in this.hijos) {
     if (
-      !nuevosHijos.defineLaClavePropia_(hijoViejo) ||
+      !nuevosHijos.defineLaClave_(hijoViejo) ||
       (nuevosHijos[hijoViejo].esUnaLista() && this[hijoViejo].length == 0) ||
       (!nuevosHijos[hijoViejo].esUnaLista() && this[hijoViejo].length != 0)
     ) {
@@ -170,7 +170,7 @@ Mila.AST._Nodo.prototype.CambiarHijosA_ = function(nuevosHijos) {
     }
   }
   for (let hijoNuevo in nuevosHijos) {
-    if (!this.hijos.defineLaClavePropia_(hijoNuevo)) {
+    if (!this.hijos.defineLaClave_(hijoNuevo)) {
       if (nuevosHijos[hijoNuevo].esUnaLista()) {
         this[hijoNuevo] = function(i) {
           if (Mila.Tipo.esNada(i)) {
@@ -231,12 +231,12 @@ Mila.AST._Nodo.prototype.CambiarCampo_A_ = function(clave, nuevoValor) {
 
 Mila.AST._Nodo.prototype.CambiarCamposA_ = function(nuevosCampos) {
   for (let campoViejo in this.campos) {
-    if (!nuevosCampos.defineLaClavePropia_(campoViejo)) {
+    if (!nuevosCampos.defineLaClave_(campoViejo)) {
       delete this[campoViejo];
     }
   }
   for (let campoNuevo in nuevosCampos) {
-    if (!this.campos.defineLaClavePropia_(campoNuevo)) {
+    if (!this.campos.defineLaClave_(campoNuevo)) {
       this[campoNuevo] = function() {
         return this.campos[campoNuevo];
       }
@@ -266,7 +266,7 @@ Mila.AST._NodoAST.prototype.NivelarHijo_ = function(clave) {
 
 Mila.AST._Nodo.prototype.fold = function(mapaDeFunciones) {
   let clave = this.tipoNodo.aTexto();
-  if (!mapaDeFunciones.defineLaClavePropia_(clave)) {
+  if (!mapaDeFunciones.defineLaClave_(clave)) {
     clave = "Nodo";
   }
   return mapaDeFunciones[clave](this, this.hijos.transformados(function(clave, valor) {
