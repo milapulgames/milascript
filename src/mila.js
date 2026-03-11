@@ -464,9 +464,7 @@ Mila._IntentarCargarProximo = function() {
   )) {
     Mila._CopiarDe_A_SinRepetidos(
       Mila._dependenciasDe_(stackARevisar[0]).filter(x => // Agrego las dependecias ...
-        // (!yaRevisados.includes(x)) // que no haya revisado ya
-        //   &&
-        (Mila._archivosPendientes.siguientes.includes(x)) // y que estaba originalmente entre los pendientes
+        (!yaRevisados.includes(x)) // que no haya revisado ya
       ),
       stackARevisar
     );
@@ -569,7 +567,20 @@ Mila._EmpezarACargar_ = function(rutaArchivo) {
 Mila._RegistrarDependenciaDe_A_ = function(ruta, dependencia) {
   // Registra al segundo archivo dado como una dependencia del primer archivo dado.
     // Tando rutaArchivo como dependencia son cadenas de texto correspondientes a las rutas absolutas de dos archivos.
+  if (Mila._hayDependenciaIndirectaDe_A_(ruta, dependencia)) {
+    Mila._Fallar(`Dependencia circular detectada entre ${dependencia} y ${ruta}.`);
+  }
   Mila._dependientesDeArchivo(dependencia).push(ruta);
+};
+
+Mila._hayDependenciaIndirectaDe_A_ = function(archivo1, archivo2) {
+  // Indice si se puede llegar desde archivo1 hasta archivo2 navegando las dependencias.
+  const todasLasDependencias = [];
+  Mila._CopiarDe_A_SinRepetidos(Mila._dependientesDeArchivo(archivo1),todasLasDependencias);
+  while (todasLasDependencias.length > 0 && !todasLasDependencias.includes(archivo2)) {
+    Mila._CopiarDe_A_SinRepetidos(Mila._dependientesDeArchivo(todasLasDependencias.shift()),todasLasDependencias);
+  }
+  return todasLasDependencias.includes(archivo2);
 };
 
 Mila._Ajustar_Para_ = function(configuración, rutaArchivo) {
@@ -968,13 +979,14 @@ if (entorno.universo.compilado) {
       Mila._RegistrarRaizMila(process.argv[i]);
 
       const inicialización = function() {
-        let funcionFalla = (rutaScript) => Mila._Fallar(`Ruta inválida: ${rutaScript}`);
+        let funciónFalla = (rutaScript) => Mila._Fallar(`Ruta inválida: ${rutaScript}`);
         if (entorno.argumentos.lista.length == 0) {
           entorno.argumentos.lista = ['interact'];
-          funcionFalla = (rutaScript) => Mila._Fallar(`No se pasa ningún script de Mila.`);
+          funciónFalla = (rutaScript) => Mila._Fallar(`No se pasa ningún script de Mila.`);
         }
         Mila.ProcesarArgumentosMila(entorno.argumentos);
         let rutaScript = entorno.argumentos.lista.splice(0,1)[0];
+        if (rutaScript.endsWith('.js')) { rutaScript = rutaScript.slice(0,-3); }
         Mila._SiExisteArchivo_Entonces_YSiNo_(
           `${rutaScript}.js`,
           () => Mila.Cargar(rutaScript),
@@ -983,7 +995,7 @@ if (entorno.universo.compilado) {
             Mila._SiExisteArchivo_Entonces_YSiNo_(
               rutaScriptInterno,
               () => Mila.Cargar(rutaScriptInterno),
-              funcionFalla
+              () => funciónFalla(rutaScriptInterno)
             )
           }
         );
