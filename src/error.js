@@ -18,8 +18,11 @@ Mila.Fallar = function(error) {
       [error, Mila.Tipo.O([Mila.Tipo.Texto, Mila.Tipo.Error])]
     ]
   });
-  console.log(error.descripción());
-  console.error(error);
+  if (error.esUnTexto()) {
+    console.error(error);
+  } else {
+    console.log(error.descripción());
+  }
 };
 
 Mila.Advertir = function(advertencia) {
@@ -136,7 +139,15 @@ Mila.Error._ResultadoParcial.prototype.falló = function() {
 
 Mila.Idioma.AgregarDirectorio_(Mila.Archivo.rutaAPartirDe_(['$milascript','msg','error']), "ERROR");
 
+// Errores de Mila.Lista
+
 Mila.Error.Declarar('TamañoListaDistinto', 'deTamañoListaDistinto', [
   ['lista', Mila.Tipo.Lista],
   ['tamañoEsperado', Mila.Tipo.Entero]
+]);
+
+// Errores de Mila.Archivo
+
+Mila.Error.Declarar('CarpetaYaExiste', 'deCarpetaYaExistente', [
+  ['ruta', Mila.Tipo.Texto]
 ]);

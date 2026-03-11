@@ -1,6 +1,6 @@
 Mila.Modulo({
   define:"Mila.Archivo",
-  necesita:["error"]
+  usa:["error"]
 });
 
 // Primitivas de entorno
@@ -274,7 +274,3 @@ Mila.Archivo.CopiarCarpeta_En_YLuego_ = function(carpetaACopiar, destino, funci√
     }
   );
 };
-
-Mila.Error.Declarar('CarpetaYaExiste', 'deCarpetaYaExistente', [
-  ['ruta', Mila.Tipo.Texto]
-]);
