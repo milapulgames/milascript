@@ -1,6 +1,6 @@
 Mila.Modulo({
   define:"Mila.Archivo",
-  usa:["error"]
+  necesita:["error"]
 });
 
 // Primitivas de entorno
@@ -13,7 +13,17 @@ Mila.Modulo({
     No funciona en el navegador.
   Mila.Archivo._solicitudArchivo : Solicita al usuario seleccionar una ruta. Tomo una función de un parámetro, correspondiente a la función a
     ejecutar con el contenido (como texto) del archivo seleccionado.
+    Si la función es de dos parámetros se pasa primero el nombre del archivo seleccionado y luego su contenido.
 */
+
+Mila.Archivo._invocaciónA_ConResultadoParcial = function(funciónOriginal) {
+  return (error) => {
+    funciónOriginal(Mila.Tipo.esAlgo(error)
+      ? Mila.Error.resultadoParcialFallo(error)
+      : Mila.Error.resultadoParcialOk()
+    );
+  }
+};
 
 Mila.Archivo._accesoArchivo = function(ruta, funcion) {
   // Sólo convierte el resultado a uno de tipo ResultadoParcial
@@ -26,22 +36,17 @@ Mila.Archivo._accesoArchivo = function(ruta, funcion) {
 };
 
 if (Mila.entorno().enNodeJs()) {
-  Mila.Archivo._escrituraArchivo = function(ruta, contenido, funcion) {
-    Mila.fs().writeFile(ruta, contenido, (error) => {
-      funcion(Mila.Tipo.esAlgo(error)
-        ? Mila.Error.resultadoParcialFallo(error)
-        : Mila.Error.resultadoParcialOk()
-      );
-    });
+  Mila.Archivo._escrituraArchivo = function(ruta, contenido, función) {
+    Mila.fs().writeFile(ruta, contenido, Mila.Archivo._invocaciónA_ConResultadoParcial(función));
   };
-  Mila.Archivo._solicitudArchivo = function(funcion) {
+  Mila.Archivo._solicitudArchivo = function(función) {
     // TODO
   };
 } else {
-  Mila.Archivo._escrituraArchivo = function(ruta, contenido, funcion) {
+  Mila.Archivo._escrituraArchivo = function(ruta, contenido, función) {
     Mila.Fallar("No se puede escribir un archivo desde el navegador");
   };
-  Mila.Archivo._solicitudArchivo = function(funcion) {
+  Mila.Archivo._solicitudArchivo = function(función) {
     const selector = document.createElement('input');
     selector.type = 'file';
     selector.onchange = e => {
@@ -50,10 +55,10 @@ if (Mila.entorno().enNodeJs()) {
       lector.readAsText(archivoSeleccionado, 'UTF-8');
       lector.onload = readerEvent => {
         let contenidoArchivo = readerEvent.target.result;
-        if (funcion.length == 2) {
-          funcion(archivoSeleccionado.name, contenidoArchivo);
+        if (función.length == 2) {
+          función(archivoSeleccionado.name, contenidoArchivo);
         } else {
-          funcion(contenidoArchivo);
+          función(contenidoArchivo);
         }
       };
     };
@@ -61,28 +66,28 @@ if (Mila.entorno().enNodeJs()) {
   };
 }
 
-Mila.Archivo.AbrirArchivo_YLuego_ = function(ruta, funcion) {
+Mila.Archivo.AbrirArchivo_YLuego_ = function(ruta, función) {
   // Toma una cadena de texto correspondiente a la ruta de un archivo y una función de un parámetro.
   // Abre el archivo y luego invoca a la función pasándole como argumento el resultado parcial de la
   //   operación (un objeto de tipo ResultadoParcial).
   // PRE: existe un archivo con acceso de lectura en la ruta dada.
-  Mila.Archivo._accesoArchivo(ruta, funcion);
+  Mila.Archivo._accesoArchivo(ruta, función);
 };
 
-Mila.Archivo.Escribir_EnElArchivo_YLuego_ = function(contenido, ruta, funcion) {
+Mila.Archivo.Escribir_EnElArchivo_YLuego_ = function(contenido, ruta, función) {
   // Toma una primera cadena de texto correspondiente al contenido a escribir, una segunda cadena de texto correspondiente
   //   a la ruta de un archivo y una función de un parámetro. Abre el archivo en la ruta dada, escribe en él el contenido dado
   //   y luego invoca a la función pasándole como argumento el resultado parcial de la operación (un objeto de tipo ResultadoParcial).
   // PRE: existe un archivo con acceso de escritura en la ruta dada o se puede crear un archivo en la ruta dada.
   // No funciona en el navegador.
-  Mila.Archivo._escrituraArchivo(ruta, contenido, funcion);
+  Mila.Archivo._escrituraArchivo(ruta, contenido, función);
 };
 
-Mila.Archivo.SolicitarArchivoYLuego_ = function(funcion) {
+Mila.Archivo.SolicitarArchivoYLuego_ = function(función) {
   // Solicita al usuario seleccionar una ruta. Toma una función de un parámetro, correspondiente a la función a ejecutar
   //   con el contenido (como texto) del archivo seleccionado.
   // Si la función es de dos parámetros se pasa primero el nombre del archivo seleccionado y luego su contenido.
-  Mila.Archivo._solicitudArchivo(funcion);
+  Mila.Archivo._solicitudArchivo(función);
 };
 
 // Alias de Mila._nombreDe_ (ver el archivo mila.js).
@@ -119,28 +124,28 @@ Mila.Archivo.NavegarA_ = function(ruta) {
   Mila.os().chdir(ruta);
 };
 
-Mila.Archivo.SiExisteRuta_Entonces_YSiNo_ = function(ruta, funcionSi, funcionNo) {
+Mila.Archivo.SiExisteRuta_Entonces_YSiNo_ = function(ruta, funciónSi, funciónNo) {
   // Determina si existe un archivo o una carpeta en la ruta dada. En caso afirmativo invoca a la primera función dada.
   //   En caso negativo invoca a la segunda función dada.
   // No funciona en el navegador.
   Mila.fs().access(ruta, Mila.fs().constants.F_OK, (error) =>
     Mila.Tipo.esAlgo(error)
-    ? funcionNo()
-    : funcionSi()
+    ? funciónNo()
+    : funciónSi()
   );
 };
 
 // Alias de Mila._SiExisteArchivo_Entonces_YSiNo_ (ver el archivo mila.js).
 Mila.Archivo.SiExisteArchivo_Entonces_YSiNo_ = Mila._SiExisteArchivo_Entonces_YSiNo_;
 
-Mila.Archivo.SiExisteCarpeta_Entonces_YSiNo_ = function(ruta, funcionSi, funcionNo) {
+Mila.Archivo.SiExisteCarpeta_Entonces_YSiNo_ = function(ruta, funciónSi, funciónNo) {
   // Determina si existe una carpeta en la ruta dada. En caso afirmativo invoca a la primera función dada.
   //   En caso negativo invoca a la segunda función dada.
   // No funciona en el navegador.
   Mila.fs().stat(ruta, (error, stats) =>
     Mila.Tipo.esAlgo(error) || !stats.isDirectory()
-    ? funcionNo()
-    : funcionSi()
+    ? funciónNo()
+    : funciónSi()
   );
 };
 
@@ -221,12 +226,7 @@ Mila.Archivo.CrearCarpeta_YLuego_ = function(ruta, función) {
   //   dada y luego invoca a la función pasándole como argumento el resultado parcial de la operación (un objeto de tipo ResultadoParcial).
   // PRE: no existe una carpeta en la ruta dada.
   // No funciona en el navegador.
-  Mila.fs().mkdir(ruta, {recursive: true}, (error) => {
-    función(Mila.Tipo.esAlgo(error)
-      ? Mila.Error.resultadoParcialFallo(error)
-      : Mila.Error.resultadoParcialOk()
-    );
-  });
+  Mila.fs().mkdir(ruta, {recursive: true}, Mila.Archivo._invocaciónA_ConResultadoParcial(función));
 };
 
 Mila.Archivo.CrearEnlaceA_En_YLuego_ = function(destino, nombre, función) {
@@ -237,10 +237,44 @@ Mila.Archivo.CrearEnlaceA_En_YLuego_ = function(destino, nombre, función) {
   // PRE: no existe un archivo ni una carpeta con el nombre dado
   // PRE: existe una carpeta o un archivo en la ruta destino dada.
   // No funciona en el navegador.
-  Mila.fs().symlink(destino, nombre, (error) => {
-    función(Mila.Tipo.esAlgo(error)
-      ? Mila.Error.resultadoParcialFallo(error)
-      : Mila.Error.resultadoParcialOk()
-    );
-  })
+  Mila.fs().symlink(destino, nombre, Mila.Archivo._invocaciónA_ConResultadoParcial(función));
 };
+
+Mila.Archivo.CopiarArchivo_En_YLuego_ = function(archivoACopiar, destino, función) {
+  // Toma una primera cadena de texto correspondiente a la ruta del archivo a copiar, una segunda cadena de texto
+  //   correspondiente al destino del nuevo archivo y una función de un parámetro. Copia el archivo que está en la primera
+  //   ruta dada, lo pega en la segunda ruta dada y luego invoca a la función dada pasándole como argumento el resultado
+  //   parcial de la operación (un objeto de tipo ResultadoParcial).
+  // PRE: existe un archivo en la primera ruta dada.
+  // PRE: existe una carpeta en la segunda ruta dada.
+  // No funciona en el navegador.
+  Mila.fs().copyFile(archivoACopiar, destino, Mila.Archivo._invocaciónA_ConResultadoParcial(función));
+};
+
+Mila.Archivo.CopiarCarpeta_En_YLuego_ = function(carpetaACopiar, destino, función) {
+  // Toma una primera cadena de texto correspondiente a la ruta de la carpeta a copiar, una segunda cadena de texto
+  //   correspondiente al destino de la nueva carpeta y una función de un parámetro. Copia la carpeta que está en la primera
+  //   ruta dada, lo pega en la segunda ruta dada y luego invoca a la función dada pasándole como argumento el resultado
+  //   parcial de la operación (un objeto de tipo ResultadoParcial).
+  // PRE: existe una carpeta en la primera ruta dada.
+  // PRE: existe una carpeta en la segunda ruta dada.
+  // No funciona en el navegador.
+  let nombreCarpeta = Mila.Archivo.nombreDe_(carpetaACopiar);
+  let carpetaDestino = Mila.Archivo.rutaAPartirDe_([destino, nombreCarpeta]);
+  Mila.Archivo.SiExisteCarpeta_Entonces_YSiNo_(carpetaDestino,
+    () => función(Mila.Error.resultadoParcialFallo(Mila.Error.deCarpetaYaExistente(carpetaDestino))),
+    () => {
+      Mila.Archivo.CrearCarpeta_YLuego_(carpetaDestino, (resultado) => {
+        if (resultado.falló()) {
+          función(resultado);
+        } else {
+          Mila.fs().cp(carpetaACopiar, carpetaDestino, {recursive: true}, Mila.Archivo._invocaciónA_ConResultadoParcial(función));
+        }
+      });
+    }
+  );
+};
+
+Mila.Error.Declarar('CarpetaYaExiste', 'deCarpetaYaExistente', [
+  ['ruta', Mila.Tipo.Texto]
+]);
