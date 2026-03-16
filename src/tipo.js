@@ -902,7 +902,8 @@ Mila.Tipo.copia = function(elemento) {
     return tipo.copia(elemento);
   }
   return elemento;
-}
+};
+Mila.Tipo._Definir_EnPrototipo_('copia', Object);
 
 // Tipo Tipo: el tipo de los tipos.
 

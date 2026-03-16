@@ -149,9 +149,9 @@ Mila.Pantalla._Panel.prototype.MinimizarAncho = function(anchoInvertido, rectang
       : this._elementos.transformados(x=>x.anchoHtml()).maximo()
     )
   );
-  this._nodoHtml.style.width = `${anchuraMinima}px`;
+  this.CambiarAnchoA_(anchuraMinima);
   if (anchoInvertido) {
-    this._nodoHtml.style.top = `${rectanguloCompleto.x + rectanguloCompleto.ancho - anchuraMinima - 2*this._grosorBorde}px`;
+    this.CambiarPosiciónXA_(rectanguloCompleto.x + rectanguloCompleto.ancho - anchuraMinima - 2*this._grosorBorde)
   }
 };
 
@@ -176,9 +176,9 @@ Mila.Pantalla._Panel.prototype.MinimizarAlto = function(altoInvertido, rectangul
       : this._elementos.transformados(x=>x.altoHtml()).fold((x,y)=>x+y,0)
     )
   );
-  this._nodoHtml.style.height = `${alturaMinima}px`;
+  this.CambiarAltoA_(alturaMinima);
   if (altoInvertido) {
-    this._nodoHtml.style.top = `${rectanguloCompleto.y + rectanguloCompleto.alto - alturaMinima - 2*this._grosorBorde}px`;
+    this.CambiarPosiciónYA_(rectanguloCompleto.y + rectanguloCompleto.alto - alturaMinima - 2*this._grosorBorde);
   }
 };
 

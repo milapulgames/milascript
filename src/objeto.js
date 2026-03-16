@@ -178,7 +178,6 @@ Mila.Objeto.copia = function(objeto, tambiénLasNoEnumerables) {
   Object.setPrototypeOf(resultado, Object.getPrototypeOf(objeto));
   return resultado;
 };
-Mila.Objeto._Definir_EnPrototipo_('copia', Object);
 
 Mila.Objeto.transformados = function(objeto, funcion, tambiénLosNoEnumerables) {
   // Describe el resultado de aplicarle la función dada a cada valor del objeto dado.
