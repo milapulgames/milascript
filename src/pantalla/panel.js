@@ -49,6 +49,7 @@ Mila.Pantalla._Panel.prototype.AgregarElemento_ = function(nuevoElemento) {
       [nuevoElemento, Mila.Tipo.ElementoVisual]
     ]
   });
+  nuevoElemento._elementoMadre = this;
   this._elementos.push(nuevoElemento);
 };
 
@@ -59,12 +60,18 @@ Mila.Pantalla._Panel.prototype.CambiarElementosA_ = function(nuevosElementos) {
       [nuevosElementos, Mila.Tipo.O([Mila.Tipo.ElementoVisual, Mila.Tipo.ListaDe_(Mila.Tipo.ElementoVisual)])]
     ]
   });
+  for (let e of this._elementos || []) {
+    e._elementoMadre = Mila.Nada;
+  }
   if ('_nodoHtml' in this) {
-    for (let e of this._elementos) {
+    for (let e of this._elementos || []) {
       e.QuitarDelHtml();
     }
   }
   this._elementos = nuevosElementos.esUnaLista() ? nuevosElementos : [nuevosElementos];
+  for (let e of this._elementos) {
+    e._elementoMadre = this;
+  }
   if ('_nodoHtml' in this) {
     for (let e of this._elementos) {
       e.PlasmarEnHtml(this._nodoHtml);
@@ -145,13 +152,15 @@ Mila.Pantalla._Panel.prototype.MinimizarAncho = function(anchoInvertido, rectang
   const anchuraMinima = this.anchoBarraScroll() + (this._elementos.esVacia()
     ? 0
     : (this._disposicion.eje == Mila.Pantalla.Eje.Horizontal
-      ? this._elementos.transformados(x=>x.anchoHtml()).fold((x,y)=>x+y,0)
-      : this._elementos.transformados(x=>x.anchoHtml()).maximo()
+      ? this._elementos.transformados(x=>x.ancho()).fold((x,y)=>x+y,0)
+      : this._elementos.transformados(x=>x.ancho()).maximo()
     )
   );
-  this.CambiarAnchoA_(anchuraMinima);
+  this._ancho = anchuraMinima;
+  this._nodoHtml.style.width = `${anchuraMinima}px`;
   if (anchoInvertido) {
-    this.CambiarPosiciónXA_(rectanguloCompleto.x + rectanguloCompleto.ancho - anchuraMinima - 2*this._grosorBorde)
+    this._posiciónX = rectanguloCompleto.x + rectanguloCompleto.ancho - anchuraMinima - 2*this._grosorBorde;
+    this._nodoHtml.style.left = `${this._posiciónX}px`;
   }
 };
 
@@ -172,13 +181,15 @@ Mila.Pantalla._Panel.prototype.MinimizarAlto = function(altoInvertido, rectangul
   const alturaMinima = this.altoBarraScroll() + (this._elementos.esVacia()
     ? 0
     : (this._disposicion.eje == Mila.Pantalla.Eje.Horizontal
-      ? this._elementos.transformados(x=>x.altoHtml()).maximo()
-      : this._elementos.transformados(x=>x.altoHtml()).fold((x,y)=>x+y,0)
+      ? this._elementos.transformados(x=>x.alto()).maximo()
+      : this._elementos.transformados(x=>x.alto()).fold((x,y)=>x+y,0)
     )
   );
-  this.CambiarAltoA_(alturaMinima);
+  this._alto = alturaMinima;
+  this._nodoHtml.style.height = `${alturaMinima}px`;
   if (altoInvertido) {
-    this.CambiarPosiciónYA_(rectanguloCompleto.y + rectanguloCompleto.alto - alturaMinima - 2*this._grosorBorde);
+    this._posiciónY = rectanguloCompleto.y + rectanguloCompleto.alto - alturaMinima - 2*this._grosorBorde;
+    this._nodoHtml.style.top = `${this._posiciónY}px`;
   }
 };
 

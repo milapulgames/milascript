@@ -1,5 +1,3 @@
-// TODO: separar 'ancho' y 'alto' de 'comportamientoAncho' y 'comportamientoAlto' (como hice con la posición)
-
 Mila.Modulo({
   define:"Mila.Pantalla",
   usa:["base","pantalla/panel"],
@@ -10,7 +8,7 @@ Mila.Pantalla._pantallas = {};
 Mila.Pantalla._pantallaActual = Mila.Nada;
 
 Mila.Pantalla.Constantes = {
-  grosorBarraScroll: 15.5,
+  grosorBarraScroll: 18.5,
   offsetVentana: 2 // Ojo: En Firefox es 3
 };
 
@@ -132,8 +130,32 @@ Mila.Pantalla._ElementoVisual.prototype.Inicializar = function(atributos, porDef
   if (funcion.esAlgo()) {
     this.CambiarFuncionA_(funcion);
   }
+  this._elementoMadre = Mila.Nada;
   this._idÚnico = Mila.Pantalla.nuevoId();
   Mila.Pantalla.mapaElementos[this._idÚnico] = this;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.atributos = function() {
+  Mila.Contrato({
+    Proposito: ["Describir los atributos de este elemento visual", Mila.Tipo.AtributosElementoVisual]
+  });
+  const atributos = {
+    posiciónX:this.comportamientoPosiciónX(),
+    posiciónY:this.comportamientoPosiciónY(),
+    ancho:this.comportamientoAncho(),
+    alto:this.comportamientoAlto(),
+    colorFondo:this._colorFondo,
+    grosorBorde:this._grosorBorde,
+    colorBorde:this._colorBorde,
+    margenInterno:this._margenInterno,
+    margenExterno:this._margenExterno,
+    cssAdicional:this._css,
+    visible:this.visible()
+  };
+  if ('_funcion' in this) {
+    atributos.funcion = this._funcion;
+  }
+  return atributos;
 };
 
 Mila.Tipo.Registrar({
@@ -171,7 +193,17 @@ Mila.Pantalla._ElementoVisualTextual.prototype.Inicializar = function(atributos,
     ? todosLosAtributos.texto
     : ''
   );
-}
+};
+
+Mila.Pantalla._ElementoVisualTextual.prototype.atributos = function() {
+  Mila.Contrato({
+    Proposito: ["Describir los atributos de este elemento visual textual", Mila.Tipo.AtributosElementoArrastrable]
+  });
+  return Object.assign({
+    tamanioLetra: this._tamanioLetra,
+    colorTexto: this._colorTexto
+  }, Mila.Pantalla._ElementoVisual.prototype.atributos.call(this));
+};
 
 Mila.Pantalla._ElementoVisual.prototype.rectanguloInterno = function(rectanguloCompleto) {
   Mila.Contrato({
@@ -246,12 +278,24 @@ Mila.Pantalla._ElementoVisual.prototype.rectanguloInterno = function(rectanguloC
       Math.abs(rectangulo.alto)
     );
   }
-  if (this.comportamientoPosiciónX().esNada()) {
-    this._posiciónX = resultado.x;
-  }
-  if (this.comportamientoPosiciónY().esNada()) {
-    this._posiciónY = resultado.y;
-  }
+
+  // ¿Lo hago siempre o sólo cuando no es un número fijo?
+  this._posiciónX = resultado.x;
+  this._posiciónY = resultado.y;
+  this._alto = resultado.alto;
+  this._ancho = resultado.ancho;
+  // if (this.comportamientoPosiciónX().esNada()) {
+  //   this._posiciónX = resultado.x;
+  // }
+  // if (this.comportamientoPosiciónY().esNada()) {
+  //   this._posiciónY = resultado.y;
+  // }
+  // if (!this.comportamientoAlto().esUnNumero()) {
+  //   this._alto = resultado.alto;
+  // }
+  // if (!this.comportamientoAlto().esUnNumero()) {
+  //   this._ancho = resultado.ancho;
+  // }
   return resultado;
 };
 
@@ -356,6 +400,16 @@ Mila.Pantalla._ElementoVisual.prototype.posiciónX = function() {
   return this._posiciónX;
 };
 
+Mila.Pantalla._ElementoVisual.prototype.posiciónXEnPantalla = function() {
+  Mila.Contrato({
+    Proposito: [
+      "Describir la posición en el eje X de este elemento visual respecto al origen de la pantalla .",
+      Mila.Tipo.Entero
+    ],
+  });
+  return this._posiciónX + (this._elementoMadre.esAlgo() ? this._elementoMadre.posiciónXEnPantalla() : 0);
+};
+
 Mila.Pantalla._ElementoVisual.prototype.comportamientoPosiciónY = function() {
   Mila.Contrato({
     Proposito: [
@@ -370,11 +424,21 @@ Mila.Pantalla._ElementoVisual.prototype.comportamientoPosiciónY = function() {
 Mila.Pantalla._ElementoVisual.prototype.posiciónY = function() {
   Mila.Contrato({
     Proposito: [
-      "Describir la posición en el eje Y de este elemento visual.",
+      "Describir la posición en el eje Y de este elemento visual respecto a su elemento madre.",
       Mila.Tipo.Entero
     ],
   });
   return this._posiciónY;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.posiciónYEnPantalla = function() {
+  Mila.Contrato({
+    Proposito: [
+      "Describir la posición en el eje Y de este elemento visual respecto al origen de la pantalla .",
+      Mila.Tipo.Entero
+    ],
+  });
+  return this._posiciónY + (this._elementoMadre.esAlgo() ? this._elementoMadre.posiciónYEnPantalla() : 0);
 };
 
 Mila.Pantalla._ElementoVisual.prototype.comportamientoAncho = function() {
@@ -386,11 +450,6 @@ Mila.Pantalla._ElementoVisual.prototype.comportamientoAncho = function() {
     ],
   });
   return this._comportamientoAncho;
-  // if ('_ancho' in this) {
-  //   return this._ancho;
-  // } else if ('_nodoHtml' in this) {
-  //   return this.anchoHtml();
-  // }
 };
 
 Mila.Pantalla._ElementoVisual.prototype.ancho = function() {
@@ -400,12 +459,10 @@ Mila.Pantalla._ElementoVisual.prototype.ancho = function() {
       Mila.Tipo.Entero
     ],
   });
-  return this._ancho;
-  // if ('_ancho' in this) {
-  //   return this._ancho;
-  // } else if ('_nodoHtml' in this) {
+  // if ('_nodoHtml' in this) {
   //   return this.anchoHtml();
   // }
+  return this._ancho;
 };
 
 // Mila.Pantalla._ElementoVisual.prototype.anchoHtml = function() {
@@ -467,11 +524,6 @@ Mila.Pantalla._ElementoVisual.prototype.comportamientoAlto = function() {
     ],
   });
   return this._comportamientoAlto
-  // if ('_alto' in this) {
-  //   return this._alto;
-  // } else if ('_nodoHtml' in this) {
-  //   return this.altoHtml();
-  // }
 };
 
 Mila.Pantalla._ElementoVisual.prototype.alto = function() {
@@ -481,12 +533,10 @@ Mila.Pantalla._ElementoVisual.prototype.alto = function() {
       Mila.Tipo.Entero
     ],
   });
-  return this._alto;
-  // if ('_alto' in this) {
-  //   return this._alto;
-  // } else if ('_nodoHtml' in this) {
+  // if ('_nodoHtml' in this) {
   //   return this.altoHtml();
   // }
+  return this._alto;
 };
 
 // Mila.Pantalla._ElementoVisual.prototype.altoHtml = function() {
@@ -828,6 +878,21 @@ Mila.Pantalla._ElementoVisual.prototype.margenExternoInferior = function() {
     ]
   });
   return this._margenExterno.esUnNumero() ? this._margenExterno : this._margenExterno.alto;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.área = function() {
+  Mila.Contrato({
+    Proposito: [
+      "Describir el área que ocupa este elemento visual",
+      Mila.Tipo.Rectangulo
+    ]
+  });
+  return Mila.Geometria.rectanguloEn__De_x_(
+    this.posiciónXEnPantalla(),
+    this.posiciónYEnPantalla(),
+    this.ancho(),
+    this.alto()
+  );
 };
 
 Mila.Pantalla._ElementoVisual.prototype.QuitarDelHtml = function() {
