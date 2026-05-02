@@ -53,6 +53,7 @@ Mila.alIniciar(() => {
   {i:"let a=[1,2,3,4,5];a.Agregar_AlFinal(6);a", o:[1,2,3,4,5,6],         d:"Agregar_AlFinal agrega el elemento al final de la lista"},
 
   // Agregar_SiNoEstá
+  // Agregar_Si_
 
   {i:"let a=[1,2,3,4,5];a.Insertar_EnPosicion_(6,1);a", o:[6,1,2,3,4,5],  d:"Insertar_EnPosicion_ inserta el elemento en la lista en la posición correcta (1)"},
   {i:"let a=[1,2,3,4,5];a.Insertar_EnPosicion_(6,3);a", o:[1,2,6,3,4,5],  d:"Insertar_EnPosicion_ inserta el elemento en la lista en la posición correcta (2)"},

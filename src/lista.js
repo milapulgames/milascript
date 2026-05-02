@@ -233,11 +233,20 @@ Mila.Lista.Agregar_SiNoEstá = function(lista, elemento) {
   // Agrega el elemento dado a la lista dada si no estaba ya.
     // lista es una lista de elementos, aquella a la cual se agrega el elemento.
     // elemento puede ser cualquier dato.
-  if (!Mila.Lista.contieneA_(lista, elemento)) {
+  Mila.Lista.Agregar_Si_(lista, elemento, !Mila.Lista.contieneA_(lista, elemento));
+};
+Mila.Lista._Definir_EnPrototipo_('Agregar_SiNoEstá', Array);
+
+Mila.Lista.Agregar_Si_ = function(lista, elemento, condición) {
+  // Agrega el elemento dado a la lista dada si se cumple la condición.
+    // lista es una lista de elementos, aquella a la cual se agrega el elemento.
+    // elemento puede ser cualquier dato.
+    // condición es un booleano
+  if (condición) {
     lista.push(elemento);
   }
 };
-Mila.Lista._Definir_EnPrototipo_('Agregar_SiNoEstá', Array);
+Mila.Lista._Definir_EnPrototipo_('Agregar_Si_', Array);
 
 Mila.Lista.Insertar_EnPosicion_ = function(lista, elemento, posicion) {
   // Inserta el elemento dado en la posición dada de la lista dada.
