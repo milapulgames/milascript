@@ -1,4 +1,4 @@
-Mila.Modulo({
+Mila.Módulo({
   define:"Mila.AST",
   usa:["objeto"],
   necesita:["base","tipo","lista","geometria"]
@@ -118,7 +118,7 @@ Mila.Tipo.Registrar({
     "?id":Mila.Tipo.Texto,
     "?tipoNodo":Mila.Tipo.Texto,
     "?hijos":Mila.Tipo.MapaNodosAST,
-    "?ubicacion":Mila.Tipo.UbicacionNodo,
+    "?ubicación":Mila.Tipo.UbicacionNodo,
     "?campos":Mila.Tipo.Registro,
     "?textoOriginal":Mila.Tipo.Texto
   },
@@ -150,7 +150,7 @@ Mila.AST.nuevoNodo = function(atributos={}) {
     'textoOriginal' in atributos ? atributos.textoOriginal : Mila.Nada
   );
   nuevoNodo.CambiarHijosA_('hijos' in atributos ? atributos.hijos : {});
-  nuevoNodo.CambiarUbicacionA_('ubicacion' in atributos ? atributos.ubicacion : Mila.Nada);
+  nuevoNodo.CambiarUbicacionA_('ubicación' in atributos ? atributos.ubicación : Mila.Nada);
   nuevoNodo.CambiarCamposA_('campos' in atributos ? atributos.campos : {});
   return nuevoNodo;
 };
@@ -218,7 +218,7 @@ Mila.AST._NodoAST.prototype.CambiarHijo_A_ = function(clave, nuevoHijo) {
 };
 
 Mila.AST._NodoAST.prototype.CambiarUbicacionA_ = function(nuevaUbicacion) {
-  this.ubicacion = nuevaUbicacion;
+  this.ubicación = nuevaUbicacion;
 };
 
 Mila.AST._NodoAST.prototype.CambiarNivelA_ = function(nuevoNivel) {

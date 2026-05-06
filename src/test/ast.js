@@ -1,4 +1,4 @@
-Mila.Modulo({usa:['../ast','../test']});
+Mila.Módulo({usa:['../ast','../test']});
 
 const hoja = n => `Mila.AST.nuevoNodo({id:'${n}'})`;
 const nodoTrivial = `${hoja('r')};`;

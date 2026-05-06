@@ -1,4 +1,4 @@
-Mila.Modulo({
+Mila.Módulo({
   define:"Mila.Base",
   necesita:["documentacion","tipo","js","objeto","lista","error"]
 });

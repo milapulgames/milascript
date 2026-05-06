@@ -1,4 +1,4 @@
-Mila.Modulo({
+Mila.Módulo({
   define:"Mila.Evento",
   necesita:["tipo"],
   usa:["lista","pantalla","evento/tecla","evento/mouse"]

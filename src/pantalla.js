@@ -1,4 +1,4 @@
-Mila.Modulo({
+Mila.Módulo({
   define:"Mila.Pantalla",
   usa:["base","pantalla/panel"],
   necesita:["tipo","geometria"]

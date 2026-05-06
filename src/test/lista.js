@@ -1,4 +1,4 @@
-Mila.Modulo({usa:['../lista','../test']});
+Mila.Módulo({usa:['../lista','../test']});
 
 Mila.alIniciar(() => {
   Mila.Test.Evaluar_([

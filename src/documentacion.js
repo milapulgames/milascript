@@ -1,4 +1,4 @@
-Mila.Modulo({
+Mila.Módulo({
   define:"Mila.Documentacion",
   usa:["tipo","lista","error"]
 });

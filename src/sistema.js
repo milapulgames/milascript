@@ -1,4 +1,4 @@
-Mila.Modulo({
+Mila.Módulo({
   define:"Mila.Sistema",
   usa:["base","error","archivo"]
 });

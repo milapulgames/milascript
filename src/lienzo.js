@@ -1,4 +1,4 @@
-Mila.Modulo({
+Mila.Módulo({
   define:"Mila.Lienzo",
   usa:["geometria","objeto","lista"],
   necesita:["tipo","pantalla"]

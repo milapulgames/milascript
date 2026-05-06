@@ -1,4 +1,4 @@
-Mila.Modulo({
+Mila.Módulo({
   define:"Mila.Pantalla.Arrastrable",
   necesita:["../tipo","../pantalla"],
   usa:["../evento","../geometria"]

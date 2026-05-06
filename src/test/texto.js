@@ -1,4 +1,4 @@
-Mila.Modulo({usa:['../texto','../test']});
+Mila.Módulo({usa:['../texto','../test']});
 
 const N = Mila.Nada;
 

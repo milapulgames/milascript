@@ -1,4 +1,4 @@
-Mila.Modulo({usa:['../geometria','../test']});
+Mila.Módulo({usa:['../geometria','../test']});
 
 const p = (args) => `Mila.Geometria.puntoEn__(${args});`
 const origen = p('0,0');

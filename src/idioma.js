@@ -1,4 +1,4 @@
-Mila.Modulo({
+Mila.Módulo({
   define:"Mila.Idioma",
   usa:["base", "texto", "archivo"]
 });

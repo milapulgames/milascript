@@ -1,4 +1,4 @@
-Mila.Modulo({
+Mila.Módulo({
   define:"Mila.Geometria",
   usa:["base"],
   necesita:["tipo"]

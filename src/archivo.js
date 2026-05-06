@@ -1,4 +1,4 @@
-Mila.Modulo({
+Mila.Módulo({
   define:"Mila.Archivo",
   usa:["error"]
 });
@@ -93,8 +93,8 @@ Mila.Archivo.SolicitarArchivoYLuego_ = function(función) {
 // Alias de Mila._nombreDe_ (ver el archivo mila.mjs).
 Mila.Archivo.nombreDe_ = Mila._nombreDe_;
 
-// Alias de Mila._ubicacionDe_ (ver el archivo mila.mjs).
-Mila.Archivo.ubicacionDe_ = Mila._ubicacionDe_;
+// Alias de Mila._ubicaciónDe_ (ver el archivo mila.mjs).
+Mila.Archivo.ubicacionDe_ = Mila._ubicaciónDe_;
 
 // Alias de Mila._rutaActual (ver el archivo mila.mjs).
 Mila.Archivo.rutaActual = Mila._rutaActual;

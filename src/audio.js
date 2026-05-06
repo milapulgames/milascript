@@ -1,4 +1,4 @@
-Mila.Modulo({
+Mila.Módulo({
   define:"Mila.Audio",
   necesita:["tipo","objeto"],
   usa:["texto","lista"]

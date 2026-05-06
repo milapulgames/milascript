@@ -1,4 +1,4 @@
-Mila.Modulo({usa:['../tipo','../test']});
+Mila.Módulo({usa:['../tipo','../test']});
 
 Mila.alIniciar(() => {
   Mila.Test.Evaluar_([

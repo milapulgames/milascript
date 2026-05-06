@@ -79,7 +79,7 @@ if (entorno.enNodeJs()) {
   Mila._fs = await import("node:fs");
   Mila._path = await import("node:path");
   const { exec } = await import("child_process")
-  Mila._accesoArchivo = function(ruta, funcion) {
+  Mila._accesoArchivo = function(ruta, función) {
     Mila._fs.readFile(ruta, "utf8", (error, contenido) => {
       const resultado = {};
       if (error) {
@@ -87,7 +87,7 @@ if (entorno.enNodeJs()) {
       } else {
         resultado.contenido = contenido;
       }
-      funcion(resultado);
+      función(resultado);
     });
   };
   const vm = await import("node:vm");
@@ -100,10 +100,10 @@ if (entorno.enNodeJs()) {
   Mila.path = function() { return Mila._path; }
   Mila.exec = exec;
 } else {
-  Mila._accesoArchivo = function(ruta, funcion) {
+  Mila._accesoArchivo = function(ruta, función) {
     if (Mila._contenidoArchivoTemporal.ruta === ruta) {
       // Tengo el contenido cacheado
-      funcion({contenido:Mila._contenidoArchivoTemporal.contenido});
+      función({contenido:Mila._contenidoArchivoTemporal.contenido});
     } else {
       let pedido = new XMLHttpRequest();
       try {
@@ -116,12 +116,12 @@ if (entorno.enNodeJs()) {
             } else {
               resultado.error = pedido.status;
             }
-            funcion(resultado);
+            función(resultado);
           }
         };
         pedido.send("");
       } catch (e) {
-        funcion({error: e});
+        función({error: e});
       }
     }
   };
@@ -149,7 +149,7 @@ Mila._archivosPendientes = {
   // salen en CONTENIDO_EJECUTADO).
 };
 
-const ESTADO_RECIEN_AGREGADO = 0; // Apenas se solicita cargar u otro módulo lo importa (todavía no se hizo el pedido).
+const ESTADO_RECIÉN_AGREGADO = 0; // Apenas se solicita cargar u otro módulo lo importa (todavía no se hizo el pedido).
 const ESTADO_ESPERANDO_CONTENIDO = 1; // Cuando se manda el pedido del contenido.
 const ESTADO_CONTENIDO_RECIBIDO = 2; // Mientras se procesa el contenido recibido.
 const ESTADO_ESPERANDO_DEPENDENCIAS = 3; // Mientras se espera que las dependencias se carguen (a partir de acá ya existe su configuración).
@@ -159,30 +159,49 @@ const ESTADO_CONTENIDO_EJECUTADO = 6; // Después de que se haya ejecutado el c�
 const ESTADO_ALIAS = 7; // Usado para declarar que el estado de este archivo no importa y hay que mirar en lugar el de su alias (en el campo 'aliasDe').
 
 Mila._DeclararNuevoArchivo = function(rutaArchivo, tipoArchivo, aPedidoDe) {
+  // Declara un pedido de carga de un archivo.
+    // rutaArchivo es la ruta relativa al archivo solicitado (puede contener indicadores de proyecto).
+    // tipoArchivo puede ser "Mila" si es un script de milascript o "JS" si es de javascript.
+    // aPedidoDe (puede ser null) es el identificador del archivo que lo solicitó (a partir del campo 'necesita' en su objeto de configuración).
   Mila._archivos[Mila._claveArchivoParaRuta(rutaArchivo)] = {
-    estado: ESTADO_RECIEN_AGREGADO,
+    estado: ESTADO_RECIÉN_AGREGADO,
     tipo: tipoArchivo,
     dependientes: (aPedidoDe === null ? [] : [aPedidoDe])
   };
 };
 
 Mila._DeclararNuevaRutaDeArchivo = function(rutaReal, rutaArchivo) {
+  // Declara una nueva ruta en el registro de rutas de archivos existentes.
+    // rutaArchivo es la ruta relativa del nuevo archivo.
+    // rutaReal es su ruta real en el sistema de archivos.
   Mila._rutasDeArchivos[Mila._claveArchivoParaRuta(rutaReal)] = rutaArchivo;
 };
 
 Mila._AsignarEstadoArchivo = function(rutaArchivo, estado) {
+  // Modifica el estado del archivo dado por el dado.
+    // rutaArchivo es la ruta relativa del archivo a modificar.
+    // estado es uno de los estados declarados como ESTADO_*
   Mila._dataDeArchivo(rutaArchivo).estado = estado;
 };
 
 Mila._AsignarRutaRealArchivo = function(rutaArchivo, rutaReal) {
+  // Asigna la segunda ruta dada como ruta real en el sistema de archivos al archivo correspondiente a la primera ruta dada.
+    // rutaArchivo es la ruta relativa del archivo.
+    // rutaReal es su ruta real en el sistema de archivos.
   Mila._dataDeArchivo(rutaArchivo).rutaReal = rutaReal;
 };
 
 Mila._AsignarConfiguraciónArchivo = function(rutaArchivo, configuración) {
+  // Asigna el objeto dado como objeto de configuración del archivo correspondiente a la ruta dada.
+    // rutaArchivo es la ruta relativa del archivo.
+    // configuración es el objeto de configuración que se le asigna.
   Mila._dataDeArchivo(rutaArchivo).configuración = configuración;
 };
 
 Mila._AsignarAliasDeArchivo = function(rutaArchivo, alias) {
+  // Asigna al primer identificador de archivo dado como un alias del segundo.
+    // rutaArchivo es la ruta relativa del nuevo archivo.
+    // alias es el identificador del archivo original que es alias del nuevo.
   Mila._dataDeArchivo(rutaArchivo).aliasDe = alias;
 };
 
@@ -222,13 +241,13 @@ Mila._claveArchivoParaRuta = function(rutaArchivo) {
   return `__${rutaArchivo}__`;
 };
 
-Mila.Modulo = function(configuración) {
+Mila.Módulo = function(configuración) {
   // Declara un nuevo módulo a partir de la configuración dada.
     // configuración es el objeto de configuración de un archivo de código milascript.
   // Falla si la configuración dada define un módulo que ya fue definido antes.
   Mila._DefinirArchivo_(configuración);
   if ('define' in configuración) {
-    Mila._RegistrarModulo_En_(configuración.define, entorno.universo, []);
+    Mila._RegistrarMódulo_En_(configuración.define, entorno.universo, []);
   }
 };
 
@@ -238,8 +257,8 @@ Mila.Cargar = function(rutaArchivo) {
   // Falla si el archivo ya fue solicitado antes.
   // Falla si el entorno no es capaz de acceder al archivo (por ejemplo si el archivo no existe o no se tiene acceso de lectura a él).
   const nombreArchivo = Mila._nombreDe_(rutaArchivo);
-  const ubicacionArchivo = Mila._ruta_NavegandoProyectos(Mila._ubicacionDe_(rutaArchivo));
-  Mila._CargarArchivoMila_En_(nombreArchivo, ubicacionArchivo);
+  const ubicaciónArchivo = Mila._ruta_NavegandoProyectos(Mila._ubicaciónDe_(rutaArchivo));
+  Mila._CargarArchivoMila_En_(nombreArchivo, ubicaciónArchivo);
 };
 
 Mila.CargarScript = function(rutaArchivo) {
@@ -250,39 +269,39 @@ Mila.CargarScript = function(rutaArchivo) {
   Mila._CargarArchivoJs_En_(rutaArchivo, "./");
 };
 
-Mila._CargarArchivoMila_En_ = function(rutaArchivo, ubicacion, aPedidoDe=null) {
+Mila._CargarArchivoMila_En_ = function(rutaArchivo, ubicación, aPedidoDe=null) {
   // Carga el archivo de código milascript que se encuentra en la ruta dada, en la ubicación dada.
     // rutaArchivo es una cadena de texto correspondiente a la ruta relativa de un archivo de código milascript.
-    // ubicacion es una cadena de texto correspondiente a la ubicación desde donde se acccede a la ruta.
+    // ubicación es una cadena de texto correspondiente a la ubicación desde donde se acccede a la ruta.
     // aPedidoDe es una cadena de texto correspondiente al archivo que inició el pedido y requiere a este otro para funcionar
       // (null si se carga a mano o si no es un requisito fuerte).
   // Falla si el archivo ya fue solicitado antes.
   // Falla si el entorno no es capaz de acceder al archivo (por ejemplo si el archivo no existe o no se tiene acceso de lectura a él).
-  Mila._CargarArchivo_DeTipo_En_(rutaArchivo, "Mila", ubicacion, aPedidoDe);
+  Mila._CargarArchivo_DeTipo_En_(rutaArchivo, "Mila", ubicación, aPedidoDe);
 };
 
-Mila._CargarArchivoJs_En_ = function(rutaArchivo, ubicacion, aPedidoDe=null) {
+Mila._CargarArchivoJs_En_ = function(rutaArchivo, ubicación, aPedidoDe=null) {
   // Carga el archivo de código Javascript que se encuentra en la ruta dada, en la ubicación dada.
     // rutaArchivo es una cadena de texto correspondiente a la ruta relativa de un archivo de código Javascript.
-    // ubicacion es una cadena de texto correspondiente a la ubicación desde donde se acccede a la ruta.
+    // ubicación es una cadena de texto correspondiente a la ubicación desde donde se acccede a la ruta.
     // aPedidoDe es una cadena de texto correspondiente al archivo que inició el pedido y requiere a este otro para funcionar
       // (null si se carga a mano o si no es un requisito fuerte).
   // Falla si el archivo ya fue solicitado antes.
   // Falla si el entorno no es capaz de acceder al archivo (por ejemplo si el archivo no existe o no se tiene acceso de lectura a él).
-  Mila._CargarArchivo_DeTipo_En_(rutaArchivo, "JS", ubicacion, aPedidoDe);
+  Mila._CargarArchivo_DeTipo_En_(rutaArchivo, "JS", ubicación, aPedidoDe);
 };
 
-Mila._CargarArchivo_DeTipo_En_ = function(rutaArchivo, tipoArchivo, ubicacion, aPedidoDe=null) {
+Mila._CargarArchivo_DeTipo_En_ = function(rutaArchivo, tipoArchivo, ubicación, aPedidoDe=null) {
   // Carga el archivo del tipo dado que se encuentra en la ruta dada, en la ubicación dada.
     // rutaArchivo es una cadena de texto correspondiente a la ruta relativa de un archivo de código milascript.
     // tipo es una cadena de texto correspondiente al tipo de archivo solicitado
       // (puede ser "Mila" si el archivo es de milascript o "JS" si es de Javascript).
-    // ubicacion es una cadena de texto correspondiente a la ubicación desde donde se acccede a la ruta.
+    // ubicación es una cadena de texto correspondiente a la ubicación desde donde se acccede a la ruta.
     // aPedidoDe es una cadena de texto correspondiente al archivo que inició el pedido y requiere a este otro para funcionar
       // (null si se carga a mano o si no es un requisito fuerte).
   // Falla si el archivo ya fue solicitado antes.
   // Falla si el entorno no es capaz de acceder al archivo (por ejemplo si el archivo no existe o no se tiene acceso de lectura a él).
-  let rutaCompleta = Mila._rutaCompletaA_Desde_(rutaArchivo, ubicacion);
+  let rutaCompleta = Mila._rutaCompletaA_Desde_(rutaArchivo, ubicación);
   if (Mila._archivo_Existe(rutaCompleta)) {
     Mila._Fallar(`El archivo ${rutaCompleta} ya fue solicitado.`);
     return;
@@ -321,7 +340,7 @@ Mila._RecibirContenidoArchivo_ = function(rutaArchivo, contenido) {
   Mila._AsignarEstadoArchivo(rutaArchivo, ESTADO_CONTENIDO_RECIBIDO);
   let configuración = {};
   if (Mila._tipoDeArchivo(rutaArchivo) == "Mila") {
-    let inicioEncabezado = contenido.indexOf('Mila.Modulo({');
+    let inicioEncabezado = contenido.indexOf('Mila.Módulo({');
     if (inicioEncabezado < 0) {
       configuración.código = contenido;
     } else {
@@ -377,7 +396,7 @@ Mila._CargarDependenciasArchivo_ = function(rutaArchivo, configuración) {
   }
   Mila._AsignarEstadoArchivo(rutaArchivo, ESTADO_ESPERANDO_DEPENDENCIAS);
   Mila._VerificarDependenciasCumplidasDe_(rutaArchivo);
-  Mila._IntentarCargarProximo();
+  Mila._IntentarCargarPróximo();
 };
 
 Mila._VerificarDependenciasCumplidasDe_ = function(rutaArchivo) {
@@ -417,39 +436,39 @@ Mila._Agregar_AlEntorno = function(rutaArchivo) {
   const tipo = Mila._tipoDeArchivo(rutaArchivo);
   Mila.Compilar_DeTipo_(configuración, tipo);
   if ('define' in configuración) {
-    Mila._RegistrarModulo_En_(configuración.define, entorno.universo, []);
+    Mila._RegistrarMódulo_En_(configuración.define, entorno.universo, []);
   }
   Mila._AgregarCódigo(configuración.código, tipo);
 };
 
-Mila._InformarEjecucion_ = function(rutaArchivo) {
+Mila._InformarEjecución_ = function(rutaArchivo) {
   // Registra la finalización de la ejecución del archivo dado y, en el caso de que todos los archivos se hayan cargado ya,
     // intenta inicializar el sistema. Este procedimiento es invocado por los scripts de los archivos cargados.
     // rutaArchivo es una cadena de texto correspondiente a la ruta absoluta de un archivo.
   // Falla si el archivo dado no estaba siendo cargado.
   // Si no está en la lista, algo salió mal.
-  if (!Mila._esta_SiendoCargadoAhora(rutaArchivo)) {
+  if (!Mila._está_SiendoCargadoAhora(rutaArchivo)) {
     Mila._Fallar(`Algo salió mal. El archivo ${rutaArchivo} se ejecutó antes de tiempo.`);
     return;
   }
   Mila._archivosPendientes.cargandoAhora = Mila._archivosPendientes.cargandoAhora.filter(x => x!=rutaArchivo);
   Mila._AsignarEstadoArchivo(rutaArchivo, ESTADO_CONTENIDO_EJECUTADO);
-  Mila._BuscarProximoArchivoACargar(rutaArchivo);
+  Mila._BuscarPróximoArchivoACargar(rutaArchivo);
   Mila._IntentarInicializar();
 };
 
-Mila._BuscarProximoArchivoACargar = function(rutaArchivo) {
+Mila._BuscarPróximoArchivoACargar = function(rutaArchivo) {
   // Actualiza los objetos de configuración de los archivos pendientes que dependen del archivo dado, que acaba de ser cargado.
     // rutaArchivo es una cadena de texto correspondiente a la ruta absoluta de un archivo.
   for (let dependiente of Mila._dependientesDeArchivo(rutaArchivo)) {
     Mila._VerificarDependenciasCumplidasDe_(dependiente);
   }
   if (Mila._quedanArchivosEnCola()) {
-    Mila._IntentarCargarProximo();
+    Mila._IntentarCargarPróximo();
   }
 };
 
-Mila._IntentarCargarProximo = function() {
+Mila._IntentarCargarPróximo = function() {
   // Intenta cargar uno de los archivos pendientes (si es que hay alguno).
     // PRE: Hay al menos uno por cargar.
   let stackARevisar = [];
@@ -495,7 +514,7 @@ Mila._ValidarAlias = function(rutaArchivo, rutaReal) {
         dependientesDelAlias.push(dependiente);
       }
     }
-    Mila._BuscarProximoArchivoACargar(alias);
+    Mila._BuscarPróximoArchivoACargar(alias);
     Mila._IntentarInicializar();
     return true;
   }
@@ -541,7 +560,7 @@ Mila._quedanArchivosEnCola = function() {
   return Mila._archivosPendientes.siguientes.length > 0;
 };
 
-Mila._esta_SiendoCargadoAhora = function(rutaArchivo) {
+Mila._está_SiendoCargadoAhora = function(rutaArchivo) {
   // Indica si el archivo dado está siendo cargado en este momento.
     // rutaArchivo es una cadena de texto correspondiente a la ruta absoluta de un archivo.
   return Mila._archivosPendientes.cargandoAhora.includes(rutaArchivo);
@@ -588,11 +607,11 @@ Mila._Ajustar_Para_ = function(configuración, rutaArchivo) {
     // rutaArchivo es una cadena de texto correspondiente a la ruta absoluta de un archivo.
     // configuración es el objeto de configuración del archivo dado.
   configuración.rutaArchivo = rutaArchivo;
-  configuración.ubicacion = Mila._ubicacionDe_(rutaArchivo);
+  configuración.ubicación = Mila._ubicaciónDe_(rutaArchivo);
   for (let campo of ['usa','necesita','usaJs','necesitaJs']) {
     let dato = (configuración[campo] || []);
     configuración[campo] = (Array.isArray(dato) ? dato : [dato]).map(
-      x => Mila._rutaCompletaA_Desde_(x, configuración.ubicacion)
+      x => Mila._rutaCompletaA_Desde_(x, configuración.ubicación)
     );
   }
 };
@@ -604,7 +623,7 @@ Mila.Compilar_DeTipo_ = function(configuración, tipo) {
       // (puede ser "Mila" si el archivo es de milascript o "JS" si es de Javascript).
   let encabezado = [];
   let cierre = [
-    `Mila._InformarEjecucion_("${configuración.rutaArchivo}");`
+    `Mila._InformarEjecución_("${configuración.rutaArchivo}");`
   ]
   if (tipo == "Mila") {
     if (entorno.enNodeJs()) {
@@ -613,7 +632,7 @@ Mila.Compilar_DeTipo_ = function(configuración, tipo) {
     }
     if (!entorno.universo.compilado) { // REVISAR: ¿hace falta?
       encabezado.push(`const _miRuta = "${configuración.rutaArchivo}";`);
-      encabezado.push(`const _miUbicacion = "${configuración.ubicacion}"`);
+      encabezado.push(`const _miUbicacion = "${configuración.ubicación}"`);
     }
   }
   configuración.código =
@@ -680,7 +699,7 @@ Mila._seCumplenLasDependenciasDe_ = function(rutaArchivo) {
   return Mila._estadoDeArchivo(rutaArchivo) == ESTADO_DEPENDENCIAS_CUMPLIDAS;
 };
 
-Mila._esta_SiendoAgregadoAlEntorno = function(rutaArchivo) {
+Mila._está_SiendoAgregadoAlEntorno = function(rutaArchivo) {
   // Indica si el archivo dado está siendo agregado al entorno en este momento.
     // rutaArchivo es una cadena de texto correspondiente a la ruta absoluta de un archivo.
   return (Mila._archivo_Existe(rutaArchivo) && (
@@ -707,54 +726,54 @@ Mila._DefinirArchivo_ = function(configuración) {
     // configuración es el objeto de configuración de un archivo.
   // Falla si la configuración dada define un módulo que ya fue definido antes.
   if ('define' in configuración) {
-    Mila._RegistrarModulo_(configuración.define);
+    Mila._RegistrarMódulo_(configuración.define);
   };
 };
 
 // Módulos
 
-Mila._modulos = {}; // Mapa de los módulos cargados
+Mila._módulos = {}; // Mapa de los módulos cargados
 
-Mila._RegistrarModulo_ = function(nombreModulo) {
+Mila._RegistrarMódulo_ = function(nombreMódulo) {
   // Registra un módulo con el nombre dado.
-    // nombreModulo es una cadena de texto correspondiente al nombre del módulo a registrar.
+    // nombreMódulo es una cadena de texto correspondiente al nombre del módulo a registrar.
   // Falla si ya se registró un módulo con el mismo nombre.
   // Falla si el nombre colisiona con algún campo ya existente.
-  if (nombreModulo in Mila._modulos) {
-    Mila._Fallar(`Ya se registró un módulo con el nombre ${nombreModulo}.`);
+  if (nombreMódulo in Mila._módulos) {
+    Mila._Fallar(`Ya se registró un módulo con el nombre ${nombreMódulo}.`);
   } else {
-    Mila._modulos[nombreModulo] = {};
+    Mila._módulos[nombreMódulo] = {};
   }
 };
 
-Mila._RegistrarModulo_En_ = function(nombreModulo, moduloMadre, rutaModuloMadre) {
+Mila._RegistrarMódulo_En_ = function(nombreMódulo, móduloMadre, rutaMóduloMadre) {
   // Registra un módulo con el nombre dado, como submódulo del módulo madre dado, cuya ruta es la ruta dada.
-    // nombreModulo es una cadena de texto correspondiente al nombre del módulo a registrar.
-    // moduloMadre es un objeto que representa al módulo madre del módulo a registrar.
-    // rutaModuloMadre es una lista de cadenas de texto correspondiente a cada módulo de la ruta al módulo madre.
+    // nombreMódulo es una cadena de texto correspondiente al nombre del módulo a registrar.
+    // móduloMadre es un objeto que representa al módulo madre del módulo a registrar.
+    // rutaMóduloMadre es una lista de cadenas de texto correspondiente a cada módulo de la ruta al módulo madre.
   // Falla si el nombre colisiona con algún campo ya existente.
   // Falla si el nombre hace referencia a un módulo madre inexistente.
-  let iPunto = nombreModulo.indexOf(".");
+  let iPunto = nombreMódulo.indexOf(".");
   if (iPunto < 0) {
-    if (nombreModulo in moduloMadre) {
-      Mila._Fallar(`No se puede registrar un módulo con el nombre ${nombreModulo}${
-        (rutaModuloMadre.length == 0) ? " " : ` en ${rutaModuloMadre.join(".")} `
+    if (nombreMódulo in móduloMadre) {
+      Mila._Fallar(`No se puede registrar un módulo con el nombre ${nombreMódulo}${
+        (rutaMóduloMadre.length == 0) ? " " : ` en ${rutaMóduloMadre.join(".")} `
       }porque ese campo ya está en uso.`);
     } else {
-      moduloMadre[nombreModulo] = {};
+      móduloMadre[nombreMódulo] = {};
     }
   } else {
-    let nuevoModuloMadre = nombreModulo.substring(0,iPunto);
-    if (nuevoModuloMadre in moduloMadre) {
-      rutaModuloMadre.push(nuevoModuloMadre);
-      Mila._RegistrarModulo_En_(
-        nombreModulo.substring(iPunto+1),
-        moduloMadre[nuevoModuloMadre],
-        rutaModuloMadre
+    let nuevoMóduloMadre = nombreMódulo.substring(0,iPunto);
+    if (nuevoMóduloMadre in móduloMadre) {
+      rutaMóduloMadre.push(nuevoMóduloMadre);
+      Mila._RegistrarMódulo_En_(
+        nombreMódulo.substring(iPunto+1),
+        móduloMadre[nuevoMóduloMadre],
+        rutaMóduloMadre
       );
     } else {
-      Mila._Fallar(`No existe un módulo con el nombre ${nuevoModuloMadre}${
-        (rutaModuloMadre.length == 0) ? "" : ` en ${rutaModuloMadre.join(".")}`
+      Mila._Fallar(`No existe un módulo con el nombre ${nuevoMóduloMadre}${
+        (rutaMóduloMadre.length == 0) ? "" : ` en ${rutaMóduloMadre.join(".")}`
       }.`);
     }
   }
@@ -775,16 +794,16 @@ Mila._nombreProyectoEnRuta = function(ruta) {
   }
 };
 
-Mila._RegistrarRutaProyecto = function(nombreProyecto, ubicacion) {
+Mila._RegistrarRutaProyecto = function(nombreProyecto, ubicación) {
   // Registra el proyecto con el nombre dado a partir de la ubicación dada, si es que no se había registrado ya.
   if (!(nombreProyecto in Mila._proyectos)) {
-    Mila._RegistrarProyecto(nombreProyecto, ubicacion);
+    Mila._RegistrarProyecto(nombreProyecto, ubicación);
   }
 };
 
-Mila._RegistrarProyecto = function(nombreProyecto, ubicacion) {
+Mila._RegistrarProyecto = function(nombreProyecto, ubicación) {
   // Registra el proyecto con el nombre dado en la ubicación dada.
-  Mila._proyectos[nombreProyecto] = ubicacion
+  Mila._proyectos[nombreProyecto] = ubicación
 };
 
 Mila._ruta_NavegandoProyectos = function(rutaArchivo) {
@@ -822,12 +841,12 @@ Mila._Fallar = function(mensaje) {
 
 // Inicialización
 
-Mila._inicializacion = []; // Lista de funciones a ejecutar cuando se terminen de cargar todos los módulos.
+Mila._inicialización = []; // Lista de funciones a ejecutar cuando se terminen de cargar todos los módulos.
 
-Mila.alIniciar = function(funcion) {
+Mila.alIniciar = function(función) {
   // Registra la función dada para ser ejecutada al inicializarse el sistema.
-    // funcion es una función que no toma parámetros.
-  Mila._inicializacion.push(funcion);
+    // función es una función que no toma parámetros.
+  Mila._inicialización.push(función);
 };
 
 Mila._Inicializar = function() {
@@ -851,12 +870,12 @@ Mila._Inicializar = function() {
 Mila.EjecutarInicializacionesPendientes = function() {
   // Ejecuta las funciones de inicialización registradas por los módulos.
   const funcionesAEjecutar = [];
-  for (let funcion of Mila._inicializacion) {
-    funcionesAEjecutar.push(funcion);
+  for (let función of Mila._inicialización) {
+    funcionesAEjecutar.push(función);
   }
-  Mila._inicializacion = [];
-  for (let funcion of funcionesAEjecutar) {
-    funcion();
+  Mila._inicialización = [];
+  for (let función of funcionesAEjecutar) {
+    función();
   }
 };
 
@@ -864,64 +883,64 @@ Mila.ProcesarArgumentosMila = function(argumentos) {
   // Procesa los argumentos que le corresponden a milascript y no al script ejecutado
 };
 
-Mila._RegistrarRaizMila = function(rutaMila) {
-  const ubicacion = rutaMila.length > "mila.mjs".length
+Mila._RegistrarRaízMila = function(rutaMila) {
+  const ubicación = rutaMila.length > "mila.mjs".length
     ? rutaMila.substring(0,rutaMila.length - "mila.mjs".length)
     : ""
   ;
-  Mila._RegistrarProyecto("milascript", Mila._ruta_Absoluta(ubicacion));
+  Mila._RegistrarProyecto("milascript", Mila._ruta_Absoluta(ubicación));
 };
 
 // Funciones del módulo Archivo que necesito acá
 
-Mila._rutaCompletaA_Desde_ = function(rutaArchivo, ubicacion) {
+Mila._rutaCompletaA_Desde_ = function(rutaArchivo, ubicación) {
   // Describe la ruta absoluta del archivo que se encuentra en la ruta dada, relativa a la ubicación dada.
     // OJO: el resultado puede contener indicadores de proyecto ($milascript).
     // rutaArchivo es una cadena de texto correspondiente a la ruta relativa de un archivo.
-    // ubicacion es una cadena de texto correspondiente a la ubicación desde donde se acccede a la ruta.
+    // ubicación es una cadena de texto correspondiente a la ubicación desde donde se acccede a la ruta.
   let resultado = rutaArchivo;
   if (resultado.endsWith(".js")) {
     // Quito la extensión para unificar
     resultado = resultado.substring(0, resultado.length-3);
   }
   if (!resultado.startsWith('./')) {
-    resultado = Mila._rutaAPartirDe_([ubicacion, resultado]);
+    resultado = Mila._rutaAPartirDe_([ubicación, resultado]);
   }
   while (resultado.includes("/../") && !resultado.startsWith("./../")) {
-    let ultimoDP = resultado.lastIndexOf("/../");
-    let diagonalAnterior = resultado.slice(0,ultimoDP).lastIndexOf("/");
-    resultado = resultado.slice(0,diagonalAnterior+1).concat(resultado.slice(ultimoDP+4));
+    let últimoDP = resultado.lastIndexOf("/../");
+    let diagonalAnterior = resultado.slice(0,últimoDP).lastIndexOf("/");
+    resultado = resultado.slice(0,diagonalAnterior+1).concat(resultado.slice(últimoDP+4));
   }
   if (resultado.startsWith('./')) {
-    resultado = resultado = Mila._rutaAPartirDe_([ubicacion, resultado.slice(2)]);
+    resultado = resultado = Mila._rutaAPartirDe_([ubicación, resultado.slice(2)]);
   }
   return resultado;
 };
 
-Mila._ubicacionDe_ = function(rutaOriginal) {
+Mila._ubicaciónDe_ = function(rutaOriginal) {
   // Describe la ubicación en la que se encuentra el archivo cuya ruta es la ruta dada.
     // rutaOriginal es una cadena de texto correspondiente a la ruta de un archivo.
-  let ultimaDiagonal = rutaOriginal.lastIndexOf("/");
-  return rutaOriginal.substring(0,ultimaDiagonal+1);
+  let últimaDiagonal = rutaOriginal.lastIndexOf("/");
+  return rutaOriginal.substring(0,últimaDiagonal+1);
 };
 
 Mila._nombreDe_ = function(rutaOriginal) {
   // Describe el nombre del archivo o de la carpeta cuya ruta es la ruta dada.
     // rutaOriginal es una cadena de texto correspondiente a la ruta de un archivo o una carpeta.
-  let ultimaDiagonal = rutaOriginal.lastIndexOf("/");
-  return rutaOriginal.substring(ultimaDiagonal+1);
+  let últimaDiagonal = rutaOriginal.lastIndexOf("/");
+  return rutaOriginal.substring(últimaDiagonal+1);
 };
 
 Mila._contenidoArchivoTemporal = {}; // En el navegador necesito dos accesos así que cachéo el contenido en el primero para devolverlo en el segundo.
 
-Mila._SiExisteArchivo_Entonces_YSiNo_ = function(ruta, funcionSi, funcionNo) {
+Mila._SiExisteArchivo_Entonces_YSiNo_ = function(ruta, funciónSi, funciónNo) {
   // Determina si existe un archivo en la ruta dada. En caso afirmativo invoca a la primera función dada.
   //   En caso negativo invoca a la segunda función dada.
   if (entorno.enNodeJs()) {
     Mila.fs().stat(ruta, (error, stats) => {
       (error !== null && error !== undefined) || stats.isDirectory()
-      ? funcionNo()
-      : funcionSi()
+      ? funciónNo()
+      : funciónSi()
     });
   } else {
     Mila._accesoArchivo(ruta, function(resultado) {
@@ -929,9 +948,9 @@ Mila._SiExisteArchivo_Entonces_YSiNo_ = function(ruta, funcionSi, funcionNo) {
         Mila._contenidoArchivoTemporal = {
           ruta, contenido:resultado.contenido
         }
-        funcionSi();
+        funciónSi();
       } else {
-        funcionNo();
+        funciónNo();
       }
     });
   }
@@ -983,7 +1002,7 @@ if (entorno.universo.compilado) {
 } else if (entorno.enNodeJs()) {
   for (let i=0; i<process.argv.length; i++) {
     if (process.argv[i].endsWith("mila.mjs")) {
-      Mila._RegistrarRaizMila(process.argv[i]);
+      Mila._RegistrarRaízMila(process.argv[i]);
       const inicialización = function() {
         let funciónFalla = (rutaScript) => Mila._Fallar(`Ruta inválida: ${rutaScript}`);
         if (entorno.argumentos.lista.length == 0) {

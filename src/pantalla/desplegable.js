@@ -1,4 +1,4 @@
-Mila.Modulo({
+Mila.Módulo({
   necesita:["../base"]
 });
 

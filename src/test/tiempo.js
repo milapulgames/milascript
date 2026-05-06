@@ -1,4 +1,4 @@
-Mila.Modulo({usa:['../tiempo','../test']});
+Mila.Módulo({usa:['../tiempo','../test']});
 
 const metronomo = (args) => `Mila.Tiempo.nuevoMetronomo(${args});`;
 const metronomoNulo = metronomo('1000,x=>{}');

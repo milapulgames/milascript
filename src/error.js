@@ -5,7 +5,7 @@
   En caso de no haber error, el resultado puede tener un campo 'contenido' con el verdadero resultado de la operación.
 */
 
-Mila.Modulo({
+Mila.Módulo({
   define:"Mila.Error",
   usa:["base"],
   necesita:["tipo","js","idioma","archivo"]

@@ -50,7 +50,7 @@ Un proyecto milascript puede ser tan simple como un único script (o un archivo 
 1. Crear el archivo `test.js` con el siguiente contenido:
 
 ```js
-Mila.Modulo({});
+Mila.Módulo({});
 
 console.log("Hola mundo!");
 ```
@@ -65,7 +65,7 @@ console.log("Hola mundo!");
 
 ### Importar módulos milascript
 
-Aunque sea un único script, todo proyecto debe comenzar con la invocación a `Mila.Modulo`. El argumento es un objeto que puede tener los siguientes campos:
+Aunque sea un único script, todo proyecto debe comenzar con la invocación a `Mila.Módulo`. El argumento es un objeto que puede tener los siguientes campos:
 
  * `define`: El nombre del módulo que se define en este archivo.
 
@@ -76,7 +76,7 @@ Aunque sea un único script, todo proyecto debe comenzar con la invocación a `M
 La diferencia entre `usa` y `necesita` radica en si se hacen referencias al módulo durante la inicialización (en cuyo caso se necesita) o únicamente dentro de las funciones y procedimientos (entonces se usa pero no es necesario que se cargue antes). Es recomendable minimizar la cantidad de módulos necesarios para reducir la posibilidad de definir una dependencia circular. Una forma fácil de evitarlo es ejecutar la mayor parte del código del módulo durante la *inicialización* del proyecto, que ocurre una vez que se cargaron todos los archivos. Para ello, se debe invocar a `Mila.alIniciar` pasándole como argumento la función de inicialización del módulo. A continuación se muestra un ejemplo que utilizar el módulo `Mila.Pantalla.Etiqueta` para mostrar una etiqueta en la ventana del navegador.
 
 ```js
-Mila.Modulo({
+Mila.Módulo({
   usa:['src/pantalla/etiqueta']
 });
 

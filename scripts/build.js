@@ -19,7 +19,7 @@
         la carpeta en la que se encuentra el script a compilar en otro caso.
 */
 
-Mila.Modulo({
+Mila.Módulo({
   necesita:["../src/base"],
   usa:["../src/archivo","../src/texto"]
 });
@@ -39,7 +39,7 @@ const build = function(nombre, ubicacionMila, argumentos) {
         const rutaArchivo = proximoACargar;
         archivosInlcuidos.push({ruta:rutaArchivo + ".js", tipo:Mila._tipoDeArchivo(proximoACargar)});
         Mila._EmpezarACargar_(proximoACargar);
-        Mila._InformarEjecucion_(proximoACargar);
+        Mila._InformarEjecución_(proximoACargar);
       };
     });
     Mila.Base.ReemplazarFuncion_De_Por_("_DefinirArchivo_", Mila, function(funcionOriginal) {

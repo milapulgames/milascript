@@ -5,7 +5,7 @@
   Para ejecutarlo en un navegador: NO DISPONIBLE POR EL MOMENTO
 */
 
-Mila.Modulo({
+Mila.Módulo({
   necesita:["../src/base"],
   usa:["../src/texto"]
 });

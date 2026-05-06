@@ -1,4 +1,4 @@
-Mila.Modulo({
+Mila.Módulo({
   define:"Mila.Tiempo",
   usa:["base"],
   necesita:["tipo"]

@@ -1,4 +1,4 @@
-Mila.Modulo({
+Mila.Módulo({
   necesita:["../tipo","../pantalla","panel","desplegable"]
 });
 

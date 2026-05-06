@@ -1,4 +1,4 @@
-Mila.Modulo({usa:['../objeto','../test']});
+Mila.Módulo({usa:['../objeto','../test']});
 
 const soloA = "let a={x:1,y:2}";
 const noEnumA = ";Object.defineProperty(a,'hx',{enumerable:false,value:-1})";
