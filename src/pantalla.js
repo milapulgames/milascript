@@ -459,28 +459,28 @@ Mila.Pantalla._ElementoVisual.prototype.ancho = function() {
       Mila.Tipo.Entero
     ],
   });
-  // if ('_nodoHtml' in this) {
-  //   return this.anchoHtml();
-  // }
+  if ('_nodoHtml' in this) {
+    return this.anchoHtml();
+  }
   return this._ancho;
 };
 
-// Mila.Pantalla._ElementoVisual.prototype.anchoHtml = function() {
-//   Mila.Contrato({
-//     Proposito: [
-//       "Describir el ancho en píxeles del elemento html de este elemento visual",
-//       Mila.Tipo.Entero
-//     ],
-//     Precondiciones: [
-//       "Se está ejecutando en el navegador",
-//       Mila.entorno().enNavegador(),
-//       "Hay un elemento html asociado a este elemento visual",
-//       '_nodoHtml' in this /* && this._nodoHtml es de tipo nodo dom */
-//     ]
-//   });
-//   return Mila.Geometria.areaDom_(this._nodoHtml).ancho + this._grosorBorde +
-//     this.margenExternoDerecho() + this.margenExternoIzquierdo();
-// };
+Mila.Pantalla._ElementoVisual.prototype.anchoHtml = function() {
+  Mila.Contrato({
+    Proposito: [
+      "Describir el ancho en píxeles del elemento html de este elemento visual",
+      Mila.Tipo.Entero
+    ],
+    Precondiciones: [
+      "Se está ejecutando en el navegador",
+      Mila.entorno().enNavegador(),
+      "Hay un elemento html asociado a este elemento visual",
+      '_nodoHtml' in this /* && this._nodoHtml es de tipo nodo dom */
+    ]
+  });
+  return Mila.Geometria.areaDom_(this._nodoHtml).ancho + this._grosorBorde +
+    this.margenExternoDerecho() + this.margenExternoIzquierdo();
+};
 
 Mila.Pantalla._ElementoVisual.prototype.anchoBarraScroll = function() {
   Mila.Contrato({
@@ -533,28 +533,28 @@ Mila.Pantalla._ElementoVisual.prototype.alto = function() {
       Mila.Tipo.Entero
     ],
   });
-  // if ('_nodoHtml' in this) {
-  //   return this.altoHtml();
-  // }
+  if ('_nodoHtml' in this) {
+    return this.altoHtml();
+  }
   return this._alto;
 };
 
-// Mila.Pantalla._ElementoVisual.prototype.altoHtml = function() {
-//   Mila.Contrato({
-//     Proposito: [
-//       "Describir el alto en píxeles del elemento html de este elemento visual",
-//       Mila.Tipo.Entero
-//     ],
-//     Precondiciones: [
-//       "Se está ejecutando en el navegador",
-//       Mila.entorno().enNavegador(),
-//       "Hay un elemento html asociado a este elemento visual",
-//       '_nodoHtml' in this /* && this._nodoHtml es de tipo nodo dom */
-//     ]
-//   });
-//   return Mila.Geometria.areaDom_(this._nodoHtml).alto + this._grosorBorde +
-//     this.margenExternoSuperior() + this.margenExternoInferior();
-// };
+Mila.Pantalla._ElementoVisual.prototype.altoHtml = function() {
+  Mila.Contrato({
+    Proposito: [
+      "Describir el alto en píxeles del elemento html de este elemento visual",
+      Mila.Tipo.Entero
+    ],
+    Precondiciones: [
+      "Se está ejecutando en el navegador",
+      Mila.entorno().enNavegador(),
+      "Hay un elemento html asociado a este elemento visual",
+      '_nodoHtml' in this /* && this._nodoHtml es de tipo nodo dom */
+    ]
+  });
+  return Mila.Geometria.areaDom_(this._nodoHtml).alto + this._grosorBorde +
+    this.margenExternoSuperior() + this.margenExternoInferior();
+};
 
 Mila.Pantalla._ElementoVisual.prototype.altoBarraScroll = function() {
   Mila.Contrato({
