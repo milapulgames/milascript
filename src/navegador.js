@@ -13,6 +13,9 @@ Mila.Navegador.argumentoUrl = function(clave) {
       [clave, Mila.Tipo.Texto]
     ]
   });
+  if (Mila.entorno().enNodeJs()) {
+    return Mila.Nada;
+  }
   let resultado = (
     new RegExp(
       "[\\?&]" + (clave.replace(/[\[]/,"\\[").replace(/[\]]/,"\\]")) + "=([^&#]*)"

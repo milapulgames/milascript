@@ -14,7 +14,7 @@ Mila.Sistema.EjecutarMila_ConArgumentos_YLuego_ = function(rutaScriptMila, argum
       [función, Mila.Tipo.Funcion]
     ]
   });
-  Mila.Sistema.Ejecutar_YLuego_(`node ${Mila.Archivo.rutaAPartirDe_([Mila._proyectos.milascript,"mila.js"])} ${rutaScriptMila} ${
+  Mila.Sistema.Ejecutar_YLuego_(`node ${Mila.Archivo.rutaAPartirDe_([Mila._proyectos.milascript,"mila.mjs"])} ${rutaScriptMila} ${
     (argumentos.esUnTexto()) ? argumentos : argumentos.join(" ")
   }`, función);
 };

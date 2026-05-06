@@ -5,7 +5,7 @@
   Para ejecutarlo mediante NodeJs: Ejecutar en una terminal `mila build ` seguido de la ruta al archivo milascript
     a compilar (sin la extensión).
   Argumentos opcionales:
-  - mila: ruta a la carpeta de fuentes milascript (donde debe estar mila.js y todos los otros archivos milascript necesarios).
+  - mila: ruta a la carpeta de fuentes milascript (donde debe estar mila.mjs y todos los otros archivos milascript necesarios).
       Si no se pasa este argumento se asume que la carpeta es build/milascript/src en el caso de que exista la carpeta 'build' o
         milascript/src en otro caso.
       Si se pasa $ como este argumento se utiliza al carpeta desde donde se está ejecutando milascript ahora.
@@ -30,14 +30,14 @@ const data = {
 
 const build = function(nombre, ubicacionMila, argumentos) {
   return function() {
-    const archivosInlcuidos = [{ruta:Mila.Archivo.rutaAPartirDe_([ubicacionMila, 'mila']), tipo:"Mila"}];
+    const archivosInlcuidos = [{ruta:Mila.Archivo.rutaAPartirDe_([ubicacionMila, 'mila.mjs']), tipo:"Mila"}];
     const conContratos = (('docs' in argumentos) ? argumentos.docs : true);
     Mila._archivos = {};
     Mila._rutasDeArchivos = {};
     Mila.Base.ReemplazarFuncion_De_Por_("_Agregar_AlEntorno", Mila, function(funcionOriginal) {
       return function(proximoACargar) {
         const rutaArchivo = proximoACargar;
-        archivosInlcuidos.push({ruta:rutaArchivo, tipo:Mila._tipoDeArchivo(proximoACargar)});
+        archivosInlcuidos.push({ruta:rutaArchivo + ".js", tipo:Mila._tipoDeArchivo(proximoACargar)});
         Mila._EmpezarACargar_(proximoACargar);
         Mila._InformarEjecucion_(proximoACargar);
       };
@@ -54,7 +54,7 @@ const build = function(nombre, ubicacionMila, argumentos) {
         for (let nombreProyecto in Mila._proyectos) {
           Mila._proyectos[nombreProyecto] = Mila.Archivo.ruta_Absoluta(Mila.Archivo.rutaAPartirDe_([argumentos.dst, nombreProyecto, 'src']));
         }
-        archivosInlcuidos[0].ruta = Mila.Archivo.rutaAPartirDe_(['$milascript', 'mila']);
+        archivosInlcuidos[0].ruta = Mila.Archivo.rutaAPartirDe_(['$milascript', 'mila.mjs']);
       }
       const dataProyectos = `  <script type="module">\n${Mila._proyectos.clavesDefinidas().map(
         proyecto => `    Mila._proyectos.${proyecto} = "${Mila.Archivo.ruta_RelativaA_(Mila._proyectos[proyecto], rutaDestino)}";`
@@ -73,7 +73,7 @@ const build = function(nombre, ubicacionMila, argumentos) {
       const scripts = archivosInlcuidos.transformados(function(archivo) {
         return `  <script${archivo.tipo == "Mila" ? ' type="module"' : ''} src="${
           Mila.Archivo.ruta_RelativaA_((rutaRealDe_(archivo.ruta)), rutaDestino)
-        }.js"></script>`;
+        }"></script>`;
       });
       scripts.Insertar_EnPosicion_(dataProyectos, 2);
       const contenido = `<!DOCTYPE HTML>\n<html>\n<head>\n  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">\n  <script type="module">window.compilado = true;window.sinContratos = ${!conContratos};</script>\n`
@@ -118,7 +118,7 @@ const buildearConDestino = function(optRutaDestino, argumentos) {
   Mila._proyectos["milascript"] = Mila.Archivo.ruta_Absoluta(ubicacionMila);
 
   Mila.Archivo.SiExisteArchivo_Entonces_YSiNo_(
-    Mila.Archivo.rutaAPartirDe_([ubicacionMila, 'mila.js']),
+    Mila.Archivo.rutaAPartirDe_([ubicacionMila, 'mila.mjs']),
       build(nombre, ubicacionMila, argumentos),
       () => Mila.Fallar(`No se encuentran los fuentes de milascript en la ruta destino ${ubicacionMila}.`)
   );

@@ -6,7 +6,7 @@ Mila.Modulo({
 // Primitivas de entorno
 
 /*
-  Mila.Archivo._accesoArchivo : La misma del intérprete (ver el archivo mila.js).
+  Mila.Archivo._accesoArchivo : La misma del intérprete (ver el archivo mila.mjs).
   Mila.Archivo._escrituraArchivo : Toma una primera cadena de texto correspondiente a la ruta de un archivo, una segunda cadena de texto
     correspondiente al contenido a escribir y una función de un parámetro. Abre el archivo y escribe en él el contenido dado. Luego invoca
     a la función pasándole el resultado parcial de la operación (un objeto de tipo ResultadoParcial).
@@ -90,16 +90,16 @@ Mila.Archivo.SolicitarArchivoYLuego_ = function(función) {
   Mila.Archivo._solicitudArchivo(función);
 };
 
-// Alias de Mila._nombreDe_ (ver el archivo mila.js).
+// Alias de Mila._nombreDe_ (ver el archivo mila.mjs).
 Mila.Archivo.nombreDe_ = Mila._nombreDe_;
 
-// Alias de Mila._ubicacionDe_ (ver el archivo mila.js).
+// Alias de Mila._ubicacionDe_ (ver el archivo mila.mjs).
 Mila.Archivo.ubicacionDe_ = Mila._ubicacionDe_;
 
-// Alias de Mila._rutaActual (ver el archivo mila.js).
+// Alias de Mila._rutaActual (ver el archivo mila.mjs).
 Mila.Archivo.rutaActual = Mila._rutaActual;
 
-// Alias de Mila._rutaAbsoluta (ver el archivo mila.js).
+// Alias de Mila._rutaAbsoluta (ver el archivo mila.mjs).
 Mila.Archivo.ruta_Absoluta = Mila._ruta_Absoluta;
 
 Mila.Archivo.ruta_RelativaA_ = function(rutaDestino, rutaOrigen) {
@@ -114,7 +114,7 @@ Mila.Archivo.ruta_Relativa = function(ruta) {
   return Mila.Archivo.ruta_RelativaA_(ruta, Mila.Archivo.rutaActual());
 };
 
-// Alias de Mila._rutaAPartirDe_ (ver el archivo mila.js).
+// Alias de Mila._rutaAPartirDe_ (ver el archivo mila.mjs).
 Mila.Archivo.rutaAPartirDe_ = Mila._rutaAPartirDe_;
 
 Mila.Archivo.NavegarA_ = function(ruta) {
@@ -135,7 +135,7 @@ Mila.Archivo.SiExisteRuta_Entonces_YSiNo_ = function(ruta, funciónSi, funciónN
   );
 };
 
-// Alias de Mila._SiExisteArchivo_Entonces_YSiNo_ (ver el archivo mila.js).
+// Alias de Mila._SiExisteArchivo_Entonces_YSiNo_ (ver el archivo mila.mjs).
 Mila.Archivo.SiExisteArchivo_Entonces_YSiNo_ = Mila._SiExisteArchivo_Entonces_YSiNo_;
 
 Mila.Archivo.SiExisteCarpeta_Entonces_YSiNo_ = function(ruta, funciónSi, funciónNo) {

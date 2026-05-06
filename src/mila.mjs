@@ -3,8 +3,8 @@
   Para ejecutarlo en un navegador web: Crear un archivo html que incluya en el encabezado un script de tipo módulo
     y cuyo archivo fuente sea este. Luego se pueden cargar archivos de milascript invocando al procedimiento Mila.Cargar,
     pasándole como argumento la cadena de texto correspondiente a la ruta del archivo a cargar (sin la extensión).
-  Para ejecutarlo mediante NodeJs: Ejecutar en una terminal `node mila.js ` seguido del nombre del archivo milascript a cargar.
-    Se le pueden pasar argumentos tanto al script `mila.js` como al archivo milascript a cargar. Los argumentos pueden ser textos
+  Para ejecutarlo mediante NodeJs: Ejecutar en una terminal `node mila.mjs ` seguido del nombre del archivo milascript a cargar.
+    Se le pueden pasar argumentos tanto al script `mila.mjs` como al archivo milascript a cargar. Los argumentos pueden ser textos
     sin el caracter ':' (se almacenan en Mila.entorno().argumentos.lista) o pares clave - valor usando el caracter ':' para separar la
     clave del valor (se almacenan como claves de Mila.entorno().argumentos). Si el argumento comienza con el caracter ':' se usa el resto
     como clave y el valor es el booleano 'true'. Si uno de los argumentos tiene clave 'args' se usa su valor como ruta a un archivo json
@@ -788,6 +788,8 @@ Mila._RegistrarProyecto = function(nombreProyecto, ubicacion) {
 };
 
 Mila._ruta_NavegandoProyectos = function(rutaArchivo) {
+  // Describe la ruta real correspondiente a la ruta dada.
+    // Reemplaza cada referencia a un proyecto (como "$milascript") por la ruta absoluta al proyecto.
   let rutaReal = rutaArchivo;
   while (rutaReal.includes('$')) {
     let iDiagonal = rutaReal.indexOf("/", rutaReal.indexOf('$'));
@@ -863,8 +865,8 @@ Mila.ProcesarArgumentosMila = function(argumentos) {
 };
 
 Mila._RegistrarRaizMila = function(rutaMila) {
-  const ubicacion = rutaMila.length > "mila.js".length
-    ? rutaMila.substring(0,rutaMila.length - "mila.js".length)
+  const ubicacion = rutaMila.length > "mila.mjs".length
+    ? rutaMila.substring(0,rutaMila.length - "mila.mjs".length)
     : ""
   ;
   Mila._RegistrarProyecto("milascript", Mila._ruta_Absoluta(ubicacion));
@@ -874,7 +876,7 @@ Mila._RegistrarRaizMila = function(rutaMila) {
 
 Mila._rutaCompletaA_Desde_ = function(rutaArchivo, ubicacion) {
   // Describe la ruta absoluta del archivo que se encuentra en la ruta dada, relativa a la ubicación dada.
-    // OJO: el resultado puede contener indicadores de proyecto ($milascript/).
+    // OJO: el resultado puede contener indicadores de proyecto ($milascript).
     // rutaArchivo es una cadena de texto correspondiente a la ruta relativa de un archivo.
     // ubicacion es una cadena de texto correspondiente a la ubicación desde donde se acccede a la ruta.
   let resultado = rutaArchivo;
@@ -883,7 +885,7 @@ Mila._rutaCompletaA_Desde_ = function(rutaArchivo, ubicacion) {
     resultado = resultado.substring(0, resultado.length-3);
   }
   if (!resultado.startsWith('./')) {
-    resultado = `${ubicacion}${resultado}`;
+    resultado = Mila._rutaAPartirDe_([ubicacion, resultado]);
   }
   while (resultado.includes("/../") && !resultado.startsWith("./../")) {
     let ultimoDP = resultado.lastIndexOf("/../");
@@ -891,7 +893,7 @@ Mila._rutaCompletaA_Desde_ = function(rutaArchivo, ubicacion) {
     resultado = resultado.slice(0,diagonalAnterior+1).concat(resultado.slice(ultimoDP+4));
   }
   if (resultado.startsWith('./')) {
-    resultado = ubicacion + resultado.slice(2);
+    resultado = resultado = Mila._rutaAPartirDe_([ubicacion, resultado.slice(2)]);
   }
   return resultado;
 };
@@ -937,6 +939,7 @@ Mila._SiExisteArchivo_Entonces_YSiNo_ = function(ruta, funcionSi, funcionNo) {
 
 Mila._rutaAPartirDe_ = function(rutas) {
   // Describe la ruta resultante de concatenar las rutas en la lista de rutas dada.
+    // OJO: el resultado puede contener indicadores de proyecto ($milascript).
   let rutaPorAhora = "";
   if (entorno.enNodeJs()) {
     rutaPorAhora = Mila.path().join(...rutas);
@@ -949,10 +952,14 @@ Mila._rutaAPartirDe_ = function(rutas) {
       rutaPorAhora += ruta.substring(ruta.startsWith('/') ? 1 : 0);
     }
     if (rutaPorAhora.endsWith('/')) {
-      rutaPorAhora = rutaPorAhora.substring(0, rutaPorAhora.length-2);
+      rutaPorAhora = rutaPorAhora.substring(0, rutaPorAhora.length-1);
     }
   }
-  return Mila._ruta_NavegandoProyectos(rutaPorAhora);
+  return rutaPorAhora;
+};
+
+Mila._rutaAPartirDe_NavegandoProyectos = function(rutas) {
+  return Mila._ruta_NavegandoProyectos(Mila._rutaAPartirDe_(rutas));
 };
 
 Mila._rutaActual = function() {
@@ -975,9 +982,8 @@ if (entorno.universo.compilado) {
   entorno.universo.addEventListener('load', Mila._Inicializar);
 } else if (entorno.enNodeJs()) {
   for (let i=0; i<process.argv.length; i++) {
-    if (process.argv[i].endsWith("mila.js")) {
+    if (process.argv[i].endsWith("mila.mjs")) {
       Mila._RegistrarRaizMila(process.argv[i]);
-
       const inicialización = function() {
         let funciónFalla = (rutaScript) => Mila._Fallar(`Ruta inválida: ${rutaScript}`);
         if (entorno.argumentos.lista.length == 0) {
