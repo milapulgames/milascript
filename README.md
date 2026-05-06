@@ -158,12 +158,12 @@ Para hacer referencia a archivos en otros módulos en las rutas de los campos `u
 
 ## Proyectos que usan milascript
 
-* milaventuras
+* milaventuras (FALLA EL BUILD: busca "src/milascript/tipo" en lugar de "milascript/src/tipo" y "milabloques/src/pequescript/src/todo" que falla porque milabloques está como submódulo en lugar de estar como enlace)
 
-* milabloques (...)
+* milabloques (FALLA EL BUILD: algunas rutas quedan con "$")
 
-* simu_aele (OK)
+* simu_aele (FALLA EL MÓDULO PANTALLA: no se renderizan correctamente los tamaños de las cosas)
 
 * pequescript (OK)
 
-* REDA-ar.github.io (OK)
+* REDA-ar.github.io (FALLA EL BUILD: las rutas quedan con "$")
