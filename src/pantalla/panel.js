@@ -135,94 +135,83 @@ Mila.Pantalla._Panel.prototype.QuitarDelHtml = function() {
   }
 };
 
-Mila.Pantalla._Panel.prototype.MinimizarAncho = function(anchoInvertido, rectanguloCompleto) {
+Mila.Pantalla._Panel.prototype._RedimensionarContenidoInternoEn_ = function(rectánguloExterno) {
   Mila.Contrato({
-    Proposito: "Minimizar el ancho del elemento html de este panel",
-    Parametros: [
-      [anchoInvertido, Mila.Tipo.Booleano, "Si es cierto, hay que aumentar la coordenada x además de reducir el ancho"],
-      [rectanguloCompleto, Mila.Tipo.Rectangulo, "Área total disponible (necesaria en el caso de que el ancho esté invertido)"]
-    ],
-    Precondiciones: [
-      "Se está ejecutando en el navegador",
-      Mila.entorno().enNavegador(),
-      "Hay un elemento html asociado a este panel",
-      '_nodoHtml' in this /* && this._nodoHtml es de tipo nodo dom */
+    Propósito: "Redimensiona el contenido interno de este panel para que entre en el rectángulo dado.",
+    Parámetros: [
+      [rectánguloExterno, Mila.Tipo.Rectángulo]
     ]
   });
-  const anchuraMinima = this.anchoBarraScroll() + (this._elementos.esVacia()
-    ? 0
-    : (this._disposicion.eje == Mila.Pantalla.Eje.Horizontal
-      ? this._elementos.transformados(x=>x.ancho()).fold((x,y)=>x+y,0)
-      : this._elementos.transformados(x=>x.ancho()).maximo()
-    )
-  );
-  this._ancho = anchuraMinima;
-  this._nodoHtml.style.width = `${anchuraMinima}px`;
-  if (anchoInvertido) {
-    this._posiciónX = rectanguloCompleto.x + rectanguloCompleto.ancho - anchuraMinima - 2*this._grosorBorde;
-    this._nodoHtml.style.left = `${this._posiciónX}px`;
-  }
-};
-
-Mila.Pantalla._Panel.prototype.MinimizarAlto = function(altoInvertido, rectanguloCompleto) {
-  Mila.Contrato({
-    Proposito: "Minimizar el alto del elemento html de este panel",
-    Parametros: [
-      [altoInvertido, Mila.Tipo.Booleano, "Si es cierto, al minimizar hay que aumentar la coordenada y además de reducir el alto"],
-      [rectanguloCompleto, Mila.Tipo.Rectangulo, "Área total disponible (necesaria en el caso de que el alto esté invertido)"]
-    ],
-    Precondiciones: [
-      "Se está ejecutando en el navegador",
-      Mila.entorno().enNavegador(),
-      "Hay un elemento html asociado a este panel",
-      '_nodoHtml' in this /* && this._nodoHtml es de tipo nodo dom */
-    ]
-  });
-  const alturaMinima = this.altoBarraScroll() + (this._elementos.esVacia()
-    ? 0
-    : (this._disposicion.eje == Mila.Pantalla.Eje.Horizontal
-      ? this._elementos.transformados(x=>x.alto()).maximo()
-      : this._elementos.transformados(x=>x.alto()).fold((x,y)=>x+y,0)
-    )
-  );
-  this._alto = alturaMinima;
-  this._nodoHtml.style.height = `${alturaMinima}px`;
-  if (altoInvertido) {
-    this._posiciónY = rectanguloCompleto.y + rectanguloCompleto.alto - alturaMinima - 2*this._grosorBorde;
-    this._nodoHtml.style.top = `${this._posiciónY}px`;
-  }
-};
-
-Mila.Pantalla._Panel.prototype.Redimensionar = function(rectanguloCompleto) {
-  Mila.Contrato({
-    Proposito: [
-      "Redimensionar este panel para que entre en el rectángulo dado.\
-        Devuelve el rectángulo ocupado tras redimensionar.",
-      Mila.Tipo.Rectangulo
-    ],
-    Parametros: [
-      [rectanguloCompleto, Mila.Tipo.Rectangulo]
-    ]
-  });
-  let resultado = this.rectanguloInterno(rectanguloCompleto);
+  let rectánguloInterno = this._rectánguloInternoParaExterno_(rectánguloExterno);
   if ('_nodoHtml' in this) {
-    if (isFinite(resultado.alto)) {
-      this._nodoHtml.style.height = `${Math.abs(resultado.alto)}px`;
-    }
-    if (isFinite(resultado.ancho)) {
-      this._nodoHtml.style.width = `${Math.abs(resultado.ancho)}px`;
-    }
-    this._disposicion.OrganizarElementos_En_(this._elementos,
-      Mila.Geometria.rectanguloEn__De_x_(
-        this.margenInternoIzquierdo(),
-        this.margenInternoSuperior(),
-        resultado.ancho,
-        resultado.alto
-      )
-    );
-    resultado = this.rectanguloMinimo(resultado, rectanguloCompleto.ancho < 0, rectanguloCompleto.alto < 0);
+    this._nodoHtml.style.height = `${Math.abs(rectánguloInterno.alto)}px`;
+    this._nodoHtml.style.width = `${Math.abs(rectánguloInterno.ancho)}px`;
   }
-  return resultado;
+  rectánguloInterno.x = this.margenInternoIzquierdo();
+  rectánguloInterno.y = this.margenInternoSuperior();
+  this._disposicion.OrganizarElementos_En_(this._elementos, rectánguloInterno);
+};
+
+Mila.Pantalla._Panel.prototype._MinimizarAnchoDeRectángulo_ = function(rectánguloCompleto) {
+  Mila.Contrato({
+    Propósito: "Minimiza el ancho del rectángulo dado para que entre este panel. También lo adapta para que sea positivo.",
+    Parámetros: [
+      [rectánguloCompleto, Mila.Tipo.Rectángulo]
+    ]
+  });
+  Mila.Pantalla._ElementoVisual.prototype._MinimizarAnchoDeRectángulo_.call(this, rectánguloCompleto);
+  for (let elemento of this._elementos) {
+    let redimensiónAnterior = elemento._últimaRedimensión;
+    redimensiónAnterior.ancho = rectánguloCompleto.ancho - this.todosLosMárgenesHorizontales();
+    elemento.Redimensionar(redimensiónAnterior);
+  }
+};
+
+Mila.Pantalla._Panel.prototype._MinimizarAltoDeRectángulo_ = function(rectánguloCompleto) {
+  Mila.Contrato({
+    Propósito: "Minimiza el alto del rectángulo dado para que entre este panel. También lo adapta para que sea positivo.",
+    Parámetros: [
+      [rectánguloCompleto, Mila.Tipo.Rectángulo]
+    ]
+  });
+  Mila.Pantalla._ElementoVisual.prototype._MinimizarAltoDeRectángulo_.call(this, rectánguloCompleto);
+  for (let elemento of this._elementos) {
+    let redimensiónAnterior = elemento._últimaRedimensión;
+    redimensiónAnterior.alto = rectánguloCompleto.alto - this.todosLosMárgenesVerticales();
+    elemento.Redimensionar(redimensiónAnterior);
+  }
+};
+
+Mila.Pantalla._Panel.prototype._anchoMínimo = function() {
+  Mila.Contrato({
+    Propósito: [
+      "Describir el ancho mínimo que necesita este panel. Inlcuye el margen externo (el 'margin'), el borde y el margen interno (el 'padding').",
+      Mila.Tipo.Entero
+    ],
+  });
+  return this.altoBarraScroll() + (this._elementos.esVacia()
+    ? 0
+    : (this._disposicion.eje == Mila.Pantalla.Eje.Vertical
+      ? this._elementos.transformados(x=>x._anchoMínimoExterno()).maximo()
+      : this._elementos.transformados(x=>x._anchoMínimoExterno()).fold((x,y)=>x+y,0)
+    )
+  );
+};
+
+Mila.Pantalla._Panel.prototype._altoMínimo = function() {
+  Mila.Contrato({
+    Propósito: [
+      "Describir el alto mínimo de este panel. Inlcuye el margen externo (el 'margin'), el borde y el margen interno (el 'padding').",
+      Mila.Tipo.Entero
+    ],
+  });
+  return this.altoBarraScroll() + (this._elementos.esVacia()
+    ? 0
+    : (this._disposicion.eje == Mila.Pantalla.Eje.Horizontal
+      ? this._elementos.transformados(x=>x._altoMínimoExterno()).maximo()
+      : this._elementos.transformados(x=>x._altoMínimoExterno()).fold((x,y)=>x+y,0)
+    )
+  );
 };
 
 Mila.Tipo.Registrar({

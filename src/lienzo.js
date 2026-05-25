@@ -19,7 +19,7 @@ Mila.Lienzo.nuevo = function(contentido=[]) {
 
 Mila.Lienzo._Lienzo = function Lienzo(contentido=[]) {
   this._contenido = contentido;
-  this._dimensiones = Mila.Geometria.rectanguloCompleto();
+  this._dimensiones = Mila.Geometria.rectánguloCompleto();
   this._grosorBorde = 1;
 };
 
@@ -73,26 +73,26 @@ Mila.Lienzo._Lienzo.prototype.Limpiar = function() {
   this._contenido = [];
 };
 
-Mila.Lienzo._Lienzo.prototype.Redimensionar = function(rectangulo) {
+Mila.Lienzo._Lienzo.prototype.Redimensionar = function(rectángulo) {
   Mila.Contrato({
     Proposito: [
       "Redimensionar este lienzo para que entre en el rectángulo dado.\
         Devuelve el rectángulo ocupado tras redimensionar.",
-      Mila.Tipo.Rectangulo
+      Mila.Tipo.Rectángulo
     ],
     Parametros: [
-      [rectangulo, Mila.Tipo.Rectangulo]
+      [rectángulo, Mila.Tipo.Rectángulo]
     ]
   });
-  this._dimensiones = rectangulo;
+  this._dimensiones = rectángulo;
   if ('_nodoHtml' in this) {
-    this._nodoHtml.style.left = `${rectangulo.x}px`;
-    this._nodoHtml.style.top = `${rectangulo.y}px`;
-    this._nodoHtml.width = rectangulo.ancho-2*this._grosorBorde;
-    this._nodoHtml.height = rectangulo.alto-2*this._grosorBorde;
+    this._nodoHtml.style.left = `${rectángulo.x}px`;
+    this._nodoHtml.style.top = `${rectángulo.y}px`;
+    this._nodoHtml.width = rectángulo.ancho-2*this._grosorBorde;
+    this._nodoHtml.height = rectángulo.alto-2*this._grosorBorde;
     this.Dibujar();
   }
-  return rectangulo;
+  return rectángulo;
 };
 
 Mila.Lienzo._Lienzo.prototype._BorrarTodo = function() {
@@ -100,8 +100,8 @@ Mila.Lienzo._Lienzo.prototype._BorrarTodo = function() {
     Proposito: "Limpiar este lienzo"
   });
   if ('_nodoHtml' in this) {
-    let rectangulo = Mila.Geometria.rectanguloEn__De_x_(0, 0, this._nodoHtml.width, this._nodoHtml.height);
-    this._DibujarRectangulo_Con_(rectangulo, {borde:"#fff", fondo:"#fff"});
+    let rectángulo = Mila.Geometria.rectánguloEn__De_x_(0, 0, this._nodoHtml.width, this._nodoHtml.height);
+    this._DibujarRectangulo_Con_(rectángulo, {borde:"#fff", fondo:"#fff"});
   }
 };
 
@@ -115,11 +115,11 @@ Mila.Lienzo._Lienzo.prototype._DibujarElemento_ = function(elemento) {
   Mila.Lienzo._dibujables[elemento.imagen.clase].Dibujar(elemento, this);
 };
 
-Mila.Lienzo._Lienzo.prototype._DibujarRectangulo_Con_ = function(rectangulo, atributos) {
+Mila.Lienzo._Lienzo.prototype._DibujarRectangulo_Con_ = function(rectángulo, atributos) {
   Mila.Contrato({
-    Proposito: "Dibujar el rectangulo dado con los atributos dados en este lienzo",
+    Proposito: "Dibujar el rectángulo dado con los atributos dados en este lienzo",
     Parametros: [
-      [rectangulo, Mila.Tipo.Rectangulo],
+      [rectángulo, Mila.Tipo.Rectángulo],
       [atributos, Mila.Tipo.AtributosDibujable]
     ]
   });
@@ -132,26 +132,26 @@ Mila.Lienzo._Lienzo.prototype._DibujarRectangulo_Con_ = function(rectangulo, atr
   if ('fondo' in atributos) {
     contexto.fillStyle = atributos.fondo;
     contexto.fillRect(
-      rectangulo.x,
-      rectangulo.y,
-      rectangulo.ancho,
-      rectangulo.alto
+      rectángulo.x,
+      rectángulo.y,
+      rectángulo.ancho,
+      rectángulo.alto
     );
   }
   contexto.strokeRect(
-    rectangulo.x,
-    rectangulo.y,
-    rectangulo.ancho,
-    rectangulo.alto
+    rectángulo.x,
+    rectángulo.y,
+    rectángulo.ancho,
+    rectángulo.alto
   );
   contexto.restore();
 };
 
-Mila.Lienzo._Lienzo.prototype._DibujarCirculo_Con_ = function(circulo, atributos) {
+Mila.Lienzo._Lienzo.prototype._DibujarCirculo_Con_ = function(círculo, atributos) {
   Mila.Contrato({
     Proposito: "Dibujar el círculo dado con los atributos dados en este lienzo",
     Parametros: [
-      [rectangulo, Mila.Tipo.Circulo],
+      [círculo, Mila.Tipo.Círculo],
       [atributos, Mila.Tipo.AtributosDibujable]
     ]
   });
@@ -161,7 +161,7 @@ Mila.Lienzo._Lienzo.prototype._DibujarCirculo_Con_ = function(circulo, atributos
   if ('borde' in atributos) {
     contexto.strokeStyle = atributos.borde;
   }
-  contexto.arc(circulo.x,circulo.y,circulo.r,0,2*Math.PI);
+  contexto.arc(círculo.x,círculo.y,círculo.r,0,2*Math.PI);
   contexto.stroke();
   contexto.closePath();
   contexto.restore();
@@ -188,26 +188,26 @@ Mila.Tipo.Registrar({
 });
 
 Mila.Lienzo._dibujables = {
-  rectangulo: {
-    es: function(elemento) { // PRE: elemento tiene imagen.clase = 'rectangulo'
-      return elemento.imagen.defineLaClave_("rectangulo") &&
-        elemento.imagen.rectangulo.esUnRectangulo()
+  rectángulo: {
+    es: function(elemento) { // PRE: elemento tiene imagen.clase = 'rectángulo'
+      return elemento.imagen.defineLaClave_("rectángulo") &&
+        elemento.imagen.rectángulo.esUnRectángulo()
     },
     Dibujar: function(elemento, lienzo) {
-      let rectangulo = elemento.imagen.rectangulo;
+      let rectángulo = elemento.imagen.rectángulo;
       if ('x' in elemento) {
-        rectangulo = rectangulo.trasladado_En_(elemento.x, 'x');
+        rectángulo = rectángulo.trasladado_En_(elemento.x, 'x');
       }
       if ('y' in elemento) {
-        rectangulo = rectangulo.trasladado_En_(elemento.y, 'y');
+        rectángulo = rectángulo.trasladado_En_(elemento.y, 'y');
       }
-      lienzo._DibujarRectangulo_Con_(rectangulo, elemento.imagen.atributos || {});
+      lienzo._DibujarRectangulo_Con_(rectángulo, elemento.imagen.atributos || {});
     }
   },
   circulo: {
     es: function(elemento) { // PRE: elemento tiene imagen.clase = 'circulo'
       return elemento.imagen.defineLaClave_("circulo") &&
-        elemento.imagen.circulo.esUnCirculo()
+        elemento.imagen.circulo.esUnCírculo()
     },
     Dibujar: function(elemento, lienzo) {
       let circulo = elemento.imagen.circulo;

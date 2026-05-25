@@ -2,9 +2,9 @@ Mila.Módulo({usa:['../geometria','../test']});
 
 const p = (args) => `Mila.Geometria.puntoEn__(${args});`
 const origen = p('0,0');
-const rect = (args) => `Mila.Geometria.rectanguloEn__De_x_(${args});`;
+const rect = (args) => `Mila.Geometria.rectánguloEn__De_x_(${args});`;
 const rectNormal = rect('0,0,1,1');
-const circ = (args) => `Mila.Geometria.circuloEn__DeRadio_(${args});`;
+const circ = (args) => `Mila.Geometria.círculoEn__DeRadio_(${args});`;
 const circNormal = circ('0,0,1');
 
 Mila.alIniciar(() => Mila.Test.Evaluar_([

@@ -6,11 +6,11 @@ Mila.Módulo({
 
 Mila.Geometria.puntoEn__ = function(x, y) {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir un nuevo punto ubicado en las coordenadas dadas",
       Mila.Tipo.Punto
     ],
-    Parametros: [
+    Parámetros: [
       [x, Mila.Tipo.Numero],
       [y, Mila.Tipo.Numero]
     ]
@@ -18,79 +18,79 @@ Mila.Geometria.puntoEn__ = function(x, y) {
   return new Mila.Geometria._Punto(x, y);
 };
 
-Mila.Geometria.rectanguloEn__De_x_ = function(x, y, ancho, alto) {
+Mila.Geometria.rectánguloEn__De_x_ = function(x, y, ancho, alto) {
   Mila.Contrato({
-    Proposito: [
-      "Describir un nuevo rectangulo ubicado en las coordenadas dadas y de las dimensiones dadas",
-      Mila.Tipo.Rectangulo
+    Propósito: [
+      "Describir un nuevo rectángulo ubicado en las coordenadas dadas y de las dimensiones dadas",
+      Mila.Tipo.Rectángulo
     ],
-    Parametros: [
+    Parámetros: [
       [x, Mila.Tipo.Numero], [y, Mila.Tipo.Numero],
       [ancho, Mila.Tipo.Numero], [alto, Mila.Tipo.Numero]
     ]
   });
-  return new Mila.Geometria._Rectangulo(x, y, ancho, alto);
+  return new Mila.Geometria._Rectángulo(x, y, ancho, alto);
 };
 
-Mila.Geometria.rectanguloCentradoEn__De_x_ = function(x, y, ancho, alto) {
+Mila.Geometria.rectánguloCentradoEn__De_x_ = function(x, y, ancho, alto) {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir un nuevo rectangulo centrado en las coordenadas dadas y de las dimensiones dadas",
-      Mila.Tipo.Rectangulo
+      Mila.Tipo.Rectángulo
     ],
-    Parametros: [
+    Parámetros: [
       [x, Mila.Tipo.Numero], [y, Mila.Tipo.Numero],
       [ancho, Mila.Tipo.Numero], [alto, Mila.Tipo.Numero]
     ]
   });
-  return Mila.Geometria.rectanguloEn__De_x_(x-ancho/2, y-alto/2, ancho, alto);
+  return Mila.Geometria.rectánguloEn__De_x_(x-ancho/2, y-alto/2, ancho, alto);
 };
 
 Mila.Geometria.cuadradoCentradoEn__DeLado_ = function(x, y, lado) {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir un nuevo cuadrado centrado en las coordenadas dadas y con el tamaño de lado dado",
       Mila.Tipo.Cuadrado
     ],
-    Parametros: [
+    Parámetros: [
       [x, Mila.Tipo.Numero],
       [y, Mila.Tipo.Numero],
       [lado, Mila.Tipo.Numero]
     ]
   });
-  return Mila.Geometria.rectanguloCentradoEn__De_x_(x, y, lado, lado);
+  return Mila.Geometria.rectánguloCentradoEn__De_x_(x, y, lado, lado);
 };
 
-Mila.Geometria.rectanguloCompleto = function() {
+Mila.Geometria.rectánguloCompleto = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir un rectángulo completo (es decir, infinito)",
-      Mila.Tipo.Rectangulo
+      Mila.Tipo.Rectángulo
     ]
   });
-  return Mila.Geometria.rectanguloCentradoEn__De_x_(-Infinity, -Infinity, Infinity, Infinity);
+  return Mila.Geometria.rectánguloCentradoEn__De_x_(-Infinity, -Infinity, Infinity, Infinity);
 };
 
-Mila.Geometria.circuloEn__DeRadio_ = function(x, y, radio) {
+Mila.Geometria.círculoEn__DeRadio_ = function(x, y, radio) {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir un nuevo círculo centrado en las coordenadas dadas y con el radio dado",
-      Mila.Tipo.Circulo
+      Mila.Tipo.Círculo
     ],
-    Parametros: [
+    Parámetros: [
       [x, Mila.Tipo.Numero],
       [y, Mila.Tipo.Numero],
       [radio, Mila.Tipo.Numero]
     ]
   });
-  return new Mila.Geometria._Circulo(x, y, radio)
+  return new Mila.Geometria._Círculo(x, y, radio)
 };
 
 Mila.Geometria._Figura = function Figura() {};
 
 Mila.Geometria._Figura.prototype.copia = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir una nueva figura idéntica a esta",
       Mila.Tipo.Figura
     ]
@@ -100,11 +100,11 @@ Mila.Geometria._Figura.prototype.copia = function() {
 
 Mila.Geometria._Figura.prototype.trasladado_En_ = function(cantidad, eje) {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir una nueva figura igual a esta pero trasladada en el eje dado tanto como la cantidad dada",
       Mila.Tipo.Figura
     ],
-    Parametros: [
+    Parámetros: [
       [cantidad, Mila.Tipo.Numero],
       [eje, Mila.Tipo.Texto]
     ]
@@ -116,8 +116,8 @@ Mila.Geometria._Figura.prototype.trasladado_En_ = function(cantidad, eje) {
 
 Mila.Geometria._Figura.prototype.Trasladar_En_ = function(cantidad, eje) {
   Mila.Contrato({
-    Proposito: "Trasladar esta figura en el eje dado tanto como la cantidad dada",
-    Parametros: [
+    Propósito: "Trasladar esta figura en el eje dado tanto como la cantidad dada",
+    Parámetros: [
       [cantidad, Mila.Tipo.Numero],
       [eje, Mila.Tipo.Texto]
     ]
@@ -130,8 +130,8 @@ Mila.Geometria._Figura.prototype.Trasladar_En_ = function(cantidad, eje) {
 
 Mila.Geometria._Figura.prototype.CambiarAnchoA_ = function(nuevoAncho) {
   Mila.Contrato({
-    Proposito: "Cambiar el ancho de esta figura por el dado",
-    Parametros: [
+    Propósito: "Cambiar el ancho de esta figura por el dado",
+    Parámetros: [
       [nuevoAncho, Mila.Tipo.Numero]
     ],
     Precondiciones: [
@@ -144,8 +144,8 @@ Mila.Geometria._Figura.prototype.CambiarAnchoA_ = function(nuevoAncho) {
 
 Mila.Geometria._Figura.prototype.CambiarAltoA_ = function(nuevoAlto) {
   Mila.Contrato({
-    Proposito: "Cambiar el alto de esta figura por el dado",
-    Parametros: [
+    Propósito: "Cambiar el alto de esta figura por el dado",
+    Parámetros: [
       [nuevoAlto, Mila.Tipo.Numero]
     ],
     Precondiciones: [
@@ -164,7 +164,7 @@ Object.setPrototypeOf(Mila.Geometria._Punto.prototype, Mila.Geometria._Figura.pr
 
 Mila.Geometria._Punto.prototype.copia = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir un nuevo punto idéntico a este",
       Mila.Tipo.Punto
     ]
@@ -172,27 +172,27 @@ Mila.Geometria._Punto.prototype.copia = function() {
   return Mila.Geometria.puntoEn__(this.x,this.y);
 };
 
-Mila.Geometria._Rectangulo = function Rectangulo(x, y, ancho, alto) {
+Mila.Geometria._Rectángulo = function Rectángulo(x, y, ancho, alto) {
   this.x = x;
   this.y = y;
   this.ancho = ancho;
   this.alto = alto;
 };
-Object.setPrototypeOf(Mila.Geometria._Rectangulo.prototype, Mila.Geometria._Figura.prototype);
+Object.setPrototypeOf(Mila.Geometria._Rectángulo.prototype, Mila.Geometria._Figura.prototype);
 
-Mila.Geometria._Rectangulo.prototype.copia = function() {
+Mila.Geometria._Rectángulo.prototype.copia = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir un nuevo rectángulo idéntico a este",
-      Mila.Tipo.Rectangulo
+      Mila.Tipo.Rectángulo
     ]
   });
-  return Mila.Geometria.rectanguloEn__De_x_(this.x, this.y, this.ancho, this.alto);
+  return Mila.Geometria.rectánguloEn__De_x_(this.x, this.y, this.ancho, this.alto);
 };
 
-Mila.Geometria._Rectangulo.prototype.centro = function() {
+Mila.Geometria._Rectángulo.prototype.centro = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir el centro de este rectángulo",
       Mila.Tipo.Punto
     ]
@@ -200,26 +200,26 @@ Mila.Geometria._Rectangulo.prototype.centro = function() {
   return Mila.Geometria.puntoEn__(this.x + this.ancho/2, this.y + this.alto/2);
 };
 
-Mila.Geometria._Circulo = function Circulo(x, y, radio) {
+Mila.Geometria._Círculo = function Círculo(x, y, radio) {
   this.x = x;
   this.y = y;
   this.radio = radio;
 };
-Object.setPrototypeOf(Mila.Geometria._Circulo.prototype, Mila.Geometria._Figura.prototype);
+Object.setPrototypeOf(Mila.Geometria._Círculo.prototype, Mila.Geometria._Figura.prototype);
 
-Mila.Geometria._Circulo.prototype.copia = function() {
+Mila.Geometria._Círculo.prototype.copia = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir un nuevo círulo idéntico a este",
-      Mila.Tipo.Circulo
+      Mila.Tipo.Círculo
     ]
   });
-  return Mila.Geometria.circuloEn__DeRadio_(this.x,this.y,this.radio);
+  return Mila.Geometria.círculoEn__DeRadio_(this.x,this.y,this.radio);
 };
 
-Mila.Geometria._Circulo.prototype.centro = function() {
+Mila.Geometria._Círculo.prototype.centro = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir el centro de este círculo",
       Mila.Tipo.Punto
     ]
@@ -245,9 +245,9 @@ Mila.Tipo.Registrar({
 });
 
 Mila.Tipo.Registrar({
-  nombre: "Rectangulo",
-  prototipo: Mila.Geometria._Rectangulo,
-  es: 'esUnRectangulo',
+  nombre: "Rectángulo",
+  prototipo: Mila.Geometria._Rectángulo,
+  es: 'esUnRectángulo',
   igualdad: ['x', 'y', 'ancho', 'alto'],
   strTipo: "Rectángulo",
   strInstancia: function(elemento) {
@@ -258,7 +258,7 @@ Mila.Tipo.Registrar({
 
 Mila.Tipo.Registrar({
   nombre: "Cuadrado",
-  subtipoDe: "Rectangulo",
+  subtipoDe: "Rectángulo",
   es: function esUnCuadrado(elemento) {
     return elemento.ancho == elemento.alto;
   },
@@ -269,9 +269,9 @@ Mila.Tipo.Registrar({
 });
 
 Mila.Tipo.Registrar({
-  nombre: "Circulo",
-  prototipo: Mila.Geometria._Circulo,
-  es: 'esUnCirculo',
+  nombre: "Círculo",
+  prototipo: Mila.Geometria._Círculo,
+  es: 'esUnCírculo',
   igualdad: ['x', 'y', 'radio'],
   strTipo: "Círculo",
   strInstancia: function(elemento) {
@@ -280,7 +280,21 @@ Mila.Tipo.Registrar({
   subtipoDe: "Figura"
 });
 
-Mila.Geometria.areaDom_ = function(dom) {
-  let rectanguloDom = dom.getBoundingClientRect();
-  return Mila.Geometria.rectanguloEn__De_x_(rectanguloDom.left, rectanguloDom.top, Math.floor(rectanguloDom.width), Math.floor(rectanguloDom.height));
+Mila.Geometria.áreaDom_ = function(dom) {
+  Mila.Contrato({
+    Propósito: [
+      "Describir el rectángulo que ocupa el elemento dado en pantalla. No incluye los márgenes externos (el 'margin') pero sí los bordes y los márgenes internos (el 'padding').",
+      Mila.Tipo.Rectángulo
+    ],
+    Parámetros: [
+      [dom]
+    ]
+  });
+  let rectánguloDom = dom.getBoundingClientRect();
+  return Mila.Geometria.rectánguloEn__De_x_(
+    rectánguloDom.left,
+    rectánguloDom.top,
+    Math.floor(rectánguloDom.width),
+    Math.floor(rectánguloDom.height)
+  );
 };

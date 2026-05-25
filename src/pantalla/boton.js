@@ -22,7 +22,7 @@ Mila.Pantalla.nuevoBoton = function(atributos={}) {
   });
   let nuevoBoton = new Mila.Pantalla._Boton();
   nuevoBoton.Inicializar(atributos, {grosorBorde:2, colorBorde:"#000",
-    margenInterno:Mila.Geometria.rectanguloEn__De_x_(5,0,5,0),
+    margenInterno:Mila.Geometria.rectánguloEn__De_x_(5,0,5,0),
     cssAdicional:{'border-radius':'5px'}
   });
   return nuevoBoton;

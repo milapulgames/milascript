@@ -4,6 +4,15 @@ Mila.Módulo({
   necesita:["tipo","geometria"]
 });
 
+/* Notas:
+  - Mila.Geometria.áreaDom_ devuelve el área que incluye el contenido, los márgenes interiores (el 'padding') y
+      los bordes. No incluye los márgenes exteriores (el 'margin').
+  - Las posiciones (x e y) y dimensiones (ancho y alto) de los elementos visuales se consideran para el
+      contenido, incluyendo sus márgenes interiores (el 'padding') pero no sus bordes ni sus márgenes
+      exteriores (el 'margin').
+  - ...
+*/
+
 Mila.Pantalla._pantallas = {};
 Mila.Pantalla._pantallaActual = Mila.Nada;
 
@@ -70,8 +79,8 @@ Mila.Tipo.Registrar({
     "?colorFondo":Mila.Tipo.Texto,
     "?grosorBorde":Mila.Tipo.Entero,
     "?colorBorde":Mila.Tipo.Texto, // ¿Color?
-    "?margenInterno":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Tipo.Rectangulo]),
-    "?margenExterno":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Tipo.Rectangulo]),
+    "?margenInterno":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Tipo.Rectángulo]),
+    "?margenExterno":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Tipo.Rectángulo]),
     "?cssAdicional":Mila.Tipo.Registro,
     "?visible":Mila.Tipo.Booleano,
     "?funcion":Mila.Tipo.Funcion, // Este elemento queda ligado a this
@@ -98,8 +107,8 @@ Mila.Pantalla._ElementoVisual = function ElementoVisual() {};
 
 Mila.Pantalla._ElementoVisual.prototype.Inicializar = function(atributos, porDefecto=Mila.Pantalla.AtributosElementoVisualPorDefecto) {
   Mila.Contrato({
-    Proposito: "Inicializar este elemento visual asignando sus campos básicos",
-    Parametros: [
+    Propósito: "Inicializar este elemento visual asignando sus campos básicos",
+    Parámetros: [
       [atributos, Mila.Tipo.AtributosElementoVisual],
       [porDefecto, Mila.Tipo.AtributosElementoVisual]
     ]
@@ -137,7 +146,7 @@ Mila.Pantalla._ElementoVisual.prototype.Inicializar = function(atributos, porDef
 
 Mila.Pantalla._ElementoVisual.prototype.atributos = function() {
   Mila.Contrato({
-    Proposito: ["Describir los atributos de este elemento visual", Mila.Tipo.AtributosElementoVisual]
+    Propósito: ["Describir los atributos de este elemento visual", Mila.Tipo.AtributosElementoVisual]
   });
   const atributos = {
     posiciónX:this.comportamientoPosiciónX(),
@@ -179,8 +188,8 @@ Object.setPrototypeOf(Mila.Pantalla._ElementoVisualTextual.prototype, Mila.Panta
 
 Mila.Pantalla._ElementoVisualTextual.prototype.Inicializar = function(atributos, porDefecto=Mila.Pantalla.AtributosElementoVisualTextualPorDefecto) {
   Mila.Contrato({
-    Proposito: "Inicializar este elemento visual textual asignando sus campos básicos",
-    Parametros: [
+    Propósito: "Inicializar este elemento visual textual asignando sus campos básicos",
+    Parámetros: [
       [atributos, Mila.Tipo.AtributosElementoVisualTextual],
       [porDefecto, Mila.Tipo.AtributosElementoVisualTextual]
     ]
@@ -197,7 +206,7 @@ Mila.Pantalla._ElementoVisualTextual.prototype.Inicializar = function(atributos,
 
 Mila.Pantalla._ElementoVisualTextual.prototype.atributos = function() {
   Mila.Contrato({
-    Proposito: ["Describir los atributos de este elemento visual textual", Mila.Tipo.AtributosElementoArrastrable]
+    Propósito: ["Describir los atributos de este elemento visual textual", Mila.Tipo.AtributosElementoArrastrable]
   });
   return Object.assign({
     tamanioLetra: this._tamanioLetra,
@@ -205,170 +214,194 @@ Mila.Pantalla._ElementoVisualTextual.prototype.atributos = function() {
   }, Mila.Pantalla._ElementoVisual.prototype.atributos.call(this));
 };
 
-Mila.Pantalla._ElementoVisual.prototype.rectanguloInterno = function(rectanguloCompleto) {
+Mila.Pantalla._ElementoVisual.prototype.Redimensionar = function(rectánguloCompleto) {
   Mila.Contrato({
-    Proposito: [
-      "Describir el rectángulo interno de este elemento visual tras redimensionarlo en el rectángulo dado",
-      Mila.Tipo.Rectangulo
-    ],
-    Parametros: [
-      [rectanguloCompleto, Mila.Tipo.Rectangulo]
-    ]
-  });
-  let rectangulo = rectanguloCompleto.copia();
-  if (this.comportamientoPosiciónX().esUnNumero()) {
-    rectangulo.x = this.posiciónX();
-  }
-  if (this.comportamientoPosiciónY().esUnNumero()) {
-    rectangulo.y = this.posiciónY();
-  }
-  let mHorizontal = 1;
-  let mVertical = 1;
-  if (this.comportamientoAncho().esUnNumero()) {
-    if (rectangulo.ancho < 0) {
-      rectangulo.ancho = maximoEntre_Y_(-this.ancho(), rectangulo.ancho);
-      mHorizontal = -1;
-    } else {
-      rectangulo.ancho = minimoEntre_Y_(this.ancho(), rectangulo.ancho);
-    }
-  }
-  if (this.comportamientoAlto().esUnNumero()) {
-    if (rectangulo.alto < 0) {
-      rectangulo.alto = maximoEntre_Y_(-this.alto(), rectangulo.alto);
-      mVertical = -1;
-    } else {
-      rectangulo.alto = minimoEntre_Y_(this.alto(), rectangulo.alto);
-    }
-  }
-  // rectangulo.x += mHorizontal*(this.margenInternoIzquierdo() -2*this._grosorBorde);
-  // rectangulo.y += mVertical*(this.margenInternoSuperior() - 2*this._grosorBorde);
-  rectangulo.ancho -= mHorizontal*(2*this._grosorBorde +
-    this.margenInternoIzquierdo() + this.margenInternoDerecho() +
-    this.margenExternoIzquierdo() + this.margenExternoDerecho()
-  );
-  rectangulo.alto -= mVertical*(2*this._grosorBorde +
-    this.margenInternoSuperior() + this.margenInternoInferior() +
-    this.margenExternoSuperior() + this.margenExternoInferior()
-  );
-  let resultado = rectangulo;
-  if ('_nodoHtml' in this) {
-    let xInterno, yInterno;
-    if (rectangulo.ancho < 0) {
-      this._nodoHtml.style.left = '';
-      this._nodoHtml.style.right = `${Mila.Pantalla.ancho() - rectangulo.x}px`;
-      xInterno = rectangulo.x + rectangulo.ancho;
-    } else {
-      this._nodoHtml.style.right = '';
-      this._nodoHtml.style.left = `${rectangulo.x}px`;
-      xInterno = rectangulo.x;
-    };
-    if (rectangulo.alto < 0) {
-      this._nodoHtml.style.top = '';
-      this._nodoHtml.style.bottom = `${Mila.Pantalla.alto() - rectangulo.y}px`;
-      yInterno = rectangulo.y + rectangulo.alto;
-    } else {
-      this._nodoHtml.style.bottom = '';
-      this._nodoHtml.style.top = `${rectangulo.y}px`;
-      yInterno = rectangulo.y;
-    };
-    resultado = Mila.Geometria.rectanguloEn__De_x_(
-      xInterno,
-      yInterno,
-      Math.abs(rectangulo.ancho),
-      Math.abs(rectangulo.alto)
-    );
-  }
-
-  // ¿Lo hago siempre o sólo cuando no es un número fijo?
-  this._posiciónX = resultado.x;
-  this._posiciónY = resultado.y;
-  this._alto = resultado.alto;
-  this._ancho = resultado.ancho;
-  // if (this.comportamientoPosiciónX().esNada()) {
-  //   this._posiciónX = resultado.x;
-  // }
-  // if (this.comportamientoPosiciónY().esNada()) {
-  //   this._posiciónY = resultado.y;
-  // }
-  // if (!this.comportamientoAlto().esUnNumero()) {
-  //   this._alto = resultado.alto;
-  // }
-  // if (!this.comportamientoAlto().esUnNumero()) {
-  //   this._ancho = resultado.ancho;
-  // }
-  return resultado;
-};
-
-Mila.Pantalla._ElementoVisual.prototype.rectanguloMinimo = function(rectanguloCompleto, anchoInvertido=false, altoInvertido=false) {
-  Mila.Contrato({
-    Proposito: [
-      "Describir el rectángulo mínimo ocupado por el elemento html asociado a este elemento visual",
-      Mila.Tipo.Rectangulo
-    ],
-    Parametros: [
-      [anchoInvertido, Mila.Tipo.Booleano, "Si es cierto, al minimizar hay que aumentar la coordenada x además de reducir el ancho"],
-      [altoInvertido, Mila.Tipo.Booleano, "Si es cierto, al minimizar hay que aumentar la coordenada y además de reducir el alto"]
-    ],
-    Precondiciones: [
-      "Se está ejecutando en el navegador",
-      Mila.entorno().enNavegador(),
-      "Hay un elemento html asociado a este elemento visual",
-      '_nodoHtml' in this /* && this._nodoHtml es de tipo nodo dom */
-    ],
-    Parametros: [
-      [rectanguloCompleto, Mila.Tipo.Rectangulo]
-    ]
-  });
-  if (this.comportamientoAncho().esUnNumero()) {
-    this._nodoHtml.style.width = `${this.ancho()}px`;
-  } else if (this.comportamientoAncho().esIgualA_(Mila.Pantalla.ComportamientoEspacio.Minimizar)) {
-    this.MinimizarAncho(anchoInvertido, rectanguloCompleto);
-  } else if (this.comportamientoAncho().esIgualA_(Mila.Pantalla.ComportamientoEspacio.Maximizar)) {
-    if (isFinite(rectanguloCompleto.alto)) {
-      this._nodoHtml.style.width = `${rectanguloCompleto.ancho}px`;
-    } else {
-      this.MinimizarAncho(anchoInvertido, rectanguloCompleto);
-    }
-  }
-  if (this.comportamientoAlto().esUnNumero()) {
-    this._nodoHtml.style.height = `${this.alto()}px`;
-  } else if (this.comportamientoAlto().esIgualA_(Mila.Pantalla.ComportamientoEspacio.Minimizar)) {
-    this.MinimizarAlto(altoInvertido, rectanguloCompleto);
-  } else if (this.comportamientoAlto().esIgualA_(Mila.Pantalla.ComportamientoEspacio.Maximizar)) {
-    if (isFinite(rectanguloCompleto.alto)) {
-      this._nodoHtml.style.height = `${rectanguloCompleto.alto}px`;
-    } else {
-      this.MinimizarAlto(altoInvertido, rectanguloCompleto);
-    }
-  }
-  const resultado = Mila.Geometria.areaDom_(this._nodoHtml);
-  resultado.x -= this.margenExternoIzquierdo();
-  resultado.y -= this.margenExternoSuperior();
-  resultado.ancho += this.margenExternoDerecho();
-  resultado.alto += this.margenExternoInferior();
-  return resultado;
-};
-
-Mila.Pantalla._ElementoVisual.prototype.Redimensionar = function(rectanguloCompleto) {
-  Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Redimensionar este elemento visual para que entre en el rectángulo dado.\
         Devuelve el rectángulo ocupado tras redimensionar.",
-      Mila.Tipo.Rectangulo
+      Mila.Tipo.Rectángulo
     ],
-    Parametros: [
-      [rectanguloCompleto, Mila.Tipo.Rectangulo]
+    Parámetros: [
+      [rectánguloCompleto, Mila.Tipo.Rectángulo]
     ]
   });
-  let resultado = this.rectanguloInterno(rectanguloCompleto);
+  this._anchoDependeDeHtml = false;
+  this._altoDependeDeHtml = false;
+  const rectánguloExterno = this._rectánguloExterno_AjustadoPorConstantes(rectánguloCompleto);
+  this._RedimensionarContenidoInternoEn_(rectánguloExterno);
+  this._AjustarRectánguloExterno_AContenido(rectánguloExterno);
+  const rectánguloInterno = this._rectánguloInternoParaExterno_(rectánguloExterno);
+  this._posiciónX = rectánguloInterno.x;
+  this._posiciónY = rectánguloInterno.y;
+  this._alto = rectánguloInterno.alto;
+  this._ancho = rectánguloInterno.ancho;
   if ('_nodoHtml' in this) {
-    resultado = this.rectanguloMinimo(resultado, rectanguloCompleto.ancho < 0, rectanguloCompleto.alto < 0);
+    this._nodoHtml.style.left = `${rectánguloExterno.x}px`;
+    this._nodoHtml.style.top = `${rectánguloExterno.y}px`;
+    this._nodoHtml.style.width = (this._anchoDependeDeHtml ? '' : `${this._ancho}px`);
+    this._nodoHtml.style.height = (this._altoDependeDeHtml ? '' :`${this._alto}px`);
   }
-  resultado.x -= this.margenExternoIzquierdo();
-  resultado.y -= this.margenExternoSuperior();
-  resultado.ancho += this.margenExternoDerecho();
-  resultado.alto += this.margenExternoInferior();
-  return resultado;
+  this._últimaRedimensión = rectánguloExterno;
+  return rectánguloExterno;
+};
+
+Mila.Pantalla._ElementoVisual.prototype._rectánguloExterno_AjustadoPorConstantes = function(rectánguloCompleto) {
+  Mila.Contrato({
+    Propósito: [
+      "Describir el rectángulo externo que este elemento visual podría llegar a ocupar limitado al rectángulo dado y ajustado únicamente por constantes (es decir, no tiene en cuenta los campos cuyos valores son 'Maximizar' o 'Minimizar'). Si el rectángulo dado es negativo en alguna de sus dimensiones, el resultado también lo es.",
+      Mila.Tipo.Rectángulo
+    ],
+    Parámetros: [
+      [rectánguloCompleto, Mila.Tipo.Rectángulo]
+    ]
+  });
+  let rectángulo = rectánguloCompleto.copia();
+  if (this.comportamientoPosiciónX().esUnNumero()) {
+    let límiteHorizontal = (rectángulo.ancho < 0)
+      ? rectángulo.x
+      : rectángulo.x + rectángulo.ancho
+    ;
+    rectángulo.x = this.comportamientoPosiciónX()
+      - this._grosorBorde
+      - this.margenExternoIzquierdo();
+    rectángulo.ancho = límiteHorizontal - rectángulo.x;
+  }
+  if (this.comportamientoPosiciónY().esUnNumero()) {
+    let límiteVertical = (rectángulo.alto < 0)
+      ? rectángulo.y
+      : rectángulo.y + rectángulo.alto
+    ;
+    rectángulo.y = this.comportamientoPosiciónY()
+      - this._grosorBorde
+      - this.margenExternoSuperior();
+    rectángulo.alto = límiteVertical - rectángulo.y;
+  }
+  if (this.comportamientoAncho().esUnNumero()) {
+    if (rectángulo.ancho < 0) {
+      rectángulo.ancho = maximoEntre_Y_(
+        rectángulo.ancho,
+        -(this.comportamientoAncho() + this.todosLosMárgenesHorizontales())
+      );
+    } else {
+      rectángulo.ancho = minimoEntre_Y_(
+        rectángulo.ancho,
+        this.comportamientoAncho() + this.todosLosMárgenesHorizontales()
+      );
+    }
+  }
+  if (this.comportamientoAlto().esUnNumero()) {
+    if (rectángulo.alto < 0) {
+      rectángulo.alto = maximoEntre_Y_(
+        rectángulo.alto,
+        -(this.comportamientoAlto() + this.todosLosMárgenesVerticales())
+      );
+    } else {
+      rectángulo.alto = minimoEntre_Y_(
+        rectángulo.alto,
+        this.comportamientoAlto() + this.todosLosMárgenesVerticales()
+      );
+    }
+  }
+  return rectángulo;
+};
+
+Mila.Pantalla._ElementoVisual.prototype._RedimensionarContenidoInternoEn_ = function(rectánguloExterno) {
+  Mila.Contrato({
+    Propósito: "Redimensiona el contenido interno de este elemento visual para que entre en el rectángulo dado. Cada subtipo debería implementar su propia versión de este procedimiento.",
+    Parámetros: [
+      [rectánguloExterno, Mila.Tipo.Rectángulo]
+    ]
+  });
+  // No hace nada (responsabilidad del subtipo)
+};
+
+Mila.Pantalla._ElementoVisual.prototype._AjustarRectánguloExterno_AContenido = function(rectánguloExterno) {
+  Mila.Contrato({
+    Propósito: "Ajusta el rectángulo externo dado en función de los comportamientos ('Maximizar' o 'Minimizar') en cada dimensión de este elemento visual y su contenido interno. También lo adapta para que sea positivo en ambas dimensiones.",
+    Parámetros: [
+      [rectánguloExterno, Mila.Tipo.Rectángulo]
+    ]
+  });
+  if (
+    this.comportamientoAncho().esIgualA_(Mila.Pantalla.ComportamientoEspacio.Minimizar) ||
+    (
+      this.comportamientoAncho().esIgualA_(Mila.Pantalla.ComportamientoEspacio.Maximizar) &&
+      !isFinite(rectánguloExterno.ancho)
+    )
+  ) {
+    this._MinimizarAnchoDeRectángulo_(rectánguloExterno);
+  } else if (rectánguloExterno.ancho < 0) {
+    rectánguloExterno.x += rectánguloExterno.ancho;
+    rectánguloExterno.ancho = Math.abs(rectánguloExterno.ancho);
+  }
+  if (
+    this.comportamientoAlto().esIgualA_(Mila.Pantalla.ComportamientoEspacio.Minimizar) ||
+    (
+      this.comportamientoAlto().esIgualA_(Mila.Pantalla.ComportamientoEspacio.Maximizar) &&
+      !isFinite(rectánguloExterno.alto)
+    )
+  ) {
+    this._MinimizarAltoDeRectángulo_(rectánguloExterno);
+  } else if (rectánguloExterno.alto < 0) {
+    rectánguloExterno.y += rectánguloExterno.alto;
+    rectánguloExterno.alto = Math.abs(rectánguloExterno.alto);
+  }
+};
+
+Mila.Pantalla._ElementoVisual.prototype._MinimizarAnchoDeRectángulo_ = function(rectánguloCompleto) {
+  Mila.Contrato({
+    Propósito: "Minimiza el ancho del rectángulo dado para que entre este elemento visual. También lo adapta para que sea positivo.",
+    Parámetros: [
+      [rectánguloCompleto, Mila.Tipo.Rectángulo]
+    ]
+  });
+  const anchoMínimo = this._anchoMínimoExterno();
+  if (rectánguloCompleto.ancho < 0) {
+    rectánguloCompleto.x = rectánguloCompleto.x - anchoMínimo;
+  }
+  rectánguloCompleto.ancho = anchoMínimo;
+};
+
+Mila.Pantalla._ElementoVisual.prototype._MinimizarAltoDeRectángulo_ = function(rectánguloCompleto) {
+  Mila.Contrato({
+    Propósito: "Minimiza el alto del rectángulo dado para que entre este elemento visual. También lo adapta para que sea positivo.",
+    Parámetros: [
+      [rectánguloCompleto, Mila.Tipo.Rectángulo]
+    ]
+  });
+  const altoMínimo = this._altoMínimoExterno();
+  if (rectánguloCompleto.alto < 0) {
+    rectánguloCompleto.y = rectánguloCompleto.y - altoMínimo;
+  }
+  rectánguloCompleto.alto = altoMínimo;
+};
+
+Mila.Pantalla._ElementoVisual.prototype._rectánguloInternoParaExterno_ = function(rectánguloExterno) {
+  Mila.Contrato({
+    Propósito: [
+      "Describir el rectángulo interno de este elemento visual cuando se lo limita al rectángulo externo dado.",
+      Mila.Tipo.Rectángulo
+    ],
+    Parámetros: [
+      [rectánguloExterno, Mila.Tipo.Rectángulo]
+    ]
+  });
+  let rectángulo = rectánguloExterno.copia();
+  let mHorizontal = (rectángulo.ancho > 0 ? 1 : -1);
+  let mVertical = (rectángulo.alto > 0 ? 1 : -1);
+  rectángulo.x += mHorizontal*
+    (this.margenExternoIzquierdo() + this._grosorBorde + this.margenInternoIzquierdo());
+  rectángulo.y += mVertical*
+    (this.margenExternoSuperior() + this._grosorBorde + this.margenInternoSuperior());
+  rectángulo.ancho -= mHorizontal* (
+    this.margenExternoIzquierdo() + this.margenExternoDerecho() +
+    2*this._grosorBorde + this.margenInternoIzquierdo() + this.margenInternoDerecho()
+  );
+  rectángulo.alto -= mVertical* (
+    this.margenExternoSuperior() + this.margenExternoInferior() +
+    2*this._grosorBorde + this.margenInternoSuperior() + this.margenInternoInferior()
+  );
+  return rectángulo;
 };
 
 Mila.Pantalla._ElementoVisual.prototype.Ocultar = function() {
@@ -381,7 +414,7 @@ Mila.Pantalla._ElementoVisual.prototype.Mostrar = function() {
 
 Mila.Pantalla._ElementoVisual.prototype.comportamientoPosiciónX = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir el comportamiento de la posición en el eje X de este elemento visual.\
         Puede ser un número o nada.",
       Mila.Tipo.O([Mila.Tipo.Entero, Mila.Tipo.Nada])
@@ -392,7 +425,7 @@ Mila.Pantalla._ElementoVisual.prototype.comportamientoPosiciónX = function() {
 
 Mila.Pantalla._ElementoVisual.prototype.posiciónX = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir la posición en el eje X de este elemento visual.",
       Mila.Tipo.Entero
     ],
@@ -402,7 +435,7 @@ Mila.Pantalla._ElementoVisual.prototype.posiciónX = function() {
 
 Mila.Pantalla._ElementoVisual.prototype.posiciónXEnPantalla = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir la posición en el eje X de este elemento visual respecto al origen de la pantalla .",
       Mila.Tipo.Entero
     ],
@@ -412,7 +445,7 @@ Mila.Pantalla._ElementoVisual.prototype.posiciónXEnPantalla = function() {
 
 Mila.Pantalla._ElementoVisual.prototype.comportamientoPosiciónY = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir el comportamiento de la posición en el eje Y de este elemento visual.\
         Puede ser un número o nada.",
       Mila.Tipo.O([Mila.Tipo.Entero, Mila.Tipo.Nada])
@@ -423,7 +456,7 @@ Mila.Pantalla._ElementoVisual.prototype.comportamientoPosiciónY = function() {
 
 Mila.Pantalla._ElementoVisual.prototype.posiciónY = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir la posición en el eje Y de este elemento visual respecto a su elemento madre.",
       Mila.Tipo.Entero
     ],
@@ -433,7 +466,7 @@ Mila.Pantalla._ElementoVisual.prototype.posiciónY = function() {
 
 Mila.Pantalla._ElementoVisual.prototype.posiciónYEnPantalla = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir la posición en el eje Y de este elemento visual respecto al origen de la pantalla .",
       Mila.Tipo.Entero
     ],
@@ -443,7 +476,7 @@ Mila.Pantalla._ElementoVisual.prototype.posiciónYEnPantalla = function() {
 
 Mila.Pantalla._ElementoVisual.prototype.comportamientoAncho = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir el comportamiento del ancho de este elemento visual.\
         Puede ser un número, un comportamiento (maximizar o minimizar) o nada.",
       Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Tipo.Nada])
@@ -454,21 +487,47 @@ Mila.Pantalla._ElementoVisual.prototype.comportamientoAncho = function() {
 
 Mila.Pantalla._ElementoVisual.prototype.ancho = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir el ancho de este elemento visual.",
       Mila.Tipo.Entero
     ],
   });
+  if (this.comportamientoAncho().esUnNumero()) {
+    return this.comportamientoAncho();
+  }
   if ('_nodoHtml' in this) {
+    this._anchoDependeDeHtml = true;
     return this.anchoHtml();
   }
   return this._ancho;
 };
 
+Mila.Pantalla._ElementoVisual.prototype._anchoMínimo = function() {
+  Mila.Contrato({
+    Propósito: [
+      "Describir el ancho mínimo de este elemento visual. Cada subtipo debería implementar su propia versión de esta función.",
+      Mila.Tipo.Entero
+    ],
+  });
+  // Describe lo mismo que ancho (responsabilidad del subtipo)
+  return this.ancho();
+};
+
+Mila.Pantalla._ElementoVisual.prototype._anchoMínimoExterno = function() {
+  Mila.Contrato({
+    Propósito: [
+      "Describir el ancho mínimo de este elemento visual. Inlcuye el margen externo (el 'margin'), el borde y el margen interno (el 'padding').",
+      Mila.Tipo.Entero
+    ],
+  });
+  return this._anchoMínimo() + this.todosLosMárgenesHorizontales();
+  ;
+};
+
 Mila.Pantalla._ElementoVisual.prototype.anchoHtml = function() {
   Mila.Contrato({
-    Proposito: [
-      "Describir el ancho en píxeles del elemento html de este elemento visual",
+    Propósito: [
+      "Describir el ancho en píxeles del elemento html de este elemento visual. No incluye ningún margen.",
       Mila.Tipo.Entero
     ],
     Precondiciones: [
@@ -478,13 +537,13 @@ Mila.Pantalla._ElementoVisual.prototype.anchoHtml = function() {
       '_nodoHtml' in this /* && this._nodoHtml es de tipo nodo dom */
     ]
   });
-  return Mila.Geometria.areaDom_(this._nodoHtml).ancho + this._grosorBorde +
-    this.margenExternoDerecho() + this.margenExternoIzquierdo();
+  return Mila.Geometria.áreaDom_(this._nodoHtml).ancho - 2*this._grosorBorde
+    - this.margenInternoDerecho() - this.margenInternoIzquierdo();
 };
 
 Mila.Pantalla._ElementoVisual.prototype.anchoBarraScroll = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir el ancho en píxeles de la barra vertical de scroll del elemento html de este elemento visual",
       Mila.Tipo.Entero
     ],
@@ -498,26 +557,9 @@ Mila.Pantalla._ElementoVisual.prototype.anchoBarraScroll = function() {
   return this._nodoHtml.scrollHeight > this._nodoHtml.clientHeight ? Mila.Pantalla.Constantes.grosorBarraScroll : 0;
 };
 
-Mila.Pantalla._ElementoVisual.prototype.MinimizarAncho = function(anchoInvertido, rectanguloCompleto) {
-  Mila.Contrato({
-    Proposito: "Minimizar el ancho del elemento html de este elemento visual",
-    Parametros: [
-      [anchoInvertido, Mila.Tipo.Booleano, "Si es cierto, hay que aumentar la coordenada x además de reducir el ancho"],
-      [rectanguloCompleto, Mila.Tipo.Rectangulo, "Área total disponible (necesaria en el caso de que el ancho esté invertido)"]
-    ],
-    Precondiciones: [
-      "Se está ejecutando en el navegador",
-      Mila.entorno().enNavegador(),
-      "Hay un elemento html asociado a este elemento visual",
-      '_nodoHtml' in this /* && this._nodoHtml es de tipo nodo dom */
-    ]
-  });
-  this._nodoHtml.style.width = '';
-};
-
 Mila.Pantalla._ElementoVisual.prototype.comportamientoAlto = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir el comportamiento del alto de este elemento visual.\
         Puede ser un número, un comportamiento (maximizar o minimizar) o nada.",
       Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Tipo.Nada])
@@ -528,21 +570,46 @@ Mila.Pantalla._ElementoVisual.prototype.comportamientoAlto = function() {
 
 Mila.Pantalla._ElementoVisual.prototype.alto = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir el alto de este elemento visual.",
       Mila.Tipo.Entero
     ],
   });
+  if (this.comportamientoAlto().esUnNumero()) {
+    return this.comportamientoAlto();
+  }
   if ('_nodoHtml' in this) {
+    this._altoDependeDeHtml = true;
     return this.altoHtml();
   }
   return this._alto;
 };
 
+Mila.Pantalla._ElementoVisual.prototype._altoMínimo = function() {
+  Mila.Contrato({
+    Propósito: [
+      "Describir el alto mínimo de este elemento visual. Cada subtipo debería implementar su propia versión de esta función.",
+      Mila.Tipo.Entero
+    ],
+  });
+  // Describe lo mismo que alto (responsabilidad del subtipo)
+  return this.alto();
+};
+
+Mila.Pantalla._ElementoVisual.prototype._altoMínimoExterno = function() {
+  Mila.Contrato({
+    Propósito: [
+      "Describir el alto mínimo de este elemento visual. Inlcuye el margen externo (el 'margin'), el borde y el margen interno (el 'padding').",
+      Mila.Tipo.Entero
+    ],
+  });
+    return this._altoMínimo() + this.todosLosMárgenesVerticales();
+};
+
 Mila.Pantalla._ElementoVisual.prototype.altoHtml = function() {
   Mila.Contrato({
-    Proposito: [
-      "Describir el alto en píxeles del elemento html de este elemento visual",
+    Propósito: [
+      "Describir el alto en píxeles del elemento html de este elemento visual. No incluye ningún margen.",
       Mila.Tipo.Entero
     ],
     Precondiciones: [
@@ -552,13 +619,13 @@ Mila.Pantalla._ElementoVisual.prototype.altoHtml = function() {
       '_nodoHtml' in this /* && this._nodoHtml es de tipo nodo dom */
     ]
   });
-  return Mila.Geometria.areaDom_(this._nodoHtml).alto + this._grosorBorde +
-    this.margenExternoSuperior() + this.margenExternoInferior();
+  return Mila.Geometria.áreaDom_(this._nodoHtml).alto - 2*this._grosorBorde
+    - this.margenInternoSuperior() + this.margenInternoInferior();
 };
 
 Mila.Pantalla._ElementoVisual.prototype.altoBarraScroll = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir el alto en píxeles de la barra horizontal de scroll del elemento html de este elemento visual",
       Mila.Tipo.Entero
     ],
@@ -572,26 +639,9 @@ Mila.Pantalla._ElementoVisual.prototype.altoBarraScroll = function() {
   return this._nodoHtml.scrollWidth > this._nodoHtml.clientWidth ? Mila.Pantalla.Constantes.grosorBarraScroll : 0;
 };
 
-Mila.Pantalla._ElementoVisual.prototype.MinimizarAlto = function(altoInvertido, rectanguloCompleto) {
-  Mila.Contrato({
-    Proposito: "Minimizar el alto del elemento html de este elemento visual",
-    Parametros: [
-      [altoInvertido, Mila.Tipo.Booleano, "Si es cierto, al minimizar hay que aumentar la coordenada y además de reducir el alto"],
-      [rectanguloCompleto, Mila.Tipo.Rectangulo, "Área total disponible (necesaria en el caso de que el alto esté invertido)"]
-    ],
-    Precondiciones: [
-      "Se está ejecutando en el navegador",
-      Mila.entorno().enNavegador(),
-      "Hay un elemento html asociado a este elemento visual",
-      '_nodoHtml' in this /* && this._nodoHtml es de tipo nodo dom */
-    ]
-  });
-  this._nodoHtml.style.height = '';
-};
-
 Mila.Pantalla._ElementoVisual.prototype.visible = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Indicar si este elemento visual es visible",
       Mila.Tipo.Booleano
     ],
@@ -601,8 +651,8 @@ Mila.Pantalla._ElementoVisual.prototype.visible = function() {
 
 Mila.Pantalla._ElementoVisual.prototype.CambiarPosiciónXA_ = function(nuevaPosiciónX) {
   Mila.Contrato({
-    Proposito: "Reemplazar (el comportamiento para) la posición X de este elemento visual por la dada",
-    Parametros: [
+    Propósito: "Reemplazar (el comportamiento para) la posición X de este elemento visual por la dada",
+    Parámetros: [
       [nuevaPosiciónX, Mila.Tipo.O([Mila.Tipo.Entero,Mila.Tipo.Nada])]
     ]
   });
@@ -616,8 +666,8 @@ Mila.Pantalla._ElementoVisual.prototype.CambiarPosiciónXA_ = function(nuevaPosi
 
 Mila.Pantalla._ElementoVisual.prototype.CambiarPosiciónYA_ = function(nuevaPosiciónY) {
   Mila.Contrato({
-    Proposito: "Reemplazar la posición Y de este elemento visual por la dada",
-    Parametros: [
+    Propósito: "Reemplazar la posición Y de este elemento visual por la dada",
+    Parámetros: [
       [nuevaPosiciónY, Mila.Tipo.O([Mila.Tipo.Entero,Mila.Tipo.Nada])]
     ]
   });
@@ -631,8 +681,8 @@ Mila.Pantalla._ElementoVisual.prototype.CambiarPosiciónYA_ = function(nuevaPosi
 
 Mila.Pantalla._ElementoVisual.prototype.CambiarAnchoA_ = function(nuevoAncho) {
   Mila.Contrato({
-    Proposito: "Reemplazar el ancho de este elemento visual por el dado",
-    Parametros: [
+    Propósito: "Reemplazar el ancho de este elemento visual por el dado",
+    Parámetros: [
       [nuevoAncho, Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio])]
     ]
   });
@@ -649,8 +699,8 @@ Mila.Pantalla._ElementoVisual.prototype.CambiarAnchoA_ = function(nuevoAncho) {
 
 Mila.Pantalla._ElementoVisual.prototype.CambiarAltoA_ = function(nuevoAlto) {
   Mila.Contrato({
-    Proposito: "Reemplazar el alto de este elemento visual por el dado",
-    Parametros: [
+    Propósito: "Reemplazar el alto de este elemento visual por el dado",
+    Parámetros: [
       [nuevoAlto, Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio])]
     ]
   });
@@ -667,8 +717,8 @@ Mila.Pantalla._ElementoVisual.prototype.CambiarAltoA_ = function(nuevoAlto) {
 
 Mila.Pantalla._ElementoVisual.prototype.CambiarColorFondoA_ = function(nuevoColorFondo) {
   Mila.Contrato({
-    Proposito: "Reemplazar el color de fondo de este elemento visual por el dado",
-    Parametros: [
+    Propósito: "Reemplazar el color de fondo de este elemento visual por el dado",
+    Parámetros: [
       [nuevoColorFondo, Mila.Tipo.Texto]
     ]
   });
@@ -680,8 +730,8 @@ Mila.Pantalla._ElementoVisual.prototype.CambiarColorFondoA_ = function(nuevoColo
 
 Mila.Pantalla._ElementoVisual.prototype.CambiarGrosorBordeA_ = function(nuevoGrosorBorde) {
   Mila.Contrato({
-    Proposito: "Reemplazar el grosor del borde de este elemento visual por el dado",
-    Parametros: [
+    Propósito: "Reemplazar el grosor del borde de este elemento visual por el dado",
+    Parámetros: [
       [nuevoGrosorBorde, Mila.Tipo.Entero]
     ]
   });
@@ -693,8 +743,8 @@ Mila.Pantalla._ElementoVisual.prototype.CambiarGrosorBordeA_ = function(nuevoGro
 
 Mila.Pantalla._ElementoVisual.prototype.CambiarColorBordeA_ = function(nuevoColorBorde) {
   Mila.Contrato({
-    Proposito: "Reemplazar el color del borde de este elemento visual por el dado",
-    Parametros: [
+    Propósito: "Reemplazar el color del borde de este elemento visual por el dado",
+    Parámetros: [
       [nuevoColorBorde, Mila.Tipo.Texto]
     ]
   });
@@ -706,9 +756,9 @@ Mila.Pantalla._ElementoVisual.prototype.CambiarColorBordeA_ = function(nuevoColo
 
 Mila.Pantalla._ElementoVisual.prototype.CambiarMargenInternoA_ = function(nuevoMargenInterno) {
   Mila.Contrato({
-    Proposito: "Reemplazar el margen interno de este elemento visual por el dado",
-    Parametros: [
-      [nuevoMargenInterno, Mila.Tipo.O([Mila.Tipo.Entero,Mila.Tipo.Rectangulo])]
+    Propósito: "Reemplazar el margen interno de este elemento visual por el dado",
+    Parámetros: [
+      [nuevoMargenInterno, Mila.Tipo.O([Mila.Tipo.Entero,Mila.Tipo.Rectángulo])]
     ]
   });
   this._margenInterno = nuevoMargenInterno;
@@ -716,9 +766,9 @@ Mila.Pantalla._ElementoVisual.prototype.CambiarMargenInternoA_ = function(nuevoM
 
 Mila.Pantalla._ElementoVisual.prototype.CambiarMargenExternoA_ = function(nuevoMargenExterno) {
   Mila.Contrato({
-    Proposito: "Reemplazar el margen externo de este elemento visual por el dado",
-    Parametros: [
-      [nuevoMargenExterno, Mila.Tipo.O([Mila.Tipo.Entero,Mila.Tipo.Rectangulo])]
+    Propósito: "Reemplazar el margen externo de este elemento visual por el dado",
+    Parámetros: [
+      [nuevoMargenExterno, Mila.Tipo.O([Mila.Tipo.Entero,Mila.Tipo.Rectángulo])]
     ]
   });
   this._margenExterno = nuevoMargenExterno;
@@ -726,8 +776,8 @@ Mila.Pantalla._ElementoVisual.prototype.CambiarMargenExternoA_ = function(nuevoM
 
 Mila.Pantalla._ElementoVisual.prototype.CambiarCssAdicionalA_ = function(nuevoCss) {
   Mila.Contrato({
-    Proposito: "Reemplazar el diccionario css de este elemento visual por el dado",
-    Parametros: [
+    Propósito: "Reemplazar el diccionario css de este elemento visual por el dado",
+    Parámetros: [
       [nuevoCss, Mila.Tipo.Registro]
     ]
   });
@@ -736,8 +786,8 @@ Mila.Pantalla._ElementoVisual.prototype.CambiarCssAdicionalA_ = function(nuevoCs
 
 Mila.Pantalla._ElementoVisual.prototype.CambiarVisibilidadA_ = function(nuevoValorVisibilidad) {
   Mila.Contrato({
-    Proposito: "Reemplazar el valor de visibilidad de este elemento visual por el dado",
-    Parametros: [
+    Propósito: "Reemplazar el valor de visibilidad de este elemento visual por el dado",
+    Parámetros: [
       [nuevoValorVisibilidad, Mila.Tipo.Booleano]
     ]
   });
@@ -749,8 +799,8 @@ Mila.Pantalla._ElementoVisual.prototype.CambiarVisibilidadA_ = function(nuevoVal
 
 Mila.Pantalla._ElementoVisual.prototype.CambiarFuncionA_ = function(nuevaFuncion) {
   Mila.Contrato({
-    Proposito: "Reemplazar la función de este elemento visual por la dada",
-    Parametros: [
+    Propósito: "Reemplazar la función de este elemento visual por la dada",
+    Parámetros: [
       [nuevaFuncion, Mila.Tipo.Funcion]
     ]
   });
@@ -763,8 +813,8 @@ Mila.Pantalla._ElementoVisual.prototype.CambiarFuncionA_ = function(nuevaFuncion
 
 Mila.Pantalla._ElementoVisualTextual.prototype.CambiarTextoA_ = function(nuevoTexto) {
   Mila.Contrato({
-    Proposito: "Reemplazar el texto de este elemento visual textual por el dado",
-    Parametros: [
+    Propósito: "Reemplazar el texto de este elemento visual textual por el dado",
+    Parámetros: [
       [nuevoTexto, Mila.Tipo.Texto]
     ]
   });
@@ -776,8 +826,8 @@ Mila.Pantalla._ElementoVisualTextual.prototype.CambiarTextoA_ = function(nuevoTe
 
 Mila.Pantalla._ElementoVisualTextual.prototype.CambiarTamanioLetraA_ = function(nuevoTamanioLetra) {
   Mila.Contrato({
-    Proposito: "Reemplazar el tamaño de letra de este elemento visual textual por el dado",
-    Parametros: [
+    Propósito: "Reemplazar el tamaño de letra de este elemento visual textual por el dado",
+    Parámetros: [
       [nuevoTamanioLetra, Mila.Tipo.Entero]
     ]
   });
@@ -789,8 +839,8 @@ Mila.Pantalla._ElementoVisualTextual.prototype.CambiarTamanioLetraA_ = function(
 
 Mila.Pantalla._ElementoVisualTextual.prototype.CambiarColorTextoA_ = function(nuevoColorTexto) {
   Mila.Contrato({
-    Proposito: "Reemplazar el color de texto de este elemento visual textual por el dado",
-    Parametros: [
+    Propósito: "Reemplazar el color de texto de este elemento visual textual por el dado",
+    Parámetros: [
       [nuevoColorTexto, Mila.Tipo.Texto]
     ]
   });
@@ -802,7 +852,7 @@ Mila.Pantalla._ElementoVisualTextual.prototype.CambiarColorTextoA_ = function(nu
 
 Mila.Pantalla._ElementoVisual.prototype.margenInternoIzquierdo = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir el valor de margen interno izquierdo de este elemento visual",
       Mila.Tipo.Entero
     ]
@@ -812,7 +862,7 @@ Mila.Pantalla._ElementoVisual.prototype.margenInternoIzquierdo = function() {
 
 Mila.Pantalla._ElementoVisual.prototype.margenInternoDerecho = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir el valor de margen interno derecho de este elemento visual",
       Mila.Tipo.Entero
     ]
@@ -822,7 +872,7 @@ Mila.Pantalla._ElementoVisual.prototype.margenInternoDerecho = function() {
 
 Mila.Pantalla._ElementoVisual.prototype.margenInternoSuperior = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir el valor de margen interno superior de este elemento visual",
       Mila.Tipo.Entero
     ]
@@ -832,7 +882,7 @@ Mila.Pantalla._ElementoVisual.prototype.margenInternoSuperior = function() {
 
 Mila.Pantalla._ElementoVisual.prototype.margenInternoInferior = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir el valor de margen interno inferior de este elemento visual",
       Mila.Tipo.Entero
     ]
@@ -842,7 +892,7 @@ Mila.Pantalla._ElementoVisual.prototype.margenInternoInferior = function() {
 
 Mila.Pantalla._ElementoVisual.prototype.margenExternoIzquierdo = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir el valor de margen externo izquierdo de este elemento visual",
       Mila.Tipo.Entero
     ]
@@ -852,7 +902,7 @@ Mila.Pantalla._ElementoVisual.prototype.margenExternoIzquierdo = function() {
 
 Mila.Pantalla._ElementoVisual.prototype.margenExternoDerecho = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir el valor de margen externo derecho de este elemento visual",
       Mila.Tipo.Entero
     ]
@@ -862,7 +912,7 @@ Mila.Pantalla._ElementoVisual.prototype.margenExternoDerecho = function() {
 
 Mila.Pantalla._ElementoVisual.prototype.margenExternoSuperior = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir el valor de margen externo superior de este elemento visual",
       Mila.Tipo.Entero
     ]
@@ -872,7 +922,7 @@ Mila.Pantalla._ElementoVisual.prototype.margenExternoSuperior = function() {
 
 Mila.Pantalla._ElementoVisual.prototype.margenExternoInferior = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir el valor de margen externo inferior de este elemento visual",
       Mila.Tipo.Entero
     ]
@@ -880,14 +930,40 @@ Mila.Pantalla._ElementoVisual.prototype.margenExternoInferior = function() {
   return this._margenExterno.esUnNumero() ? this._margenExterno : this._margenExterno.alto;
 };
 
-Mila.Pantalla._ElementoVisual.prototype.área = function() {
+Mila.Pantalla._ElementoVisual.prototype.todosLosMárgenesHorizontales = function() {
   Mila.Contrato({
-    Proposito: [
-      "Describir el área que ocupa este elemento visual",
-      Mila.Tipo.Rectangulo
+    Propósito: [
+      "Describir la suma de todos lo márgenes (el externo, el borde y el interno) horizontales este elemento visual",
+      Mila.Tipo.Entero
     ]
   });
-  return Mila.Geometria.rectanguloEn__De_x_(
+  return 2*this._grosorBorde +
+    this.margenExternoIzquierdo() + this.margenInternoIzquierdo() +
+    this.margenExternoDerecho() + this.margenInternoDerecho()
+  ;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.todosLosMárgenesVerticales = function() {
+  Mila.Contrato({
+    Propósito: [
+      "Describir la suma de todos lo márgenes (el externo, el borde y el interno) verticales este elemento visual",
+      Mila.Tipo.Entero
+    ]
+  });
+  return 2*this._grosorBorde +
+    this.margenExternoSuperior() + this.margenInternoSuperior() +
+    this.margenExternoInferior() + this.margenInternoInferior()
+  ;
+};
+
+Mila.Pantalla._ElementoVisual.prototype.áreaDeContenido = function() {
+  Mila.Contrato({
+    Propósito: [
+      "Describir el área que ocupa este elemento visual. No incluye márgenes.",
+      Mila.Tipo.Rectángulo
+    ]
+  });
+  return Mila.Geometria.rectánguloEn__De_x_(
     this.posiciónXEnPantalla(),
     this.posiciónYEnPantalla(),
     this.ancho(),
@@ -895,9 +971,24 @@ Mila.Pantalla._ElementoVisual.prototype.área = function() {
   );
 };
 
+Mila.Pantalla._ElementoVisual.prototype.áreaTotal = function() {
+  Mila.Contrato({
+    Propósito: [
+      "Describir el área que ocupa este elemento visual. Incluye márgenes.",
+      Mila.Tipo.Rectángulo
+    ]
+  });
+  return Mila.Geometria.rectánguloEn__De_x_(
+    this.posiciónXEnPantalla() - (this.margenExternoIzquierdo() + this._grosorBorde + this.margenInternoIzquierdo()),
+    this.posiciónYEnPantalla() - (this.margenExternoSuperior() + this._grosorBorde + this.margenInternoSuperior()),
+    this.ancho() + this.todosLosMárgenesHorizontales(),
+    this.alto() + this.todosLosMárgenesVerticales()
+  );
+};
+
 Mila.Pantalla._ElementoVisual.prototype.QuitarDelHtml = function() {
   Mila.Contrato({
-    Proposito: "Quitar este elemento visual del documento html",
+    Propósito: "Quitar este elemento visual del documento html",
     Precondiciones: [
       "Se está ejecutando en el navegador",
       Mila.entorno().enNavegador()
@@ -911,7 +1002,7 @@ Mila.Pantalla._ElementoVisual.prototype.QuitarDelHtml = function() {
 
 Mila.Pantalla._ElementoVisual.prototype.InicializarHtml = function() {
   Mila.Contrato({
-    Proposito: "Inicializar el nodo Html de este elemento visual",
+    Propósito: "Inicializar el nodo Html de este elemento visual",
     Precondiciones: [
       "Se está ejecutando en el navegador",
       Mila.entorno().enNavegador(),
@@ -944,7 +1035,7 @@ Mila.Pantalla._ElementoVisual.prototype.InicializarHtml = function() {
 
 Mila.Pantalla._ElementoVisualTextual.prototype.InicializarHtml = function() {
   Mila.Contrato({
-    Proposito: "Inicializar el nodo Html de este elemento visual textual",
+    Propósito: "Inicializar el nodo Html de este elemento visual textual",
     Precondiciones: [
       "Se está ejecutando en el navegador",
       Mila.entorno().enNavegador(),
@@ -959,23 +1050,23 @@ Mila.Pantalla._ElementoVisualTextual.prototype.InicializarHtml = function() {
 
 Mila.Pantalla._Redimensionar = function() {
   Mila.Contrato({
-    Proposito: "Redimensionar los elementos visibles"
+    Propósito: "Redimensionar los elementos visibles"
   });
   if (Mila.Pantalla._pantallaActual.esAlgo()) {
     let pantallaActual = Mila.Pantalla._pantallas[Mila.Pantalla._pantallaActual];
-    pantallaActual.Redimensionar(Mila.Pantalla.rectanguloPantalla());
+    pantallaActual.Redimensionar(Mila.Pantalla.rectánguloPantalla());
   }
 };
 
-Mila.Pantalla.rectanguloPantalla = function() {
+Mila.Pantalla.rectánguloPantalla = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir el rectángulo correspondiente a la pantalla completa",
-      Mila.Tipo.Rectangulo
+      Mila.Tipo.Rectángulo
     ]
   });
   // TODO: distinguir el caso que esté ejecutando en node
-  const rectangulo = Mila.Geometria.rectanguloEn__De_x_(0,0,window.innerWidth, window.innerHeight);
+  const rectangulo = Mila.Geometria.rectánguloEn__De_x_(0,0,window.innerWidth, window.innerHeight);
   rectangulo.ancho -= Mila.Pantalla.Constantes.offsetVentana;
   rectangulo.alto -= Mila.Pantalla.Constantes.offsetVentana;
   return rectangulo;
@@ -983,22 +1074,22 @@ Mila.Pantalla.rectanguloPantalla = function() {
 
 Mila.Pantalla.ancho = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir el ancho en píxeles de la pantalla completa",
       Mila.Tipo.Entero
     ]
   });
-  return Mila.Pantalla.rectanguloPantalla().ancho;
+  return Mila.Pantalla.rectánguloPantalla().ancho;
 };
 
 Mila.Pantalla.alto = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir el alto en píxeles de la pantalla completa",
       Mila.Tipo.Entero
     ]
   });
-  return Mila.Pantalla.rectanguloPantalla().alto;
+  return Mila.Pantalla.rectánguloPantalla().alto;
 };
 
 if (Mila.entorno().enNavegador()) {
@@ -1007,11 +1098,11 @@ if (Mila.entorno().enNavegador()) {
 
 Mila.Pantalla.nueva = function(atributos, nombre=Mila.Nada) {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir una nueva pantalla. Si no se provee un nombre, se genera uno por defecto.",
       Mila.Tipo.Panel
     ],
-    Parametros: [
+    Parámetros: [
       [atributos, Mila.Tipo.AtributosPanel],
       [nombre, Mila.Tipo.O([Mila.Tipo.Texto, Mila.Tipo.Nada])]
     ]
@@ -1029,12 +1120,12 @@ Mila.Pantalla.nueva = function(atributos, nombre=Mila.Nada) {
 
 Mila.Pantalla.CambiarA_ = function(nombre) {
   Mila.Contrato({
-    Proposito: "Cambiar la pantalla actual a la pantalla con el nombre dado",
+    Propósito: "Cambiar la pantalla actual a la pantalla con el nombre dado",
     Precondiciones: [
       "Existe una pantalla con el nombre dado",
       nombre in Mila.Pantalla._pantallas
     ],
-    Parametros: [
+    Parámetros: [
       [nombre, Mila.Tipo.Texto]
     ]
   });
@@ -1099,10 +1190,10 @@ Mila.Pantalla.DisposicionVerticalAlternada = new Mila.Pantalla._Disposicion(Mila
 
 Mila.Pantalla._Disposicion.prototype.OrganizarElementos_En_ = function(elementos, rectangulo) {
   Mila.Contrato({
-    Proposito: "Organizar los elementos dados en el rectángulo dado",
-    Parametros: [
+    Propósito: "Organizar los elementos dados en el rectángulo dado",
+    Parámetros: [
       [elementos, Mila.Tipo.ListaDe_(Mila.Tipo.ElementoVisual)],
-      [rectangulo, Mila.Tipo.Rectangulo]
+      [rectangulo, Mila.Tipo.Rectángulo]
     ]
   });
   let elementosRestantes = elementos;

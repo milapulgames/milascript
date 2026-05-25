@@ -22,10 +22,10 @@ Mila.Tipo.Registrar({
   es: {
     "?elementoVisual":Mila.Tipo.ElementoVisual,
     "?zonasSoltables":Mila.Tipo.O(Mila.Tipo.Nada, // Se puede soltar en cualquier lado
-      Mila.Tipo.ListaDe_(Mila.Tipo.O([Mila.Tipo.ElementoVisual, Mila.Tipo.Rectangulo]))
+      Mila.Tipo.ListaDe_(Mila.Tipo.O([Mila.Tipo.ElementoVisual, Mila.Tipo.Rectángulo]))
     ),
     "?zonaArrastrable":Mila.Tipo.O([Mila.Tipo.Nada, // Se puede arrastrar por cualquier lado
-      Mila.Tipo.ElementoVisual, Mila.Tipo.Rectangulo]
+      Mila.Tipo.ElementoVisual, Mila.Tipo.Rectángulo]
     ),
     "?comportamientoAgarre":Mila.Tipo.O([Mila.Tipo.ComportamientoAgarre, Mila.Tipo.ClaveComportamientoAgarre])
   },
@@ -94,7 +94,7 @@ Mila.Pantalla._ElementoArrastrable.prototype.CambiarZonasSoltablesA_ = function(
     Proposito: "Cambiar las zonas soltables de este elemento arrastrable por las dados",
     Parametros: [
       [nuevosZonasSoltables, Mila.Tipo.O(Mila.Tipo.Nada, // Se puede soltar en cualquier lado
-        Mila.Tipo.ListaDe_(Mila.Tipo.O([Mila.Tipo.ElementoVisual, Mila.Tipo.Rectangulo]))
+        Mila.Tipo.ListaDe_(Mila.Tipo.O([Mila.Tipo.ElementoVisual, Mila.Tipo.Rectángulo]))
       )]
     ]
   });
@@ -106,7 +106,7 @@ Mila.Pantalla._ElementoArrastrable.prototype.CambiarZonaArrastrableA_ = function
     Proposito: "Cambiar la zona arrastrable de este elemento arrastrable por la dada",
     Parametros: [
       [nuevaZonaArrastrable, Mila.Tipo.O([Mila.Tipo.Nada, // Se puede arrastrar por cualquier lado
-        Mila.Tipo.ElementoVisual, Mila.Tipo.Rectangulo]
+        Mila.Tipo.ElementoVisual, Mila.Tipo.Rectángulo]
       )]
     ]
   });
@@ -130,15 +130,15 @@ Mila.Pantalla._ElementoArrastrable.prototype.áreaArrastrable = function() {
   Mila.Contrato({
     Proposito: [
       "Describe el área sobre la cual este elemento arrastrable puede ser arrastrado",
-      Mila.Tipo.Rectangulo
+      Mila.Tipo.Rectángulo
     ],
   });
   return (this._zonaArrastrable.esNada())
-    ? Mila.Pantalla.rectanguloPantalla()
+    ? Mila.Pantalla.rectánguloPantalla()
     : (
-      (this._zonaArrastrable.esUnRectangulo())
+      (this._zonaArrastrable.esUnRectángulo())
         ? this._zonaArrastrable
-        : this._zonaArrastrable.área()
+        : this._zonaArrastrable.áreaDeContenido()
     )
   ;
 };
@@ -175,21 +175,21 @@ Mila.Pantalla._ElementoArrastrable.prototype.PlasmarEnHtml = function(nodoMadre)
   }
 };
 
-Mila.Pantalla._ElementoArrastrable.prototype.Redimensionar = function(rectanguloCompleto) {
+Mila.Pantalla._ElementoArrastrable.prototype.Redimensionar = function(rectánguloCompleto) {
   Mila.Contrato({
     Proposito: [
       "Redimensionar este elemento arrastrable para que entre en el rectángulo dado.\
         Devuelve el rectángulo ocupado tras redimensionar.",
-      Mila.Tipo.Rectangulo
+      Mila.Tipo.Rectángulo
     ],
     Parametros: [
-      [rectanguloCompleto, Mila.Tipo.Rectangulo]
+      [rectánguloCompleto, Mila.Tipo.Rectángulo]
     ]
   });
   // if (this._elementoVisual.esNada()) {
-    return Mila.Pantalla._ElementoVisual.prototype.Redimensionar.call(this, rectanguloCompleto);
+    return Mila.Pantalla._ElementoVisual.prototype.Redimensionar.call(this, rectánguloCompleto);
   // }
-  // return this._elementoVisual.Redimensionar(rectanguloCompleto);
+  // return this._elementoVisual.Redimensionar(rectánguloCompleto);
 };
 
 Mila.Pantalla._ElementoArrastrable.prototype.copia = function() {
@@ -243,7 +243,7 @@ Mila.Pantalla.Arrastrable.IniciarArrastre = function(elemento, evento) {
   } else { // Instanciar
     elementoAMover = elemento.copia();
     elementoAMover.PlasmarEnHtml(document.body);
-    elementoAMover.Redimensionar(Mila.Pantalla.rectanguloPantalla());
+    elementoAMover.Redimensionar(Mila.Pantalla.rectánguloPantalla());
   }
   Mila.Pantalla.Arrastrable.actual.elemento = elementoAMover;
   Mila.Pantalla.Arrastrable.Mover(inicioMouse.x, inicioMouse.y);
