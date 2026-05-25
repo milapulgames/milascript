@@ -60,13 +60,11 @@ const build = function(nombre, ubicacionMila, argumentos) {
         proyecto => `    Mila._proyectos.${proyecto} = "${Mila.Archivo.ruta_RelativaA_(Mila._proyectos[proyecto], rutaDestino)}";`
       ).join('\n')}\n  </script>`;
       const rutaRealDe_ = (data.usandoDestinoBuild)
-        ? function(rutaOriginal) {
-          return Mila._ruta_NavegandoProyectos(rutaOriginal)
-        }
+        ? Mila._ruta_NavegandoProyectos
         : function(rutaOriginal) {
           return (Mila._archivo_Existe(rutaOriginal) && 'rutaReal' in Mila._dataDeArchivo(rutaOriginal))
             ? Mila._rutaRealDeArchivo(rutaOriginal)
-            : rutaOriginal
+            : Mila._ruta_NavegandoProyectos(rutaOriginal)
           ;
         }
       ;
