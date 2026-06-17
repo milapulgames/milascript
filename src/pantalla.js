@@ -81,6 +81,7 @@ Mila.Tipo.Registrar({
     "?colorBorde":Mila.Tipo.Texto, // ¿Color?
     "?margenInterno":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Tipo.Rectángulo]),
     "?margenExterno":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Tipo.Rectángulo]),
+    "?rotación":Mila.Numero,
     "?cssAdicional":Mila.Tipo.Registro,
     "?visible":Mila.Tipo.Booleano,
     "?funcion":Mila.Tipo.Funcion, // Este elemento queda ligado a this
@@ -123,6 +124,10 @@ Mila.Pantalla._ElementoVisual.prototype.Inicializar = function(atributos, porDef
   this.CambiarColorBordeA_(todosLosAtributos.colorBorde);
   this.CambiarMargenInternoA_(todosLosAtributos.margenInterno);
   this.CambiarMargenExternoA_(todosLosAtributos.margenExterno);
+  this.CambiarRotaciónA_('rotación' in atributos
+    ? atributos.rotación
+    : Mila.Nada
+  );
   this.CambiarCssAdicionalA_(todosLosAtributos.cssAdicional);
   this.CambiarVisibilidadA_(todosLosAtributos.visible);
   let funcion = Mila.Nada;
@@ -811,6 +816,29 @@ Mila.Pantalla._ElementoVisual.prototype.CambiarFuncionA_ = function(nuevaFuncion
   }
 };
 
+Mila.Pantalla._ElementoVisual.prototype.CambiarRotaciónA_ = function(nuevaRotación) {
+  Mila.Contrato({
+    Proposito: "Reemplazar la rotación de este elemento visual por la dada",
+    Parametros: [
+      [nuevaRotación, Mila.Tipo.O([Mila.Tipo.Numero,Mila.Tipo.Nada])]
+    ]
+  });
+  if (this._rotación == nuevaRotación) { return; }
+  this._rotación = nuevaRotación;
+  if ('_nodoHtml' in this) {
+    let rotaciónCss = this._rotación.esAlgo() ? `rotate(${this._rotación}deg)` : '';
+    for (let clave of [
+      '-webkit-transform',
+      '-moz-transform',
+      '-o-transform',
+      '-ms-transform',
+      'transform'
+    ]) {
+      this._nodoHtml.style['transform'] = rotaciónCss;
+    }
+  }
+};
+
 Mila.Pantalla._ElementoVisualTextual.prototype.CambiarTextoA_ = function(nuevoTexto) {
   Mila.Contrato({
     Propósito: "Reemplazar el texto de este elemento visual textual por el dado",
@@ -1020,6 +1048,16 @@ Mila.Pantalla._ElementoVisual.prototype.InicializarHtml = function() {
   this._nodoHtml.style['margin-right'] = `${this.margenExternoDerecho()}px`;
   this._nodoHtml.style['margin-top'] = `${this.margenExternoSuperior()}px`;
   this._nodoHtml.style['margin-bottom'] = `${this.margenExternoInferior()}px`;
+  let rotaciónCss = this._rotación.esAlgo() ? `rotate(${this._rotación}deg)` : '';
+  for (let clave of [
+    '-webkit-transform',
+    '-moz-transform',
+    '-o-transform',
+    '-ms-transform',
+    'transform'
+  ]) {
+    this._nodoHtml.style['transform'] = rotaciónCss;
+  }
   for (let k in this._css) {
     this._nodoHtml.style[k] = this._css[k];
   }
