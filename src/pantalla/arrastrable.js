@@ -143,6 +143,75 @@ Mila.Pantalla._ElementoArrastrable.prototype.áreaArrastrable = function() {
   ;
 };
 
+Mila.Pantalla._ElementoArrastrable.prototype._RedimensionarContenidoInternoEn_ = function(rectánguloExterno) {
+  Mila.Contrato({
+    Propósito: "Redimensiona el contenido interno de este elemento arrastrable para que entre en el rectángulo dado.",
+    Parámetros: [
+      [rectánguloExterno, Mila.Tipo.Rectángulo]
+    ]
+  });
+  let rectánguloInterno = this._rectánguloInternoParaExterno_(rectánguloExterno);
+  if ('_nodoHtml' in this) {
+    this._nodoHtml.style.height = `${Math.abs(rectánguloInterno.alto)}px`;
+    this._nodoHtml.style.width = `${Math.abs(rectánguloInterno.ancho)}px`;
+  }
+  rectánguloInterno.x = this.margenInternoIzquierdo();
+  rectánguloInterno.y = this.margenInternoSuperior();
+  if (this._elementoVisual.esAlgo()) {
+    this._elementoVisual.Redimensionar(rectánguloInterno);
+  }
+};
+
+Mila.Pantalla._ElementoArrastrable.prototype._MinimizarAnchoDeRectángulo_ = function(rectánguloCompleto) {
+  Mila.Contrato({
+    Propósito: "Minimiza el ancho del rectángulo dado para que entre este elemento arrastrable. También lo adapta para que sea positivo.",
+    Parámetros: [
+      [rectánguloCompleto, Mila.Tipo.Rectángulo]
+    ]
+  });
+  Mila.Pantalla._ElementoVisual.prototype._MinimizarAnchoDeRectángulo_.call(this, rectánguloCompleto);
+  if (this._elementoVisual.esAlgo()) {
+    let redimensiónAnterior = this._elementoVisual._últimaRedimensión;
+    redimensiónAnterior.ancho = rectánguloCompleto.ancho - this.todosLosMárgenesHorizontales();
+    this._elementoVisual.Redimensionar(redimensiónAnterior);
+  }
+};
+
+Mila.Pantalla._ElementoArrastrable.prototype._MinimizarAltoDeRectángulo_ = function(rectánguloCompleto) {
+  Mila.Contrato({
+    Propósito: "Minimiza el alto del rectángulo dado para que entre este elemento arrastrable. También lo adapta para que sea positivo.",
+    Parámetros: [
+      [rectánguloCompleto, Mila.Tipo.Rectángulo]
+    ]
+  });
+  Mila.Pantalla._ElementoVisual.prototype._MinimizarAltoDeRectángulo_.call(this, rectánguloCompleto);
+  if (this._elementoVisual.esAlgo()) {
+    let redimensiónAnterior = this._elementoVisual._últimaRedimensión;
+    redimensiónAnterior.alto = rectánguloCompleto.alto - this.todosLosMárgenesVerticales();
+    this._elementoVisual.Redimensionar(redimensiónAnterior);
+  }
+};
+
+Mila.Pantalla._ElementoArrastrable.prototype._anchoMínimo = function() {
+  Mila.Contrato({
+    Propósito: [
+      "Describir el ancho mínimo que necesita este elemento arrastrable. Inlcuye el margen externo (el 'margin'), el borde y el margen interno (el 'padding').",
+      Mila.Tipo.Entero
+    ],
+  });
+  return (this._elementoVisual.esAlgo()) ? this._elementoVisual._anchoMínimoExterno() : 0;
+};
+
+Mila.Pantalla._ElementoArrastrable.prototype._altoMínimo = function() {
+  Mila.Contrato({
+    Propósito: [
+      "Describir el alto mínimo de este elemento arrastrable. Inlcuye el margen externo (el 'margin'), el borde y el margen interno (el 'padding').",
+      Mila.Tipo.Entero
+    ],
+  });
+  return (this._elementoVisual.esAlgo()) ? this._elementoVisual._altoMínimoExterno() : 0;
+};
+
 Mila.Pantalla._ElementoArrastrable.prototype.PlasmarEnHtml = function(nodoMadre) {
   Mila.Contrato({
     Proposito: "Plasmar este elemento arrastrable en el documento html como hijo del nodo dado",
@@ -175,21 +244,21 @@ Mila.Pantalla._ElementoArrastrable.prototype.PlasmarEnHtml = function(nodoMadre)
   }
 };
 
-Mila.Pantalla._ElementoArrastrable.prototype.Redimensionar = function(rectánguloCompleto) {
+Mila.Pantalla._ElementoArrastrable.prototype.QuitarDelHtml = function() {
   Mila.Contrato({
-    Proposito: [
-      "Redimensionar este elemento arrastrable para que entre en el rectángulo dado.\
-        Devuelve el rectángulo ocupado tras redimensionar.",
-      Mila.Tipo.Rectángulo
-    ],
-    Parametros: [
-      [rectánguloCompleto, Mila.Tipo.Rectángulo]
+    Proposito: "Quitar este elemento arrastrable del documento html",
+    Precondiciones: [
+      "Se está ejecutando en el navegador",
+      Mila.entorno().enNavegador()
     ]
   });
-  // if (this._elementoVisual.esNada()) {
-    return Mila.Pantalla._ElementoVisual.prototype.Redimensionar.call(this, rectánguloCompleto);
-  // }
-  // return this._elementoVisual.Redimensionar(rectánguloCompleto);
+  if (this._elementoVisual.esAlgo()) {
+    this._elementoVisual.QuitarDelHtml();
+  }
+  if ('_nodoHtml' in this) {
+    this._nodoHtml.remove();
+    delete this._nodoHtml;
+  }
 };
 
 Mila.Pantalla._ElementoArrastrable.prototype.copia = function() {
