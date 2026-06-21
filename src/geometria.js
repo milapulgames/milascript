@@ -230,6 +230,7 @@ Mila.Geometria._Círculo.prototype.centro = function() {
 Mila.Tipo.Registrar({
   nombre: "Figura",
   prototipo: Mila.Geometria._Figura,
+  copia: (elemento) => elemento.copia(),
   es: 'esUnaFigura'
 });
 

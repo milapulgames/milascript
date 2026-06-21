@@ -72,7 +72,7 @@ Mila.Tipo._Registrar = function(dataTipo) {
     if ('subtipoDe' in nuevoTipo) {
       supertipo = Mila.Tipo.esUnTipo(nuevoTipo.subtipoDe) ? nuevoTipo.subtipoDe : Mila.Tipo._tipos[nuevoTipo.subtipoDe];
       for (let clave of ['igualdad','orden','strInstancia','copia']) { // Claves heredadas a los subtipos
-        if (!(clave in nuevoTipo)) {
+        if (supertipo.defineLaClave_(clave) && !(nuevoTipo.defineLaClave_(clave))) {
           nuevoTipo[clave] = supertipo[clave];
         }
       }
