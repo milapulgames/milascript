@@ -78,6 +78,8 @@ if (entorno.enNodeJs()) {
   Mila._os = process;
   Mila._fs = await import("node:fs");
   Mila._path = await import("node:path");
+  Mila._http = await import("node:http");
+  Mila._https = await import("node:https");
   const { exec } = await import("child_process")
   Mila._accesoArchivo = function(ruta, función) {
     Mila._fs.readFile(ruta, "utf8", (error, contenido) => {
@@ -95,9 +97,11 @@ if (entorno.enNodeJs()) {
     const script = new vm.Script(código);
     script.runInThisContext();
   };
-  Mila.os = function() { return Mila._os; }
-  Mila.fs = function() { return Mila._fs; }
-  Mila.path = function() { return Mila._path; }
+  Mila.os = function() { return Mila._os; };
+  Mila.fs = function() { return Mila._fs; };
+  Mila.path = function() { return Mila._path; };
+  Mila.http = function() { return Mila._http; };
+  Mila.https = function() { return Mila._https; };
   Mila.exec = exec;
 } else {
   Mila._accesoArchivo = function(ruta, función) {
@@ -134,8 +138,10 @@ if (entorno.enNodeJs()) {
     document.head.appendChild(script);
   };
   Mila.os = function() { Mila._Fallar("No disponible en el navegador"); }
-  Mila.fs = function() { Mila._Fallar("No disponible en el navegador"); }
-  Mila.path = function() { Mila._Fallar("No disponible en el navegador"); }
+  Mila.fs = Mila.os;
+  Mila.path = Mila.os;
+  Mila.http = Mila.os;
+  Mila.https = Mila.os;
 }
 
 // Archivos

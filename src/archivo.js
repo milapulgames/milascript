@@ -96,6 +96,12 @@ Mila.Archivo.nombreDe_ = Mila._nombreDe_;
 // Alias de Mila._ubicaciónDe_ (ver el archivo mila.mjs).
 Mila.Archivo.ubicacionDe_ = Mila._ubicaciónDe_;
 
+Mila.Archivo.extensiónDe_ = function(rutaCompleta) {
+  // Describe la extensión del archivo en la ruta dada como un texto.
+  let iÚltimoPunto = rutaCompleta.lastIndexOf('.');
+  return (iÚltimoPunto < 0) ? "" : rutaCompleta.substring(iÚltimoPunto + 1);
+};
+
 // Alias de Mila._rutaActual (ver el archivo mila.mjs).
 Mila.Archivo.rutaActual = Mila._rutaActual;
 
