@@ -113,18 +113,24 @@ Mila.Texto._Definir_EnPrototipo_('subTextoEntre_Y_', String);
 Mila.Texto.subTextoDesde_ = function(texto, inicio) {
   Mila.Contrato({
     Proposito: [
-      "Describe los caracteres del texto dado desde la posición dada, inclusive.",
+      "Describe los caracteres del texto dado desde la posición dada, inclusive. Si la posición es uno más que la longitud del texto, describe la cadena vacía.",
       Mila.Tipo.Texto
     ],
     Precondiciones: [
-      "La posición es mayor o igual a 1.", inicio >= 1
+      "La posición es mayor o igual a 1.",
+      inicio >= 1,
+      "La posición es menor o igual a la longitud del texto más 1.",
+      inicio <= Mila.Texto.longitud(texto) + 1
     ],
     Parametros: [
       [texto, Mila.Tipo.Texto],
       [inicio, Mila.Tipo.Entero]
     ]
   });
-  return Mila.Texto.subTextoEntre_Y_(texto, inicio, Mila.Texto.longitud(texto));
+  return (inicio <= Mila.Texto.longitud(texto))
+    ? Mila.Texto.subTextoEntre_Y_(texto, inicio, Mila.Texto.longitud(texto))
+    : ""
+  ;
 };
 Mila.Texto._Definir_EnPrototipo_('subTextoDesde_', String);
 
@@ -135,18 +141,24 @@ Mila.Texto._Definir_EnPrototipo_('subTextoAPartirDe_', String);
 Mila.Texto.subTextoHasta_ = function(texto, fin) {
   Mila.Contrato({
     Proposito: [
-      "Describe los caracteres del texto dado hasta la posición dada, inclusive.",
+      "Describe los caracteres del texto dado hasta la posición dada, inclusive. Si la posición es 0, describe la cadena vacía.",
       Mila.Tipo.Texto
     ],
     Precondiciones: [
-      "La posición es menor o igual a la longitud del texto.", fin <= Mila.Texto.longitud(texto)
+      "La posición es mayor o igual a 0.",
+      fin >= 0,
+      "La posición es menor o igual a la longitud del texto.",
+      fin <= Mila.Texto.longitud(texto)
     ],
     Parametros: [
       [texto, Mila.Tipo.Texto],
       [fin, Mila.Tipo.Entero]
     ]
   });
-  return Mila.Texto.subTextoEntre_Y_(texto, 1, fin);
+  return (fin > 0) ?
+    Mila.Texto.subTextoEntre_Y_(texto, 1, fin)
+    : ""
+  ;
 };
 Mila.Texto._Definir_EnPrototipo_('subTextoHasta_', String);
 
