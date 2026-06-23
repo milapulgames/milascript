@@ -148,6 +148,22 @@ Mila.Error.Declarar('TamañoListaDistinto', 'deTamañoListaDistinto', [
 
 // Errores de Mila.Archivo
 
+Mila.Error.Declarar('ArchivoNoExiste', 'deArchivoInexistente', [
+  ['ruta', Mila.Tipo.Texto]
+]);
+
+Mila.Error.Declarar('ArchivoYaExiste', 'deArchivoYaExistente', [
+  ['ruta', Mila.Tipo.Texto]
+]);
+
+Mila.Error.Declarar('AbrirArchivo', 'deAperturaDeArchivo', [
+  ['ruta', Mila.Tipo.Texto]
+]);
+
+Mila.Error.Declarar('CarpetaNoExiste', 'deCarpetaInexistente', [
+  ['ruta', Mila.Tipo.Texto]
+]);
+
 Mila.Error.Declarar('CarpetaYaExiste', 'deCarpetaYaExistente', [
   ['ruta', Mila.Tipo.Texto]
 ]);

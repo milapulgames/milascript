@@ -1,5 +1,6 @@
 Mila.Módulo({
   define:"Mila.Idioma",
+  necesita:"tipo",
   usa:["base", "texto", "archivo"]
 });
 
