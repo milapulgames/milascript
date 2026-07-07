@@ -313,7 +313,7 @@ Mila.Lista._Definir_EnPrototipo_('ConcatenarCon_SinRepetidos', Array);
 Mila.Lista.concatenadas = function(listaDeListas) {
   // Describe la concatenación entre las listas de la lista dada.
     // listaDeListas es una lista cuyos elementos también son listas.
-  return Mila.Lista.fold1(listaDeListas, function(x, rec) { return rec.concatenadaCon_(x); });
+  return Mila.Lista.fold(listaDeListas, function(x, rec) { return rec.concatenadaCon_(x); }, []);
 };
 Mila.Lista._Definir_EnPrototipo_('concatenadas', Array);
 
@@ -443,7 +443,9 @@ Mila.Lista._Definir_EnPrototipo_('SacarElementosHasta_', Array);
 
 Mila.Lista.copia = function(lista) {
   // Describe una lista igual a la dada.
-  return Mila.Lista.fold(lista, function(x, rec) { return Mila.Lista.cons(rec, Mila.Tipo.copia(x)); }, []);
+  return Mila.Lista.fold(lista, function(x, rec) {
+    return Mila.Lista.cons(rec, Mila.Tipo.copia(x));
+  }, []);
 };
 Mila.Lista._Definir_EnPrototipo_('copia', Array);
 
@@ -451,7 +453,7 @@ Mila.Lista.transformados = function(lista, funcion) {
   // Describe la lista dada tras aplicarle la función dada a cada uno de sus elementos.
     // lista es una lista de elementos, a cuyos elementos se les aplica la función dada.
     // funcion es una función que toma un elemento y devuelve otro.
-  return Mila.Lista.fold(lista, function(x, rec) { return rec.snoc(funcion(x))}, []);
+  return Mila.Lista.fold(lista, function(x, rec) { return rec.cons(funcion(x))}, []);
 };
 Mila.Lista._Definir_EnPrototipo_('transformados', Array);
 
@@ -459,7 +461,7 @@ Mila.Lista.losQueCumplen = function(lista, condicion) {
   // Describe los elementos de la lista dada que cumplen la condición dada.
     // lista es una lista de elementos, aquella de la cual se obtienen los elementos que cumplen la condición.
     // condicion es una función que toma un elemento y devuelve un booleano.
-  return lista.fold(function(x, rec) { return condicion(x) ? rec.snoc(x) : rec}, []);
+  return lista.fold(function(x, rec) { return condicion(x) ? rec.cons(x) : rec}, []);
 };
 Mila.Lista._Definir_EnPrototipo_('losQueCumplen', Array);
 
@@ -467,7 +469,7 @@ Mila.Lista.losQueNoCumplen = function(lista, condicion) {
   // Describe los elementos de la lista dada que no cumplen la condición dada.
     // lista es una lista de elementos, aquella de la cual se obtienen los elementos que no cumplen la condición.
     // condicion es una función que toma un elemento y devuelve un booleano.
-  return lista.fold(function(x, rec) { return condicion(x) ? rec : rec.snoc(x)}, []);
+  return lista.fold(function(x, rec) { return condicion(x) ? rec : rec.cons(x)}, []);
 };
 Mila.Lista._Definir_EnPrototipo_('losQueNoCumplen', Array);
 
@@ -665,7 +667,7 @@ Mila.Lista.fold = function(lista, funcion, casoBase) {
     // lista es una lista de elementos, para la cual se describe el resultado de la recursión estructural.
     // funcion es una función que toma un elemento y el resultado del llamado recursivo y devuelve un nuevo resultado.
     // casoBase puede ser cualquier dato.
-  return lista.reduce(function(rec, x) { return funcion(x, rec); }, casoBase);
+  return lista.reduceRight(function(rec, x) { return funcion(x, rec); }, casoBase);
 };
 Mila.Lista._Definir_EnPrototipo_('fold', Array);
 
@@ -674,6 +676,6 @@ Mila.Lista.fold1 = function(lista, funcion) {
     // lista es una lista de elementos, para la cual se describe el resultado de la recursión estructural.
     // funcion es una función que toma un elemento y el resultado del llamado recursivo y devuelve un nuevo resultado.
   // PRE: Hay al menos un elemento en la lista dada.
-  return Mila.Lista.sinElUltimo(lista).reduce(function(rec, x) { return funcion(x, rec); }, Mila.Lista.ultimo(lista));
+  return Mila.Lista.sinElUltimo(lista).reduceRight(function(rec, x) { return funcion(x, rec); }, Mila.Lista.ultimo(lista));
 };
 Mila.Lista._Definir_EnPrototipo_('fold1', Array);
