@@ -515,6 +515,16 @@ Mila.Lista.SacarLosQueNoCumplen = function(lista, condicion) {
 };
 Mila.Lista._Definir_EnPrototipo_('SacarLosQueNoCumplen', Array);
 
+Mila.Lista.conCadaUno = function(lista, función) {
+  // Ejecuta la función dada con cada elemento de la lista dada.
+    // lista es una lista de elementos, con cuyos elementos se ejecuta la función dada.
+    // función es una función que toma un elemento.
+  for (let i=0; i<Mila.Lista.longitud(lista); i++) {
+    función(lista[i]);
+  };
+};
+Mila.Lista._Definir_EnPrototipo_('conCadaUno', Array);
+
 Mila.Lista.algunoCumple_ = function(lista, condicion) {
   // Indica si algún elemento de la lista dada cumple la condición dada.
     // lista es una lista de elementos, la cual se indica si alguno de sus elementos cumple la condición dada.
@@ -679,3 +689,27 @@ Mila.Lista.fold1 = function(lista, funcion) {
   return Mila.Lista.sinElUltimo(lista).reduceRight(function(rec, x) { return funcion(x, rec); }, Mila.Lista.ultimo(lista));
 };
 Mila.Lista._Definir_EnPrototipo_('fold1', Array);
+
+Mila.Lista.con_Repetido_Veces = function(elemento, cantidad) {
+  // Describe una lista con el elemento dado repetido la cantidad dada de veces.
+    // elemento es un elemento de cualquier tipo.
+    // cantidad es un número entero.
+  // PRE: la cantidad dada es mayor o igual a 0.
+  const resultado = [];
+  for (let i=0; i<cantidad; i++) {
+    resultado.push(elemento.copia());
+  }
+  return resultado;
+};
+
+Mila.Lista.con_Generado_Veces = function(función, cantidad) {
+  // Describe una lista cuya longitud es la cantidad dada y cuyos elementos son los resultantes de ejecutar la función dada.
+    // función es una función sin parámetros y que devuelve elementos de cualquier tipo.
+    // cantidad es un número entero.
+  // PRE: la cantidad dada es mayor o igual a 0.
+  const resultado = [];
+  for (let i=0; i<cantidad; i++) {
+    resultado.push(función());
+  }
+  return resultado;
+};

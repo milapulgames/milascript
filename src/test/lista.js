@@ -129,6 +129,9 @@ Mila.alIniciar(() => {
   {i:"let a=['2+2','!true'];a.Transformar(eval);a", o:[4,false],          d:"Transformar le aplica la función a cada elemento"},
   {i:"let a=[2,NaN,5];a.SacarLosQueCumplen(isFinite);a", o:[NaN],         d:"SacarLosQueCumplen saca los elementos que cumplen"},
   {i:"let a=[2,NaN,5];a.SacarLosQueNoCumplen(isFinite);a", o:[2,5],       d:"SacarLosQueNoCumplen saca los elementos que no cumplen"},
+
+  // conCadaUno
+
   {i:"let a=[NaN,NaN,NaN];a.algunoCumple_(isFinite)", o:false,            d:"algunoCumple_ devuelve falso si ninguno cumple"},
   {i:"let a=[NaN,2,NaN];a.algunoCumple_(isFinite)", o:true,               d:"algunoCumple_ devuelve verdadero si exactamente uno cumple"},
   {i:"let a=[2,NaN,5];a.algunoCumple_(isFinite)", o:true,                 d:"algunoCumple_ devuelve verdadero si más de uno cumple"},
@@ -237,4 +240,7 @@ Mila.alIniciar(() => {
   {i:`Mila.Tipo.tipoUnificadoEntre_Y_(${ListaEntero},${ListaBooleano})`,    d:"La unificación entre Lista de Entero y Lista de Booleano es Lista (2)",
     oX:Lista}
   ]);
+
+  // con_Repetido_Veces
+  // con_Generado_Veces
 });
