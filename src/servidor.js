@@ -105,6 +105,9 @@ Mila.Servidor.Escuchar = function(atributosServidor) {
 Mila.Servidor._fAtenderPetición = function(mensajes, archivos) {
   return async function(req, res) {
     let pedido = decodeURI(req.url).subTextoDesde_(2);
+    if (pedido.includes('?')) {
+      pedido = pedido.split('?')[0];
+    }
     if (pedido.terminaCon_('/')) {
       pedido = pedido.sinLosUltimos_(1);
     }
@@ -161,22 +164,22 @@ Mila.Servidor._ResponderConContenido = function(res, contenido) {
 
 Mila.Servidor._errorArchivoNoEncontrado = function(res, ruta) {
   res.writeHead(404, Mila.Servidor._encabezadoError());
-  res.end(`Archivo ${ruta} no encontrado.`);
+  res.end(`Archivo "${ruta}" no encontrado.`);
 };
 
 Mila.Servidor._errorArchivoInválido = function(res, ruta) {
   res.writeHead(404, Mila.Servidor._encabezadoError());
-  res.end(`Archivo ${ruta} inválido.`);
+  res.end(`Archivo "${ruta}" inválido.`);
 };
 
 Mila.Servidor._errorMensajeInválido = function(res, mensaje) {
   res.writeHead(404, Mila.Servidor._encabezadoError());
-  res.end(`Mensaje ${mensaje} inválido.`);
+  res.end(`Mensaje "${mensaje}" inválido.`);
 };
 
 Mila.Servidor._errorMétodoInválido = function(res, método) {
   res.writeHead(404, Mila.Servidor._encabezadoError());
-  res.end(`Método ${método} inválido.`);
+  res.end(`Método "${método}" inválido.`);
 };
 
 Mila.Servidor._errorJsonInválido = function(res) {
@@ -204,6 +207,7 @@ Mila.Servidor._tipoMimePara_ = {
   default: "application/octet-stream",
   html: "text/html; charset=UTF-8",
   js: "text/javascript",
+  mjs: "text/javascript",
   css: "text/css",
   json: "application/json",
   png: "image/png",

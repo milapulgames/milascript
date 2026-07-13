@@ -8,7 +8,7 @@
   - mila: ruta a la carpeta de fuentes milascript (donde debe estar mila.mjs y todos los otros archivos milascript necesarios).
       Si no se pasa este argumento se asume que la carpeta es build/milascript/src en el caso de que exista la carpeta 'build' o
         milascript/src en otro caso.
-      Si se pasa $ como este argumento se utiliza al carpeta desde donde se está ejecutando milascript ahora.
+      Si se pasa $ como este argumento se utiliza la carpeta desde donde se está ejecutando milascript ahora.
   - docs: ¿ejecutar contratos?
       Si no se pasa este argumento se asume que sí.
   - name: nombre del archivo compilado (sin la extensión).
