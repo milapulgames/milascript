@@ -86,6 +86,7 @@ Mila.Pantalla._ElementoArrastrable.prototype.CambiarElementoVisualA_ = function(
       [nuevoElementoVisual, Mila.Tipo.ElementoVisual]
     ]
   });
+  this._cambióElContenido = true;
   this._elementoVisual = nuevoElementoVisual;
 };
 
@@ -171,7 +172,7 @@ Mila.Pantalla._ElementoArrastrable.prototype._MinimizarAnchoDeRectángulo_ = fun
   });
   Mila.Pantalla._ElementoVisual.prototype._MinimizarAnchoDeRectángulo_.call(this, rectánguloCompleto);
   if (this._elementoVisual.esAlgo()) {
-    let redimensiónAnterior = this._elementoVisual._últimaRedimensión;
+    let redimensiónAnterior = this._elementoVisual._últimaRedimensión.resultado.copia();
     redimensiónAnterior.ancho = rectánguloCompleto.ancho - this.todosLosMárgenesHorizontales();
     this._elementoVisual.Redimensionar(redimensiónAnterior);
   }
@@ -186,7 +187,7 @@ Mila.Pantalla._ElementoArrastrable.prototype._MinimizarAltoDeRectángulo_ = func
   });
   Mila.Pantalla._ElementoVisual.prototype._MinimizarAltoDeRectángulo_.call(this, rectánguloCompleto);
   if (this._elementoVisual.esAlgo()) {
-    let redimensiónAnterior = this._elementoVisual._últimaRedimensión;
+    let redimensiónAnterior = this._elementoVisual._últimaRedimensión.resultado.copia();
     redimensiónAnterior.alto = rectánguloCompleto.alto - this.todosLosMárgenesVerticales();
     this._elementoVisual.Redimensionar(redimensiónAnterior);
   }

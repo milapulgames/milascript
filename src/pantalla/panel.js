@@ -6,7 +6,13 @@ Mila.Tipo.Registrar({
   nombre:'AtributosPanel',
   es: {
     "?elementos":Mila.Tipo.O([Mila.Tipo.ElementoVisual, Mila.Tipo.ListaDe_(Mila.Tipo.ElementoVisual)]),
-    "?disposicion":Mila.Tipo.O([Mila.Tipo.Disposicion,Mila.Pantalla.ClaveDisposicion])
+    "?disposicion":Mila.Tipo.O([
+      Mila.Tipo.Disposicion,
+      Mila.Pantalla.ClaveDisposicion,
+      Mila.Tipo.Nada // Se espera que los elementos se organicen por su cuenta (es decir, que incluyan
+        // los campos correspondientes a la posición y al tamaño, o se ubicarán en el origen ocupando
+        // todo el espacio disponible).
+    ])
   },
   subtipoDe: "AtributosElementoVisual",
   inferible: false
@@ -25,8 +31,7 @@ Mila.Pantalla.nuevoPanel = function(atributos={}) {
   let nuevoPanel = new Mila.Pantalla._Panel();
   nuevoPanel.Inicializar(atributos, {
     ancho:Mila.Pantalla.ComportamientoEspacio.Maximizar,
-    alto:Mila.Pantalla.ComportamientoEspacio.Maximizar,
-    grosorBorde:1, colorBorde:"#0000"
+    alto:Mila.Pantalla.ComportamientoEspacio.Maximizar
   });
   nuevoPanel.CambiarElementosA_('elementos' in atributos
     ? atributos.elementos
@@ -51,6 +56,11 @@ Mila.Pantalla._Panel.prototype.AgregarElemento_ = function(nuevoElemento) {
   });
   nuevoElemento._elementoMadre = this;
   this._elementos.push(nuevoElemento);
+  this._cambióElContenido = true;
+  if ('_nodoHtml' in this) {
+    nuevoElemento.PlasmarEnHtml(this._nodoHtml);
+    Mila.Pantalla._SolicitarRedimensión();
+  }
 };
 
 Mila.Pantalla._Panel.prototype.CambiarElementosA_ = function(nuevosElementos) {
@@ -72,11 +82,12 @@ Mila.Pantalla._Panel.prototype.CambiarElementosA_ = function(nuevosElementos) {
   for (let e of this._elementos) {
     e._elementoMadre = this;
   }
+  this._cambióElContenido = true;
   if ('_nodoHtml' in this) {
     for (let e of this._elementos) {
       e.PlasmarEnHtml(this._nodoHtml);
     }
-    Mila.Pantalla._Redimensionar();
+    Mila.Pantalla._SolicitarRedimensión();
   }
 };
 
@@ -91,6 +102,7 @@ Mila.Pantalla._Panel.prototype.CambiarDisposicionA_ = function(nuevaDisposicion)
     ? Mila.Pantalla[`Disposicion${nuevaDisposicion}`]
     : nuevaDisposicion
   );
+  this._cambióElContenido = true;
 };
 
 Mila.Pantalla._Panel.prototype.PlasmarEnHtml = function(nodoMadre) {
@@ -147,9 +159,51 @@ Mila.Pantalla._Panel.prototype._RedimensionarContenidoInternoEn_ = function(rect
     this._nodoHtml.style.height = `${Math.abs(rectánguloInterno.alto)}px`;
     this._nodoHtml.style.width = `${Math.abs(rectánguloInterno.ancho)}px`;
   }
-  rectánguloInterno.x = this.margenInternoIzquierdo();
-  rectánguloInterno.y = this.margenInternoSuperior();
-  this._disposicion.OrganizarElementos_En_(this._elementos, rectánguloInterno);
+  if (rectánguloInterno.ancho < 0) {
+    rectánguloInterno.x = -rectánguloInterno.ancho;
+  } else {
+    rectánguloInterno.x = this.margenInternoIzquierdo();
+  }
+  if (rectánguloInterno.alto < 0) {
+    rectánguloInterno.y = -rectánguloInterno.alto;
+  } else {
+    rectánguloInterno.y = this.margenInternoSuperior();
+  }
+  if (this._disposicion.esAlgo()) {
+    this._disposicion.OrganizarElementos_En_(this._elementos, rectánguloInterno);
+  } else {
+    this._elementos.conCadaUno(x => x.Redimensionar(rectánguloInterno));
+  }
+};
+
+Mila.Pantalla._Panel.prototype._ReposicionarContenidoInternoDe_A_ = function(rectánguloAnterior, rectánguloNuevo) {
+  Mila.Contrato({
+    Propósito: "Reposiciona el contenido interno de este panel tras haber cambiado su área desde el primer rectángulo dado al segundo rectángulo dado.",
+    Parámetros: [
+      [rectánguloAnterior, Mila.Tipo.Rectángulo]
+      [rectánguloNuevo, Mila.Tipo.Rectángulo]
+    ]
+  });
+  const inicioYAnterior = rectánguloAnterior.y + Math.min(rectánguloAnterior.alto, 0);
+  const inicioYActual = rectánguloNuevo.y + Math.min(rectánguloNuevo.alto, 0);
+  if (!this._enDisposiciónVerticalInverida && inicioYAnterior != inicioYActual) {
+    this._elementos.conCadaUno(function(elemento) {
+      elemento._posiciónY -= (inicioYActual - inicioYAnterior);
+      if ('_nodoHtml' in elemento) {
+        elemento._nodoHtml.style.top = `${elemento._posiciónY}px`;
+      }
+    });
+  }
+  const inicioXAnterior = rectánguloAnterior.x + Math.min(rectánguloAnterior.ancho, 0);
+  const inicioXActual = rectánguloNuevo.x + Math.min(rectánguloNuevo.ancho, 0);
+  if (!this._enDisposiciónHorizontalInvertida && inicioXAnterior != inicioXActual) {
+    this._elementos.conCadaUno(function(elemento) {
+      elemento._posiciónX -= (inicioXActual - inicioXAnterior);
+      if ('_nodoHtml' in elemento) {
+        elemento._nodoHtml.style.left = `${elemento._posiciónX}px`;
+      }
+    });
+  }
 };
 
 Mila.Pantalla._Panel.prototype._MinimizarAnchoDeRectángulo_ = function(rectánguloCompleto) {
@@ -161,8 +215,11 @@ Mila.Pantalla._Panel.prototype._MinimizarAnchoDeRectángulo_ = function(rectáng
   });
   Mila.Pantalla._ElementoVisual.prototype._MinimizarAnchoDeRectángulo_.call(this, rectánguloCompleto);
   for (let elemento of this._elementos) {
-    let redimensiónAnterior = elemento._últimaRedimensión;
+    let redimensiónAnterior = elemento._últimaRedimensión.resultado.copia();
     redimensiónAnterior.ancho = rectánguloCompleto.ancho - this.todosLosMárgenesHorizontales();
+    if (this._enDisposiciónHorizontalInvertida) {
+      redimensiónAnterior.y = 0;
+    }
     elemento.Redimensionar(redimensiónAnterior);
   }
 };
@@ -176,8 +233,11 @@ Mila.Pantalla._Panel.prototype._MinimizarAltoDeRectángulo_ = function(rectángu
   });
   Mila.Pantalla._ElementoVisual.prototype._MinimizarAltoDeRectángulo_.call(this, rectánguloCompleto);
   for (let elemento of this._elementos) {
-    let redimensiónAnterior = elemento._últimaRedimensión;
+    let redimensiónAnterior = elemento._últimaRedimensión.resultado.copia();
     redimensiónAnterior.alto = rectánguloCompleto.alto - this.todosLosMárgenesVerticales();
+    if (this._enDisposiciónVerticalInverida) {
+      redimensiónAnterior.y = 0;
+    }
     elemento.Redimensionar(redimensiónAnterior);
   }
 };
@@ -191,9 +251,12 @@ Mila.Pantalla._Panel.prototype._anchoMínimo = function() {
   });
   return this.altoBarraScroll() + (this._elementos.esVacia()
     ? 0
-    : (this._disposicion.eje == Mila.Pantalla.Eje.Vertical
-      ? this._elementos.transformados(x=>x._anchoMínimoExterno()).maximo()
-      : this._elementos.transformados(x=>x._anchoMínimoExterno()).fold((x,y)=>x+y,0)
+    : (this._disposicion.esAlgo()
+      ? (this._disposicion.eje == Mila.Pantalla.Eje.Vertical
+        ? this._elementos.transformados(x=>x._anchoMínimoExterno()).maximo()
+        : this._elementos.transformados(x=>x._anchoMínimoExterno()).fold((x,y)=>x+y,0)
+      ) : this._elementos.transformados(x=>
+        (this._enDisposiciónHorizontalInvertida ? 0 : x.posiciónX()) + x._anchoMínimoExterno()).maximo()
     )
   );
 };
@@ -207,9 +270,12 @@ Mila.Pantalla._Panel.prototype._altoMínimo = function() {
   });
   return this.altoBarraScroll() + (this._elementos.esVacia()
     ? 0
-    : (this._disposicion.eje == Mila.Pantalla.Eje.Horizontal
-      ? this._elementos.transformados(x=>x._altoMínimoExterno()).maximo()
-      : this._elementos.transformados(x=>x._altoMínimoExterno()).fold((x,y)=>x+y,0)
+    : (this._disposicion.esAlgo()
+      ? (this._disposicion.eje == Mila.Pantalla.Eje.Horizontal
+        ? this._elementos.transformados(x=>x._altoMínimoExterno()).maximo()
+        : this._elementos.transformados(x=>x._altoMínimoExterno()).fold((x,y)=>x+y,0)
+      ) : this._elementos.transformados(x=>
+        (this._enDisposiciónVerticalInverida ? 0 : x.posiciónY()) + x._altoMínimoExterno()).maximo()
     )
   );
 };

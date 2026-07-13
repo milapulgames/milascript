@@ -60,7 +60,7 @@ Mila.Pantalla._Imagen.prototype.PlasmarEnHtml = function(nodoMadre) {
     this._nodoHtml.setAttribute('src', this._ruta);
     this._nodoHtml.style.position = 'absolute';
     this._nodoHtml.style['text-wrap-mode'] = 'nowrap';
-    Mila.Pantalla._ProgramarRedimension(this._nodoHtml);
+    Mila.Pantalla._SolicitarRedimensiónPorNodo_(this._nodoHtml);
     nodoMadre.appendChild(this._nodoHtml);
     this.InicializarHtml();
   }

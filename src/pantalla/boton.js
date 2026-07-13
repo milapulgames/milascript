@@ -44,7 +44,7 @@ Mila.Pantalla._Boton.prototype.PlasmarEnHtml = function(nodoMadre) {
   });
   if (!('_nodoHtml' in this)) {
     this._nodoHtml = document.createElement('a');
-    this._nodoHtml.innerHTML = this._texto;
+    this._nodoHtml.textContent = this._texto;
     this._nodoHtml.style.position = 'absolute';
     this._nodoHtml.style['cursor'] = 'pointer';
     nodoMadre.appendChild(this._nodoHtml);
