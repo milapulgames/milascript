@@ -1,6 +1,6 @@
 Mila.Módulo({
   define:"Mila.Lienzo",
-  usa:["geometria","objeto","lista"],
+  usa:["geometria","objeto","lista","svg"],
   necesita:["tipo","pantalla"]
 });
 
@@ -181,6 +181,28 @@ Mila.Lienzo._Lienzo.prototype._DibujarCírculo_Con_ = function(círculo, atribut
   contexto.restore();
 };
 
+Mila.Lienzo._Lienzo.prototype._DibujarSvg_ = function(svg) {
+  Mila.Contrato({
+    Proposito: "Dibujar el svg dado en este lienzo.",
+    Parametros: [
+      [svg, Mila.Tipo.Svg]
+    ]
+  });
+  let contexto = this._contexto;
+  contexto.save();
+  contexto.beginPath();
+  const datos = new Path2D(svg.comandosComoTexto());
+  contexto.lineWidth = svg.grosorLínea()
+  contexto.strokeStyle = svg.colorLínea();
+  contexto.stroke(datos);
+  contexto.globalAlpha = svg.opacidadFondo();
+  contexto.fillStyle = svg.colorFondo();
+  contexto.fill(datos);
+  contexto.closePath();
+  contexto.restore();
+  svg.hijos().conCadaUno(hijo => this._DibujarSvg_(hijo));
+};
+
 Mila.Tipo.Registrar({
   nombre: "Lienzo",
   prototipo: Mila.Lienzo._Lienzo,
@@ -243,6 +265,22 @@ Mila.Lienzo._dibujables = {
       elemento.imagen.círculo.x *= escala;
       elemento.imagen.círculo.y *= escala;
       elemento.imagen.círculo.radio *= escala;
+    }
+  },
+  svg: {
+    es: function(elemento) { // PRE: elemento tiene imagen.clase = 'svg'
+      return elemento.imagen.defineLaClave_('svg') && elemento.imagen.svg.esDeTipo_(Mila.Tipo.Svg);
+    },
+    Dibujar: function(elemento, lienzo) {
+      const svg = elemento.imagen.svg.transladado__YEscalado_(
+        ('x' in elemento) ? elemento.x : 0,
+        ('y' in elemento) ? elemento.y : 0,
+        ('s' in elemento) ? elemento.s : 1
+      );
+      lienzo._DibujarSvg_(svg);
+    },
+    EscalarEn_: function(elemento, escala) {
+      elemento.imagen.svg.Transladar__YEscalar_(0,0,escala);
     }
   }
 };
