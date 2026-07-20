@@ -47,6 +47,7 @@ Mila.Pantalla._Boton.prototype.PlasmarEnHtml = function(nodoMadre) {
     this._nodoHtml.textContent = this._texto;
     this._nodoHtml.style.position = 'absolute';
     this._nodoHtml.style['cursor'] = 'pointer';
+    this._nodoHtml.style['user-select'] = 'none';
     nodoMadre.appendChild(this._nodoHtml);
     this.InicializarHtml();
   }

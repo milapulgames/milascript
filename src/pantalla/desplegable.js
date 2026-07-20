@@ -1,5 +1,5 @@
 Mila.Módulo({
-  necesita:["../base"]
+  necesita:["../base","../pantalla"]
 });
 
 Mila.Tipo.Registrar({

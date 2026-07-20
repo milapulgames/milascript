@@ -12,9 +12,17 @@ Mila.Tipo.Registrar({
 });
 
 Mila.Tipo.Registrar({
+  nombre: "ElementoEscenificable",
+  es: function esElementoDeEscena(elemento) {
+    return Mila.Escena.esElementoEscenificable(elemento);
+  },
+  inferible: false
+});
+
+Mila.Tipo.Registrar({
   nombre:'AtributosEscena',
   es: {
-    "?contenido":Mila.Tipo.ListaDe_(Mila.Tipo.ElementoDeEscena),
+    "?contenido":Mila.Tipo.ListaDe_(Mila.Tipo.ElementoEscenificable),
     "?dimensiones":Mila.Tipo.O([Mila.Tipo.Nada, Mila.Tipo.Rectángulo])
   },
   inferible: false
@@ -22,11 +30,11 @@ Mila.Tipo.Registrar({
 
 Mila.Escena.nueva = function(atributos={}) {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir una nueva escena a partir de los atributos dados.",
       Mila.Tipo.Escena
     ],
-    Parametros: [
+    Parámetros: [
       [atributos, Mila.Tipo.AtributosEscena]
     ]
   });
@@ -46,18 +54,18 @@ Mila.Escena._Escena = function Escena() {};
 
 Mila.Escena._Escena.prototype.CambiarContenidoA_ = function(nuevoContenido) {
   Mila.Contrato({
-    Proposito: "Reemplazar el contenido de esta escena por el dado.",
-    Parametros: [
-      [nuevoContenido, Mila.Tipo.ListaDe_(Mila.Tipo.ElementoDeEscena)]
+    Propósito: "Reemplazar el contenido de esta escena por el dado.",
+    Parámetros: [
+      [nuevoContenido, Mila.Tipo.ListaDe_(Mila.Tipo.ElementoEscenificable)]
     ]
   });
-  this._contenido = nuevoContenido;
+  this._contenido = nuevoContenido.transformados(Mila.Escena.comoElementoDeEscena);
 };
 
 Mila.Escena._Escena.prototype.CambiarDimensionesA_ = function(nuevasDimensiones) {
   Mila.Contrato({
-    Proposito: "Reemplazar las dimensiones de esta escena por las dadas.",
-    Parametros: [
+    Propósito: "Reemplazar las dimensiones de esta escena por las dadas.",
+    Parámetros: [
       [nuevasDimensiones, Mila.Tipo.O([Mila.Tipo.Nada, Mila.Tipo.Rectángulo])]
     ]
   });
@@ -69,7 +77,7 @@ Mila.Escena._Escena.prototype.CambiarDimensionesA_ = function(nuevasDimensiones)
 
 Mila.Escena._Escena.prototype.contenido = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir la lista de elementos de esta escena.",
       Mila.Tipo.ListaDe_(Mila.Tipo.ElementoDeEscena)
     ]
@@ -79,7 +87,7 @@ Mila.Escena._Escena.prototype.contenido = function() {
 
 Mila.Escena._Escena.prototype.dimensiones = function() {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir las dimensiones de esta escena.",
       Mila.Tipo.Rectángulo
     ]
@@ -89,16 +97,55 @@ Mila.Escena._Escena.prototype.dimensiones = function() {
 
 Mila.Escena.esElementoDeEscena = function(elemento) {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Indicar si el elemento dado es un elemento de escena.",
       Mila.Tipo.Booleano
     ],
-    Parametros: [
+    Parámetros: [
       elemento // Cualquier tipo
     ]
   });
   // TODO: pensar qué debería tener para poder estar en una escena.
   return true;
+};
+
+Mila.Escena.esElementoEscenificable = function(elemento) {
+  Mila.Contrato({
+    Propósito: [
+      "Indicar si el elemento dado es un elemento escenificable (es decir, si se puede convertir en un elemento de escena).",
+      Mila.Tipo.Booleano
+    ],
+    Parámetros: [
+      elemento // Cualquier tipo
+    ]
+  });
+  // TODO: pensar qué debería tener para poder concertirse en un elemento de una escena.
+  // Por ahora es que sea un ElementoVisual o que sea un dibujable de Lienzo
+  return true;
+};
+
+Mila.Escena.comoElementoDeEscena = function(elementoEscenificable) {
+  Mila.Contrato({
+    Propósito:["Describe al elemento escenificable dado como un elemento de escena.", Mila.Tipo.ElementoDeEscena],
+    Parámetros: [
+      elementoEscenificable, Mila.Tipo.ElementoEscenificable
+    ]
+  });
+  const resultado = {
+    x:0, y:0, elementoOriginal:elementoEscenificable
+  };
+  if (elementoEscenificable.esDeTipo_(Mila.Tipo.ElementoVisual)) {
+    resultado.x = elementoEscenificable.posiciónX();
+    resultado.y = elementoEscenificable.posiciónY();
+  } else if (elementoEscenificable.esDibujable()) {
+    if (elementoEscenificable.defineLaClave_('x')) {
+      resultado.x = elementoEscenificable.x;
+    }
+    if (elementoEscenificable.defineLaClave_('y')) {
+      resultado.y = elementoEscenificable.y;
+    }
+  }
+  return resultado;
 };
 
 Mila.Tipo.Registrar({

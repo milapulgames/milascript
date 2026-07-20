@@ -30,9 +30,10 @@ Mila.Pantalla.nuevoEscenario = function(atributos={}) {
     alto:Mila.Pantalla.ComportamientoEspacio.Maximizar,
     grosorBorde:1, colorBorde:"#000"
   });
+  nuevoEscenario._lienzo = Mila.Lienzo.nuevo();
+  nuevoEscenario._contenidoHtml = [];
   nuevoEscenario.CambiarEscenaA_(atributos.escena);
   nuevoEscenario.CambiarCámaraA_(atributos.cámara);
-  nuevoEscenario._lienzo = Mila.Lienzo.nuevo();
   return nuevoEscenario;
 };
 
@@ -47,6 +48,11 @@ Mila.Pantalla._Escenario.prototype.CambiarEscenaA_ = function(nuevaEscena) {
     ]
   });
   this._escena = nuevaEscena;
+  this._contenidoHtml = nuevaEscena
+    .contenido()
+    .losQueCumplen(elemento => elemento.elementoOriginal.esDeTipo_(Mila.Tipo.ElementoVisual))
+    .transformados(elemento => elemento.elementoOriginal)
+  ;
 };
 
 Mila.Pantalla._Escenario.prototype.CambiarCámaraA_ = function(nuevaCámara) {
@@ -87,23 +93,27 @@ Mila.Pantalla._Escenario.prototype._Refrescar = function() {
     Proposito: "Refrescar este escenario."
   });
   const cámara = this._cámara;
-  this._lienzo.CambiarContenidoA_(this._escena.contenido().transformados(
-    elemento => {
-      const elementoADibujar = elemento.copia();
-      if (elementoADibujar.defineLaClave_('x')) {
-        elementoADibujar.x -= cámara.posición().x;
-        elementoADibujar.x *= cámara.zoom()/100;
+  const contenidoLienzo = [];
+  this._escena.contenido().conCadaUno(function(elementoEscena) {
+    const elemento = elementoEscena.elementoOriginal;
+    if (elemento.esDeTipo_(Mila.Tipo.ElementoVisual)) {
+      elemento.CambiarPosiciónXA_(elementoEscena.x - cámara.posición().x);
+      elemento.CambiarPosiciónYA_(elementoEscena.y - cámara.posición().y);
+      // ¿zoom?
+    } else if (elemento.esDibujable()) {
+      const dibujable = elemento.copia();
+      let s = dibujable.defineLaClave_('s') ? dibujable.s : 1;
+      if (dibujable.defineLaClave_('x')) {
+        dibujable.x = (elementoEscena.x - cámara.posición().x) * cámara.zoom()/100/s;
       }
-      if (elementoADibujar.defineLaClave_('y')) {
-        elementoADibujar.y -= cámara.posición().y;
-        elementoADibujar.y *= cámara.zoom()/100;
+      if (dibujable.defineLaClave_('y')) {
+        dibujable.y = (elementoEscena.y - cámara.posición().y) * cámara.zoom()/100/s;
       }
-      if (elementoADibujar.esDibujable()) {
-        Mila.Lienzo.EscalarDibujable_En_(elementoADibujar, cámara.zoom()/100);
-      }
-      return elementoADibujar;
+      Mila.Lienzo.EscalarDibujable_En_(dibujable, cámara.zoom()/100);
+      contenidoLienzo.push(dibujable);
     }
-  ));
+  });
+  this._lienzo.CambiarContenidoA_(contenidoLienzo);
   this._lienzo.Dibujar();
 };
 
@@ -133,6 +143,7 @@ Mila.Pantalla._Escenario.prototype.PlasmarEnHtml = function(nodoMadre) {
     ]
   });
   this._lienzo.PlasmarEnHtml(nodoMadre);
+  this._contenidoHtml.conCadaUno(elemento => elemento.PlasmarEnHtml(nodoMadre));
   this._Refrescar();
 };
 
