@@ -40,6 +40,8 @@ Mila.alIniciar(() => Mila.Test.Evaluar_([
   // esSubcadenaDe_
   // primeraApariciónDe_
   // primeraApariciónDe_Desde_
+  // primeraApariciónDeAlgunaDe_
+  // primeraApariciónDeAlgunaDe_Desde_
   // primeraApariciónDe_NoEscapeadaCon_
   {i:'let a="abc";a.primeraApariciónDe_Desde_NoEscapeadaCon_("b",1,"-b");', o:2,        d:""},
   {i:'let a="abc";a.primeraApariciónDe_Desde_NoEscapeadaCon_("b",2,"-b");', o:2,        d:""},

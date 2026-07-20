@@ -179,6 +179,32 @@ Mila.Objeto.copia = function(objeto, tambiénLasNoEnumerables) {
   return resultado;
 };
 
+Mila.Objeto.aTexto = function(objeto, conSaltosDeLínea=false) {
+  // Describe la representación textual del objeto dado.
+  // objeto puede ser cualquier dato.
+  return Mila.Objeto.aTextoPorNivel(objeto, 0, conSaltosDeLínea);
+};
+
+Mila.Objeto.aTextoPorNivel = function(objeto, nivel, conSaltosDeLínea) {
+  // Describe la representación textual del objeto dado.
+  // objeto puede ser cualquier dato.
+  let abre = `${Object.getPrototypeOf(objeto).constructor.name} {`;
+  let cierra = '}';
+  let coma = `,${conSaltosDeLínea ? '\n ' : ' '}`;
+  if (conSaltosDeLínea) {
+    abre += '\n ';
+    for (let i=0; i<nivel; i++) {
+      abre = "  " + abre + "  ";
+      coma += "  ";
+      cierra = "  " + cierra;
+    }
+    cierra = "\n" + cierra;
+  }
+  return `${abre}${Mila.Objeto.clavesDefinidas(objeto).map(function(k) {
+    return `${k}:${Mila.Tipo.aTextoPorNivel(objeto[k], nivel + 1, conSaltosDeLínea)}`
+  }).join(coma)}${cierra}`;
+};
+
 Mila.Objeto.transformados = function(objeto, funcion, tambiénLosNoEnumerables) {
   // Describe el resultado de aplicarle la función dada a cada valor del objeto dado.
   // Si el tercer argumento es verdadero, procesa también las claves no enumerables.

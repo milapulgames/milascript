@@ -285,6 +285,17 @@ Mila.Lista.Insertar_EnOrdenSegun_ = function(lista, elemento, comparador) {
 };
 Mila.Lista._Definir_EnPrototipo_('Insertar_EnOrdenSegun_', Array);
 
+Mila.Lista.ReemplazarEnPosicion_Por_ = function(lista, posicion, elemento) {
+  // Reemplaza el elemento en la posición dada de la lista dada por el elemento dado.
+    // lista es una lista de elementos, aquella en la cual se reemplaza el elemento.
+    // elemento puede ser cualquier dato.
+    // posición es un entero, correspondiente a la posición en la que reemplazar el elemento.
+  // PRE: *posicion* es mayor a 0.
+  // PRE: La lista dada contiene al menos *posicion* elementos.
+  lista[posicion-1] = elemento;
+};
+Mila.Lista._Definir_EnPrototipo_('ReemplazarEnPosicion_Por_', Array);
+
 Mila.Lista.concatenadaCon_ = function(lista1, lista2) {
   // Describe la concatenación entre las listas dadas.
     // Tanto lista1 como lista2 son listas de elementos.
@@ -567,6 +578,21 @@ Mila.Lista.elQueCumple_ = function(lista, condicion) {
   });
 };
 Mila.Lista._Definir_EnPrototipo_('elQueCumple_', Array);
+
+Mila.Lista.ConElPrimeroQueCumple_Hacer_YSiNingunoCumple_ = function(lista, condición, funciónSiHay, funciónSiNoHay) {
+  // Ejecuta la primera función dada con el primer elemento de la lista dada que cumple la condición dada, si hay alguno. Si no, ejecuta la segunda función dada.
+    // lista es una lista de elementos, para la cual se ejecuta la primera función dada con su primer elemento que cumple la condición dada, en caso de haber alguno.
+    // condición es una función que toma un elemento y devuelve un booleano.
+    // funciónSiHay es una función que toma un elemento de la lista dada. Se ejecuta con el primer elemento de la lista dada que cumpla la condición dada, si hay alguno.
+    // funciónSiNoHay es una función que se ejecuta si ningún elemento de la lista dada cumple la condición dada.
+  for (let i=0; i<Mila.Lista.longitud(lista); i++) {
+    if (condición(lista[i])) {
+      return funciónSiHay(lista[i]);
+    }
+  };
+  return funciónSiNoHay();
+};
+Mila.Lista._Definir_EnPrototipo_('ConElPrimeroQueCumple_Hacer_YSiNingunoCumple_', Array);
 
 Mila.Lista.cantidadQueCumple_ = function(lista, condicion) {
   // Describe la cantidad de elementos de la lista dada que cumplen la condición dada.

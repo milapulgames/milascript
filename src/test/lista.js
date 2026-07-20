@@ -80,6 +80,9 @@ Mila.alIniciar(() => {
     o:[[],[3],[2,2],[1,1]],                                               d:"Insertar_EnOrdenSegun_ mantiene el orden relativo original entre elementos iguales (1)"},
   {i:"let a=[[],[2,2],[1,1]];a.Insertar_EnOrdenSegun_([3,3,3],(x,r)=>x.length<r.length);a",
     o:[[],[2,2],[1,1],[3,3,3]],                                           d:"Insertar_EnOrdenSegun_ mantiene el orden relativo original entre elementos iguales (2)"},
+
+  // ReemplazarEnPosicion_Por_
+
   {i:"let a=[1,2,3];a.concatenadaCon_([4,5,6])", o:[1,2,3,4,5,6],         d:"concatenadaCon_ devuelve la lista concatenada con otra lista"},
   {i:"let a=[1,2,3];a.concatenadaCon_([4,5,6]);a", o:[1,2,3],             d:"concatenadaCon_ no modifica la lista"},
   {i:"let a=[1,2,3];a.ConcatenarCon_([4,5,6]);a", o:[1,2,3,4,5,6],        d:"ConcatenarCon_ concatena la segunda lista a la primera lista"},
@@ -148,6 +151,9 @@ Mila.alIniciar(() => {
   {i:"let a=[2,NaN,5];a.ningunoCumple_(isFinite)", o:false,               d:"ningunoCumple_ devuelve falso si alguno cumple"},
   {i:"let a=[NaN,NaN,NaN];a.ningunoCumple_(isFinite)", o:true,            d:"ningunoCumple_ devuelve verdadero si ninguno cumple"},
   {i:"let a=[2,NaN,5];a.ningunoCumple_(isFinite);a", o:[2,NaN,5],         d:"ningunoCumple_ no modifica la lista"},
+
+  // ConElPrimeroQueCumple_Hacer_YSiNingunoCumple_
+
   {i:"let a=[2];a.elQueCumple_(isFinite)", o:2,                           d:"elQueCumple_ devuelve el primero que cumple en una lista que sólo tiene uno que cumple"},
   {i:"let a=[NaN,2,NaN];a.elQueCumple_(isFinite)", o:2,                   d:"elQueCumple_ devuelve el primero que cumple en una lista que tiene además otros que no cumplen"},
   {i:"let a=[2,NaN,5];a.elQueCumple_(isFinite)", o:2,                     d:"elQueCumple_ devuelve el primero que cumple en una lista en la que hay otros que cumplen"},

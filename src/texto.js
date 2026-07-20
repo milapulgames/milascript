@@ -47,6 +47,25 @@ Mila.Texto.esVacio = function(texto) {
 };
 Mila.Texto._Definir_EnPrototipo_('esVacio', String);
 
+Mila.Texto.caracterEnPosición_ = function(texto, posición) {
+  Mila.Contrato({
+    Proposito: [
+      "Describe el caracter que está en la posición dada del texto dado.",
+      Mila.Tipo.Texto
+    ],
+    Precondiciones: [
+      "La posición es mayor o igual a 1.", posición >= 1,
+      "La posición es menor o igual a la longitud del texto.", posición <= Mila.Texto.longitud(texto)
+    ],
+    Parametros: [
+      [texto, Mila.Tipo.Texto],
+      [posición, Mila.Tipo.Entero]
+    ]
+  });
+  return texto[posición-1];
+};
+Mila.Texto._Definir_EnPrototipo_('caracterEnPosición_', String);
+
 Mila.Texto.empiezaCon_ = function(texto, prefijo) {
   Mila.Contrato({
     Proposito: [
@@ -266,6 +285,57 @@ Mila.Texto.primeraApariciónDe_Desde_ = function(texto, subcadena, posición) {
   return índice < 0 ? Mila.Nada : índice + 1;
 };
 Mila.Texto._Definir_EnPrototipo_('primeraApariciónDe_Desde_', String);
+
+Mila.Texto.primeraApariciónDeAlgunaDe_ = function(texto, subcadenas) {
+  Mila.Contrato({
+    Proposito: [
+      "Describe el índice de la primera aparición de alguna de las subcadenas de la lista dada en el texto dado o Nada si ninguna de las subcadenas dada aparece en el texto dado.",
+      Mila.Tipo.O([Mila.Tipo.Entero, Mila.Tipo.Nada])
+    ],
+    Parametros: [
+      [texto, Mila.Tipo.Texto],
+      [subcadenas, Mila.Tipo.ListaDe_(Mila.Tipo.Texto)]
+    ]
+  });
+  let resultado = Mila.Nada;
+  for (let subcadena of subcadenas) {
+    let primeraAparición = Mila.Texto.primeraApariciónDe_(texto, subcadena);
+    if (primeraAparición.esAlgo()) {
+      resultado = (resultado.esAlgo()
+        ? minimoEntre_Y_(resultado, primeraAparición)
+        : primeraAparición
+      );
+    }
+  }
+  return resultado;
+};
+Mila.Texto._Definir_EnPrototipo_('primeraApariciónDeAlgunaDe_', String);
+
+Mila.Texto.primeraApariciónDeAlgunaDe_Desde_ = function(texto, subcadenas, posición) {
+  Mila.Contrato({
+    Proposito: [
+      "Describe el índice de la primera aparición de alguna de las subcadenas de la lista dada en el texto dado, a partir de la posición dada o Nada si ninguna de las subcadenas dada aparece en el texto dado.",
+      Mila.Tipo.O([Mila.Tipo.Entero, Mila.Tipo.Nada])
+    ],
+    Parametros: [
+      [texto, Mila.Tipo.Texto],
+      [subcadenas, Mila.Tipo.ListaDe_(Mila.Tipo.Texto)],
+      [posición, Mila.Tipo.Entero]
+    ]
+  });
+  let resultado = Mila.Nada;
+  for (let subcadena of subcadenas) {
+    let primeraAparición = Mila.Texto.primeraApariciónDe_Desde_(texto, subcadena, posición);
+    if (primeraAparición.esAlgo()) {
+      resultado = (resultado.esAlgo()
+        ? minimoEntre_Y_(resultado, primeraAparición)
+        : primeraAparición
+      );
+    }
+  }
+  return resultado;
+};
+Mila.Texto._Definir_EnPrototipo_('primeraApariciónDeAlgunaDe_Desde_', String);
 
 Mila.Texto.primeraApariciónDe_NoEscapeadaCon_ = function(texto, subcadena, secuenciaDeEscape) {
   Mila.Contrato({

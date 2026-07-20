@@ -95,7 +95,12 @@ Mila.Tipo._Registrar = function(dataTipo) {
           codigo: `Mila.Tipo._tipos.${nuevoTipo.nombre}.strInstancia(this)`
         });
       } else {
-        nuevoTipo.strInstancia = function(elemento) { return nuevoTipo.prototipo.prototype.toString.call(elemento); }
+        nuevoTipo.strInstancia = function(elemento) {
+          return (typeof elemento === 'object')
+            ? Mila.Objeto.aTexto(elemento)
+            : nuevoTipo.prototipo.prototype.toString.call(elemento)
+          ;
+        }
       }
       nuevoTipo.validacionAdicionalPrototipo = function(elemento) { return true; };
       if (typeof nuevoTipo.es == 'string') {
@@ -1079,11 +1084,7 @@ Mila.Tipo.Registrar({
       Mila.Objeto.clavesDefinidas(elemento1).todosCumplen_((clave) => Mila.Tipo.esIgualA_(elemento1[clave], elemento2[clave]))
     );
   },
-  strInstancia: function(elemento) {
-    return `{${Mila.Objeto.clavesDefinidas(elemento).map(function(k) {
-      return `${k}:${Mila.Tipo.aTexto(elemento[k])}`
-    }).join(', ')}}`;
-  },
+  strInstancia: Mila.Objeto.aTexto,
   copia: Mila.Objeto.copia
 });
 
