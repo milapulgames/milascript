@@ -286,14 +286,12 @@ Mila.Svg._Svg.prototype.Transladar__YEscalar_ = function(x, y, s) {
       [s, Mila.Tipo.Numero]
     ]
   });
+  if (!this._comandos.esVacia() && this._comandos[0].clase() == 'm') {
+    this._comandos[0].argumentos()[0] += x;
+    this._comandos[0].argumentos()[1] += y;
+  }
   this._comandos.conCadaUno(comando => {
-    if ('mM'.includes(comando.clase())) {
-      comando.argumentos()[0] += x;
-      comando.argumentos()[1] += y;
-    }
-    // Mostrar(comando.argumentos());
     comando.argumentos().Transformar(argumento => argumento * s);
-    // Mostrar(comando.argumentos());
   });
   this._hijos.conCadaUno(hijo => hijo.Transladar__YEscalar_(x, y, s));
 };
@@ -325,7 +323,6 @@ Mila.Svg.comandoDesdeTexto = function(texto) {
       "El texto dado es la representación textual de un comando Svg."
     ]
   });
-  // Mostrar(`>> ${texto}`);
   const clase = texto[0];
   const argumentos = [];
   let inicioArgumento=1;
@@ -366,10 +363,8 @@ Mila.Svg.secuenciaDeComandosDesdeTexto = function(texto) {
   if (inicioComando.esAlgo() && inicioComando > 1) {
     Mostrar("Error al parsear comandos svg: caracteres inválidos antes del primer comando");
   }
-  // Mostrar(texto);
   while (inicioComando.esAlgo()) {
     let finComando=texto.primeraApariciónDeAlgunaDe_Desde_(Mila.Svg.clavesDeComandos, inicioComando+1);
-    // Mostrar(`>> i ${inicioComando} ; f ${finComando}`);
     secuenciaDeComandos.push(Mila.Svg.comandoDesdeTexto(texto.subTextoEntre_Y_(
       inicioComando, finComando.esAlgo() ? finComando-1 : texto.longitud()
     )));

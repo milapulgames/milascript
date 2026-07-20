@@ -169,6 +169,19 @@ Mila.Objeto.cantidadDeClaves = function(objeto) {
 };
 Mila.Objeto._Definir_EnPrototipo_('cantidadDeClaves', Object);
 
+Mila.Objeto.campo_ConIndirección = function(objeto, clave) {
+  // Describe el valor del campo del objeto dado para la clave dada. Si es una función, describe el
+    // resultado de ejecutarla.
+    // objeto puede ser cualquier dato.
+    // clave es un texto, correspondiente a la clave que se obtiene en el objeto dado.
+  let dato = objeto[clave];
+  while (dato.esDeTipo_(Mila.Tipo.Funcion)) {
+    dato = dato();
+  }
+  return dato;
+};
+Mila.Objeto._Definir_EnPrototipo_('campo_ConIndirección', Object);
+
 Mila.Objeto.copia = function(objeto, tambiénLasNoEnumerables) {
   // Describe un objeto igual (con las mismas claves y valores y con el mismo prototipo) al dado.
   // Si el segundo argumento es verdadero, incluye también las claves no enumerables.

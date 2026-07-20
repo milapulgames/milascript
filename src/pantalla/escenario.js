@@ -97,17 +97,17 @@ Mila.Pantalla._Escenario.prototype._Refrescar = function() {
   this._escena.contenido().conCadaUno(function(elementoEscena) {
     const elemento = elementoEscena.elementoOriginal;
     if (elemento.esDeTipo_(Mila.Tipo.ElementoVisual)) {
-      elemento.CambiarPosiciónXA_(elementoEscena.x - cámara.posición().x);
-      elemento.CambiarPosiciónYA_(elementoEscena.y - cámara.posición().y);
+      elemento.CambiarPosiciónXA_(elementoEscena.campo_ConIndirección('x') - cámara.posición().x);
+      elemento.CambiarPosiciónYA_(elementoEscena.campo_ConIndirección('y') - cámara.posición().y);
       // ¿zoom?
     } else if (elemento.esDibujable()) {
-      const dibujable = elemento.copia();
+      const dibujable = Mila.Lienzo.copiaDeDibujable_(elemento);
       let s = dibujable.defineLaClave_('s') ? dibujable.s : 1;
       if (dibujable.defineLaClave_('x')) {
-        dibujable.x = (elementoEscena.x - cámara.posición().x) * cámara.zoom()/100/s;
+        dibujable.x = (elementoEscena.campo_ConIndirección('x') - cámara.posición().x) * cámara.zoom()/100/s;
       }
       if (dibujable.defineLaClave_('y')) {
-        dibujable.y = (elementoEscena.y - cámara.posición().y) * cámara.zoom()/100/s;
+        dibujable.y = (elementoEscena.campo_ConIndirección('y') - cámara.posición().y) * cámara.zoom()/100/s;
       }
       Mila.Lienzo.EscalarDibujable_En_(dibujable, cámara.zoom()/100);
       contenidoLienzo.push(dibujable);

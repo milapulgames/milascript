@@ -6,11 +6,11 @@ Mila.Módulo({
 
 Mila.Lienzo.nuevo = function(contentido=[]) {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Describir un nuevo lienzo infinito con el contenido dado.",
       Mila.Tipo.Lienzo
     ],
-    Parametros: [
+    Parámetros: [
       [contentido, Mila.Tipo.ListaDe_(Mila.Tipo.Dibujable)]
     ]
   });
@@ -25,17 +25,16 @@ Mila.Lienzo._Lienzo = function Lienzo(contentido=[]) {
 
 Mila.Lienzo._Lienzo.prototype.PlasmarEnHtml = function(nodoMadre) {
   Mila.Contrato({
-    Proposito: "Plasmar este lienzo en el documento html como hijo del nodo dado",
+    Propósito: "Plasmar este lienzo en el documento html como hijo del nodo dado",
     Precondiciones: [
       "Se está ejecutando en un navegador.", Mila.entorno().enNavegador(),
       "No se inicializó el nodo HTML de este lienzo antes.", !('_nodoHtml' in this)
     ],
-    Parametros: [
+    Parámetros: [
       nodoMadre // Tipo nodo dom
     ]
   });
   this._nodoHtml = document.createElement('canvas');
-  this._nodoHtml.style.border = `solid ${this._grosorBorde}px red`;
   this._nodoHtml.style.margin = '0';
   this._nodoHtml.style.padding = '0';
   this._nodoHtml.style.position = 'absolute';
@@ -45,8 +44,8 @@ Mila.Lienzo._Lienzo.prototype.PlasmarEnHtml = function(nodoMadre) {
 
 Mila.Lienzo._Lienzo.prototype.CambiarContenidoA_ = function(nuevoContenido) {
   Mila.Contrato({
-    Proposito: "Cambiar el contenido de este lienzo por el dado.",
-    Parametros: [
+    Propósito: "Cambiar el contenido de este lienzo por el dado.",
+    Parámetros: [
       [nuevoContenido, Mila.Tipo.ListaDe_(Mila.Tipo.Dibujable)]
     ]
   });
@@ -55,8 +54,8 @@ Mila.Lienzo._Lienzo.prototype.CambiarContenidoA_ = function(nuevoContenido) {
 
 Mila.Lienzo._Lienzo.prototype.AgregarElemento_ = function(elemento) {
   Mila.Contrato({
-    Proposito: "Agregar el elemento dado al contenido de este lienzo.",
-    Parametros: [
+    Propósito: "Agregar el elemento dado al contenido de este lienzo.",
+    Parámetros: [
       [elemento, Mila.Tipo.Dibujable]
     ]
   });
@@ -65,7 +64,7 @@ Mila.Lienzo._Lienzo.prototype.AgregarElemento_ = function(elemento) {
 
 Mila.Lienzo._Lienzo.prototype.Dibujar = function() {
   Mila.Contrato({
-    Proposito: "Dibujar el contenido de este lienzo."
+    Propósito: "Dibujar el contenido de este lienzo."
   });
   this._BorrarTodo();
   if ('_nodoHtml' in this) {
@@ -77,7 +76,7 @@ Mila.Lienzo._Lienzo.prototype.Dibujar = function() {
 
 Mila.Lienzo._Lienzo.prototype.Limpiar = function() {
   Mila.Contrato({
-    Proposito: "Limpiar el contenido de este lienzo."
+    Propósito: "Limpiar el contenido de este lienzo."
   });
   this._BorrarTodo();
   this._contenido = [];
@@ -85,12 +84,12 @@ Mila.Lienzo._Lienzo.prototype.Limpiar = function() {
 
 Mila.Lienzo._Lienzo.prototype.Redimensionar = function(rectángulo) {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Redimensionar este lienzo para que entre en el rectángulo dado.\
         Devuelve el rectángulo ocupado tras redimensionar.",
       Mila.Tipo.Rectángulo
     ],
-    Parametros: [
+    Parámetros: [
       [rectángulo, Mila.Tipo.Rectángulo]
     ]
   });
@@ -107,7 +106,7 @@ Mila.Lienzo._Lienzo.prototype.Redimensionar = function(rectángulo) {
 
 Mila.Lienzo._Lienzo.prototype._BorrarTodo = function() {
   Mila.Contrato({
-    Proposito: "Limpiar este lienzo."
+    Propósito: "Limpiar este lienzo."
   });
   if ('_nodoHtml' in this) {
     let rectángulo = Mila.Geometria.rectánguloEn__De_x_(0, 0, this._nodoHtml.width, this._nodoHtml.height);
@@ -117,8 +116,8 @@ Mila.Lienzo._Lienzo.prototype._BorrarTodo = function() {
 
 Mila.Lienzo._Lienzo.prototype._DibujarElemento_ = function(elemento) {
   Mila.Contrato({
-    Proposito: "Dibujar el elemento dado en este lienzo.",
-    Parametros: [
+    Propósito: "Dibujar el elemento dado en este lienzo.",
+    Parámetros: [
       [elemento, Mila.Tipo.Dibujable]
     ]
   });
@@ -127,8 +126,8 @@ Mila.Lienzo._Lienzo.prototype._DibujarElemento_ = function(elemento) {
 
 Mila.Lienzo._Lienzo.prototype._DibujarRectangulo_Con_ = function(rectángulo, atributos) {
   Mila.Contrato({
-    Proposito: "Dibujar el rectángulo dado con los atributos dados en este lienzo.",
-    Parametros: [
+    Propósito: "Dibujar el rectángulo dado con los atributos dados en este lienzo.",
+    Parámetros: [
       [rectángulo, Mila.Tipo.Rectángulo],
       [atributos, Mila.Tipo.AtributosDibujable]
     ]
@@ -159,8 +158,8 @@ Mila.Lienzo._Lienzo.prototype._DibujarRectangulo_Con_ = function(rectángulo, at
 
 Mila.Lienzo._Lienzo.prototype._DibujarCírculo_Con_ = function(círculo, atributos) {
   Mila.Contrato({
-    Proposito: "Dibujar el círculo dado con los atributos dados en este lienzo.",
-    Parametros: [
+    Propósito: "Dibujar el círculo dado con los atributos dados en este lienzo.",
+    Parámetros: [
       [círculo, Mila.Tipo.Círculo],
       [atributos, Mila.Tipo.AtributosDibujable]
     ]
@@ -183,8 +182,8 @@ Mila.Lienzo._Lienzo.prototype._DibujarCírculo_Con_ = function(círculo, atribut
 
 Mila.Lienzo._Lienzo.prototype._DibujarSvg_ = function(svg) {
   Mila.Contrato({
-    Proposito: "Dibujar el svg dado en este lienzo.",
-    Parametros: [
+    Propósito: "Dibujar el svg dado en este lienzo.",
+    Parámetros: [
       [svg, Mila.Tipo.Svg]
     ]
   });
@@ -226,18 +225,19 @@ Mila.Tipo.Registrar({
 Mila.Lienzo._dibujables = {
   rectángulo: {
     es: function(elemento) { // PRE: elemento tiene imagen.clase = 'rectángulo'
-      return elemento.imagen.defineLaClave_("rectángulo") &&
-        elemento.imagen.rectángulo.esUnRectángulo()
+      const imagen = elemento.campo_ConIndirección('imagen');
+      return imagen.defineLaClave_("rectángulo") && imagen.rectángulo.esUnRectángulo()
     },
     Dibujar: function(elemento, lienzo) {
-      let rectángulo = elemento.imagen.rectángulo;
-      if ('x' in elemento) {
-        rectángulo = rectángulo.trasladado_En_(elemento.x, 'x');
+      const imagen = elemento.campo_ConIndirección('imagen');
+      let rectángulo = imagen.rectángulo;
+      if (elemento.defineLaClave_('x')) {
+        rectángulo = rectángulo.trasladado_En_(elemento.campo_ConIndirección('x'), 'x');
       }
-      if ('y' in elemento) {
-        rectángulo = rectángulo.trasladado_En_(elemento.y, 'y');
+      if (elemento.defineLaClave_('y')) {
+        rectángulo = rectángulo.trasladado_En_(elemento.campo_ConIndirección('y'), 'y');
       }
-      lienzo._DibujarRectangulo_Con_(rectángulo, elemento.imagen.atributos || {});
+      lienzo._DibujarRectangulo_Con_(rectángulo, imagen.atributos || {});
     },
     EscalarEn_: function(elemento, escala) {
       elemento.imagen.rectángulo.x *= escala;
@@ -248,18 +248,19 @@ Mila.Lienzo._dibujables = {
   },
   círculo: {
     es: function(elemento) { // PRE: elemento tiene imagen.clase = 'círculo'
-      return elemento.imagen.defineLaClave_("círculo") &&
-        elemento.imagen.círculo.esUnCírculo()
+      const imagen = elemento.campo_ConIndirección('imagen');
+      return imagen.defineLaClave_("círculo") && imagen.círculo.esUnCírculo()
     },
     Dibujar: function(elemento, lienzo) {
-      let círculo = elemento.imagen.círculo;
-      if ('x' in elemento) {
-        círculo = círculo.trasladado_En_(elemento.x, 'x');
+      const imagen = elemento.campo_ConIndirección('imagen');
+      let círculo = imagen.círculo;
+      if (elemento.defineLaClave_('x')) {
+        círculo = círculo.trasladado_En_(elemento.campo_ConIndirección('x'), 'x');
       }
-      if ('y' in elemento) {
-        círculo = círculo.trasladado_En_(elemento.y, 'y');
+      if (elemento.defineLaClave_('y')) {
+        círculo = círculo.trasladado_En_(elemento.campo_ConIndirección('y'), 'y');
       }
-      lienzo._DibujarCírculo_Con_(círculo, elemento.imagen.atributos || {});
+      lienzo._DibujarCírculo_Con_(círculo, imagen.atributos || {});
     },
     EscalarEn_: function(elemento, escala) {
       elemento.imagen.círculo.x *= escala;
@@ -269,48 +270,71 @@ Mila.Lienzo._dibujables = {
   },
   svg: {
     es: function(elemento) { // PRE: elemento tiene imagen.clase = 'svg'
-      return elemento.imagen.defineLaClave_('svg') && elemento.imagen.svg.esDeTipo_(Mila.Tipo.Svg);
+      const imagen = elemento.campo_ConIndirección('imagen');
+      return imagen.defineLaClave_('svg') &&
+        imagen.campo_ConIndirección('svg').esDeTipo_(Mila.Tipo.Svg)
+      ;
     },
     Dibujar: function(elemento, lienzo) {
-      const svg = elemento.imagen.svg.transladado__YEscalado_(
-        ('x' in elemento) ? elemento.x : 0,
-        ('y' in elemento) ? elemento.y : 0,
-        ('s' in elemento) ? elemento.s : 1
+      const imagen = elemento.campo_ConIndirección('imagen');
+      const svg = imagen.campo_ConIndirección('svg').transladado__YEscalado_(
+        elemento.defineLaClave_('x') ? elemento.campo_ConIndirección('x') : 0,
+        elemento.defineLaClave_('y') ? elemento.campo_ConIndirección('y') : 0,
+        elemento.defineLaClave_('s') ? elemento.campo_ConIndirección('s') : 1
       );
       lienzo._DibujarSvg_(svg);
     },
     EscalarEn_: function(elemento, escala) {
-      elemento.imagen.svg.Transladar__YEscalar_(0,0,escala);
+      elemento.campo_ConIndirección('imagen')
+        .campo_ConIndirección('svg')
+        .Transladar__YEscalar_(0,0,escala)
+      ;
     }
   }
 };
 
 Mila.Lienzo.esDibujable = function(elemento) {
   Mila.Contrato({
-    Proposito: [
+    Propósito: [
       "Indicar si el elemento dado es dibujable.",
       Mila.Tipo.Booleano
     ],
-    Parametros: [
+    Parámetros: [
       elemento // Cualquier tipo
     ]
   });
-  return elemento.defineLaClave_('imagen') &&
-    elemento.imagen.defineLaClave_('clase') &&
-    Mila.Lienzo._dibujables.defineLaClave_(elemento.imagen.clase) &&
-    Mila.Lienzo._dibujables[elemento.imagen.clase].es(elemento)
-  ;
+  if (elemento.defineLaClave_('imagen')) {
+    const imagen = elemento.campo_ConIndirección('imagen');
+    return imagen.defineLaClave_('clase') &&
+      Mila.Lienzo._dibujables.defineLaClave_(imagen.clase) &&
+      Mila.Lienzo._dibujables[imagen.clase].es(elemento)
+    ;
+  }
+  return false;
 };
 
 Mila.Lienzo.EscalarDibujable_En_ = function(dibujable, escala) {
   Mila.Contrato({
-    Proposito: "Escalar el dibujable dado en la escala dada.",
-    Parametros: [
+    Propósito: "Escalar el dibujable dado en la escala dada.",
+    Parámetros: [
       [dibujable, Mila.Tipo.Dibujable],
       [escala, Mila.Tipo.Numero]
     ]
   });
   Mila.Lienzo._dibujables[dibujable.imagen.clase].EscalarEn_(dibujable, escala);
+};
+
+Mila.Lienzo.copiaDeDibujable_ = function(dibujableOriginal) {
+  Mila.Contrato({
+    Propósito: ["Describe una copia del dibujable dado.", Mila.Tipo.Dibujable],
+    Parámetros: [[dibujableOriginal, Mila.Tipo.Dibujable]]
+  });
+  const nuevo = {};
+  nuevo.x = dibujableOriginal.defineLaClave_('x') ? dibujableOriginal.campo_ConIndirección('x') : 0;
+  nuevo.y = dibujableOriginal.defineLaClave_('y') ? dibujableOriginal.campo_ConIndirección('y') : 0;
+  nuevo.s = dibujableOriginal.defineLaClave_('s') ? dibujableOriginal.campo_ConIndirección('s') : 1;
+  nuevo.imagen = dibujableOriginal.campo_ConIndirección('imagen').copia();
+  return nuevo;
 };
 
 Mila.Tipo.Registrar({
