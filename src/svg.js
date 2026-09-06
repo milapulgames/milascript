@@ -427,7 +427,7 @@ Mila.Svg.ExtraerDesdeArchivo_YLuego_ = function(rutaArchivo, función) {
       const dom = (new DOMParser()).parseFromString(resultado.contenido, "image/svg+xml");
       const hijos = [];
       for (let hijo of dom.childNodes) {
-        if (['svg', 'g', 'path'].includes(hijo.tagName.toLowerCase())) {
+        if (hijo.sabeResponder_('tagName') && ['svg', 'g', 'path'].includes(hijo.tagName.toLowerCase())) {
           hijos.push(hijo);
         }
       }

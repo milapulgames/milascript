@@ -81,7 +81,7 @@ Mila.Tipo.Registrar({
     "?colorBorde":Mila.Tipo.Texto, // ¿Color?
     "?margenInterno":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Tipo.Rectángulo]),
     "?margenExterno":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Tipo.Rectángulo]),
-    "?rotación":Mila.Numero,
+    "?rotación":Mila.Tipo.Numero,
     "?cssAdicional":Mila.Tipo.Registro,
     "?visible":Mila.Tipo.Booleano,
     "?funcion":Mila.Tipo.Funcion, // Este elemento queda ligado a this
