@@ -143,7 +143,6 @@ Para hacer referencia a archivos en otros módulos en las rutas de los campos `u
 * `src/tipo.js`: Módulo Tipo de milascript.
 * `src/tiempo.js`: Módulo Tiempo de milascript.
 * `src/geometria.js`: Módulo Geometria de milascript.
-* `src/lienzo.js`: Módulo Lienzo de milascript.
 * `src/pantalla.js`: Módulo Pantalla de milascript.
 ---
 * `src/test/lista.js`: Tests del módulo Lista de milascript.
@@ -160,10 +159,10 @@ Para hacer referencia a archivos en otros módulos en las rutas de los campos `u
 
 * milaventuras (FALLA EL BUILD: busca "src/milascript/tipo" en lugar de "milascript/src/tipo" y "milabloques/src/pequescript/src/todo" que falla porque milabloques está como submódulo en lugar de estar como enlace)
 
-* milabloques (FALLA EL BUILD: algunas rutas quedan con "$")
+* milabloques: FALLA AL CARGAR LOS ARCHIVOS DE IDIOMA (revisar Mila.Idioma._directorios)
 
-* simu_aele (FALLA EL MÓDULO PANTALLA: no se renderizan correctamente los tamaños de las cosas)
+* simu_aele: OK
 
-* pequescript (OK)
+* pequescript: OK
 
-* REDA-ar.github.io (FALLA EL BUILD: las rutas quedan con "$")
+* REDA-ar.github.io: OK (aunque funciona medio rara la pantalla del catálogo al abrir y cerrar secciones)

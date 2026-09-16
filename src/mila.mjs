@@ -909,7 +909,7 @@ Mila._rutaCompletaA_Desde_ = function(rutaArchivo, ubicación) {
     // Quito la extensión para unificar
     resultado = resultado.substring(0, resultado.length-3);
   }
-  if (!resultado.startsWith('./')) {
+  if (!resultado.startsWith('./') && ubicación.length > 0) {
     resultado = Mila._rutaAPartirDe_([ubicación, resultado]);
   }
   while (resultado.includes("/../") && !resultado.startsWith("./../")) {

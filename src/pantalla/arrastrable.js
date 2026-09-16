@@ -299,7 +299,7 @@ Mila.Pantalla.Arrastrable.actual = Mila.Nada;
 
 Mila.Pantalla.Arrastrable.IniciarArrastre = function(elemento, evento) {
   let desplazamientoRelativo = elemento._nodoHtml.parentNode.getBoundingClientRect();
-  let inicioMouse = {x:evento.atributo_('posiciónEnX'), y:evento.atributo_('posiciónEnY')}
+  let inicioMouse = {x:evento.atributo_('posiciónEnX'), y:evento.atributo_('posiciónEnY')};
   Mila.Pantalla.Arrastrable.actual = {
     inicioMouse,
     xElementoInicial:elemento.posiciónX(),

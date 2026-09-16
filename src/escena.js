@@ -3,7 +3,7 @@ Mila.Módulo({
   necesita:["tipo","lista","geometria"]
 });
 
-Mila.Tipo.Registrar({
+/*Mila.Tipo.Registrar({
   nombre: "ElementoDeEscena",
   es: function esElementoDeEscena(elemento) {
     return Mila.Escena.esElementoDeEscena(elemento);
@@ -17,7 +17,7 @@ Mila.Tipo.Registrar({
     return Mila.Escena.esElementoEscenificable(elemento);
   },
   inferible: false
-});
+});*/
 
 Mila.Tipo.Registrar({
   nombre:'AtributosEscena',
@@ -56,10 +56,10 @@ Mila.Escena._Escena.prototype.CambiarContenidoA_ = function(nuevoContenido) {
   Mila.Contrato({
     Propósito: "Reemplazar el contenido de esta escena por el dado.",
     Parámetros: [
-      [nuevoContenido, Mila.Tipo.ListaDe_(Mila.Tipo.ElementoEscenificable)]
+      [nuevoContenido/*, Mila.Tipo.ListaDe_(Mila.Tipo.ElementoEscenificable)*/]
     ]
   });
-  this._contenido = nuevoContenido.transformados(Mila.Escena.comoElementoDeEscena);
+  this._contenido = nuevoContenido/*.transformados(Mila.Escena.comoElementoDeEscena)*/;
 };
 
 Mila.Escena._Escena.prototype.CambiarDimensionesA_ = function(nuevasDimensiones) {
@@ -78,8 +78,8 @@ Mila.Escena._Escena.prototype.CambiarDimensionesA_ = function(nuevasDimensiones)
 Mila.Escena._Escena.prototype.contenido = function() {
   Mila.Contrato({
     Propósito: [
-      "Describir la lista de elementos de esta escena.",
-      Mila.Tipo.ListaDe_(Mila.Tipo.ElementoDeEscena)
+      "Describir la lista de elementos de esta escena."/*,
+      Mila.Tipo.ListaDe_(Mila.Tipo.ElementoDeEscena)*/
     ]
   });
   return this._contenido;
@@ -95,7 +95,7 @@ Mila.Escena._Escena.prototype.dimensiones = function() {
   return this._dimensiones;
 };
 
-Mila.Escena.esElementoDeEscena = function(elemento) {
+/*Mila.Escena.esElementoDeEscena = function(elemento) {
   Mila.Contrato({
     Propósito: [
       "Indicar si el elemento dado es un elemento de escena.",
@@ -131,22 +131,23 @@ Mila.Escena.comoElementoDeEscena = function(elementoEscenificable) {
       elementoEscenificable, Mila.Tipo.ElementoEscenificable
     ]
   });
-  const resultado = {
-    x:0, y:0, elementoOriginal:elementoEscenificable
-  };
-  if (elementoEscenificable.esDeTipo_(Mila.Tipo.ElementoVisual)) {
-    resultado.x = elementoEscenificable.posiciónX();
-    resultado.y = elementoEscenificable.posiciónY();
-  } else if (elementoEscenificable.esDibujable()) {
-    if (elementoEscenificable.defineLaClave_('x')) {
-      resultado.x = elementoEscenificable.x;
-    }
-    if (elementoEscenificable.defineLaClave_('y')) {
-      resultado.y = elementoEscenificable.y;
-    }
-  }
-  return resultado;
-};
+  // const resultado = {
+  //   x:0, y:0, elementoOriginal:elementoEscenificable
+  // };
+  // if (elementoEscenificable.esDeTipo_(Mila.Tipo.ElementoVisual)) {
+  //   resultado.x = elementoEscenificable.posiciónX();
+  //   resultado.y = elementoEscenificable.posiciónY();
+  // } else if (elementoEscenificable.esDibujable()) {
+  //   if (elementoEscenificable.defineLaClave_('x')) {
+  //     resultado.x = elementoEscenificable.x;
+  //   }
+  //   if (elementoEscenificable.defineLaClave_('y')) {
+  //     resultado.y = elementoEscenificable.y;
+  //   }
+  // }
+  // return resultado;
+  return elementoEscenificable;
+};*/
 
 Mila.Tipo.Registrar({
   nombre:'Escena',

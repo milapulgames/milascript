@@ -76,7 +76,7 @@ Mila.Tipo.Registrar({
     "?posiciónY":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Tipo.Nada]),
     "?ancho":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio]),
     "?alto":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio]),
-    "?colorFondo":Mila.Tipo.Texto,
+    "?colorFondo":Mila.Tipo.Texto, // ¿Color?
     "?grosorBorde":Mila.Tipo.Entero,
     "?colorBorde":Mila.Tipo.Texto, // ¿Color?
     "?margenInterno":Mila.Tipo.O([Mila.Tipo.Entero,Mila.Tipo.Rectángulo]),
@@ -256,10 +256,12 @@ Mila.Pantalla._ElementoVisual.prototype.Redimensionar = function(rectánguloComp
   this._alto = rectánguloInterno.alto;
   this._ancho = rectánguloInterno.ancho;
   if ('_nodoHtml' in this) {
-    this._nodoHtml.style.left = `${rectánguloExterno.x}px`;
-    this._nodoHtml.style.top = `${rectánguloExterno.y}px`;
-    this._nodoHtml.style.width = (this._anchoDependeDeHtml ? '' : `${this._ancho}px`);
-    this._nodoHtml.style.height = (this._altoDependeDeHtml ? '' :`${this._alto}px`);
+    this._RedimensionarHtml(Mila.Geometria.rectánguloEn__De_x_(
+      rectánguloExterno.x,
+      rectánguloExterno.y,
+      this._ancho,
+      this._alto
+    ));
   }
   this._últimaRedimensión = {
     completo: rectánguloCompleto,
@@ -267,6 +269,25 @@ Mila.Pantalla._ElementoVisual.prototype.Redimensionar = function(rectánguloComp
   };
   this._cambióElContenido = false;
   return rectánguloExterno;
+};
+
+Mila.Pantalla._ElementoVisual.prototype._RedimensionarHtml = function(rectángulo) {
+  Mila.Contrato({
+    Propósito: "Redimensionar el nodo html de este elemento visual en el rectángulo dado.",
+    Precondiciones: [
+      "Se está ejecutando en el navegador",
+      Mila.entorno().enNavegador(),
+      "Hay un elemento html asociado a este elemento visual",
+      '_nodoHtml' in this /* && this._nodoHtml es de tipo nodo dom */
+    ],
+    Parámetros: [
+      [rectángulo, Mila.Tipo.Rectángulo]
+    ]
+  });
+  this._CambiarPosiciónXDeNodoHtmlA_(rectángulo.x);
+  this._CambiarPosiciónYDeNodoHtmlA_(rectángulo.y);
+  this._nodoHtml.style.width = (this._anchoDependeDeHtml ? '' : `${rectángulo.ancho}px`);
+  this._nodoHtml.style.height = (this._altoDependeDeHtml ? '' :`${rectángulo.alto}px`);
 };
 
 Mila.Pantalla._ElementoVisual.prototype._haceFaltaRedimensionarEn_ = function(rectángulo) {
@@ -297,8 +318,8 @@ Mila.Pantalla._ElementoVisual.prototype._haceFaltaRedimensionarEn_ = function(re
     this._posiciónX += diferenciaEnX;
     this._posiciónY += diferenciaEnY;
     if ('_nodoHtml' in this) {
-      this._nodoHtml.style.left = `${this._últimaRedimensión.resultado.x}px`;
-      this._nodoHtml.style.top = `${this._últimaRedimensión.resultado.y}px`;
+      this._CambiarPosiciónXDeNodoHtmlA_(this._últimaRedimensión.resultado.x);
+      this._CambiarPosiciónYDeNodoHtmlA_(this._últimaRedimensión.resultado.y);
     }
     this._últimaRedimensión.completo = rectángulo;
     return false;
@@ -763,13 +784,13 @@ Mila.Pantalla._ElementoVisual.prototype.CambiarPosiciónXA_ = function(nuevaPosi
   this._posiciónX = Mila.Tipo.esNada(nuevaPosiciónX) ? 0 : nuevaPosiciónX;
   // TODO: Si es Nada, redimensionar
   if ('_nodoHtml' in this) {
-    this._nodoHtml.style.left = Mila.Tipo.esNada(nuevaPosiciónX) ? '' : `${nuevaPosiciónX}px`;
+    this._CambiarPosiciónXDeNodoHtmlA_(nuevaPosiciónX);
   }
 };
 
 Mila.Pantalla._ElementoVisual.prototype.CambiarPosiciónYA_ = function(nuevaPosiciónY) {
   Mila.Contrato({
-    Propósito: "Reemplazar la posición Y de este elemento visual por la dada",
+    Propósito: "Reemplazar (el comportamiento para) la posición Y de este elemento visual por la dada",
     Parámetros: [
       [nuevaPosiciónY, Mila.Tipo.O([Mila.Tipo.Entero,Mila.Tipo.Nada])]
     ]
@@ -778,13 +799,45 @@ Mila.Pantalla._ElementoVisual.prototype.CambiarPosiciónYA_ = function(nuevaPosi
   this._posiciónY = Mila.Tipo.esNada(nuevaPosiciónY) ? 0 : nuevaPosiciónY;
   // TODO: Si es Nada, redimensionar
   if ('_nodoHtml' in this) {
-    this._nodoHtml.style.top = Mila.Tipo.esNada(nuevaPosiciónY) ? '' : `${nuevaPosiciónY}px`;
+    this._CambiarPosiciónYDeNodoHtmlA_(nuevaPosiciónY);
   }
+};
+
+Mila.Pantalla._ElementoVisual.prototype._CambiarPosiciónXDeNodoHtmlA_ = function(nuevaPosiciónX) {
+  Mila.Contrato({
+    Propósito: "Reemplazar la posición X del nodo html de este elemento visual por la dada",
+    Precondiciones: [
+      "Se está ejecutando en el navegador",
+      Mila.entorno().enNavegador(),
+      "Hay un elemento html asociado a este elemento visual",
+      '_nodoHtml' in this /* && this._nodoHtml es de tipo nodo dom */
+    ],
+    Parámetros: [
+      [nuevaPosiciónX, Mila.Tipo.O([Mila.Tipo.Entero,Mila.Tipo.Nada])]
+    ]
+  });
+  this._nodoHtml.style.left = Mila.Tipo.esNada(nuevaPosiciónX) ? '' : `${nuevaPosiciónX}px`;
+};
+
+Mila.Pantalla._ElementoVisual.prototype._CambiarPosiciónYDeNodoHtmlA_ = function(nuevaPosiciónY) {
+  Mila.Contrato({
+    Propósito: "Reemplazar la posición X del nodo html de este elemento visual por la dada",
+    Precondiciones: [
+      "Se está ejecutando en el navegador",
+      Mila.entorno().enNavegador(),
+      "Hay un elemento html asociado a este elemento visual",
+      '_nodoHtml' in this /* && this._nodoHtml es de tipo nodo dom */
+    ],
+    Parámetros: [
+      [nuevaPosiciónY, Mila.Tipo.O([Mila.Tipo.Entero,Mila.Tipo.Nada])]
+    ]
+  });
+  this._nodoHtml.style.top = Mila.Tipo.esNada(nuevaPosiciónY) ? '' : `${nuevaPosiciónY}px`;
 };
 
 Mila.Pantalla._ElementoVisual.prototype.CambiarAnchoA_ = function(nuevoAncho) {
   Mila.Contrato({
-    Propósito: "Reemplazar el ancho de este elemento visual por el dado",
+    Propósito: "Reemplazar (el comportamiento para) el ancho de este elemento visual por el dado",
     Parámetros: [
       [nuevoAncho, Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio])]
     ]
@@ -802,7 +855,7 @@ Mila.Pantalla._ElementoVisual.prototype.CambiarAnchoA_ = function(nuevoAncho) {
 
 Mila.Pantalla._ElementoVisual.prototype.CambiarAltoA_ = function(nuevoAlto) {
   Mila.Contrato({
-    Propósito: "Reemplazar el alto de este elemento visual por el dado",
+    Propósito: "Reemplazar (el comportamiento para) el alto de este elemento visual por el dado",
     Parámetros: [
       [nuevoAlto, Mila.Tipo.O([Mila.Tipo.Entero,Mila.Pantalla.ComportamientoEspacio,Mila.Pantalla.ClaveComportamientoEspacio])]
     ]

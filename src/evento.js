@@ -189,6 +189,8 @@ Mila.Evento.coincideCon_ = function(evento, atributos) {
       ;
     case "MovimientoMouse":
       return coincidenAtributos(evento, atributos, ['posiciónEnX','posiciónEnY']);
+    case "RuedaMouse":
+      return coincidenAtributos(evento, atributos, ['desplazamiento']);
     case "Tiempo":
       return coincidenAtributos(evento, atributos, ['cantidadDeMilisegundos']);
   }
@@ -282,6 +284,16 @@ Mila.Evento.deMovimientoMouse = function(posiciónEnX, posiciónEnY) {
   return Mila.Evento.nuevo("MovimientoMouse", {posiciónEnX, posiciónEnY});
 };
 
+Mila.Evento.deRuedaMouse = function(desplazamiento) {
+  Mila.Contrato({
+    Proposito: ["Describir un nuevo evento que indica que la rueda del mouse se movió", Mila.Tipo.Evento],
+    Parametros: [
+      [desplazamiento, Mila.Tipo.Entero, "Desplazamiento ocurrido"]
+    ]
+  });
+  return Mila.Evento.nuevo("RuedaMouse", {desplazamiento});
+};
+
 Mila.Evento.deTiempoTranscurrido = function(cantidadDeMilisegundos) {
   Mila.Contrato({
     Proposito: ["Describir un nuevo evento que indica que transcurrió la cantidad de milisegundos dada (o menos)", Mila.Tipo.Evento],
@@ -356,14 +368,30 @@ Mila.Evento.desdeJs = function(eventoJs) {
         elementosCliqueados:[],
         posiciónEnX: eventoJs.clientX, posiciónEnY: eventoJs.clientY
       })];
+    case "wheel":
+      return [Mila.Evento.deRuedaMouse(eventoJs.deltaY* -0.01)]
   }
   return [];
 };
 
 Mila.Evento.elementosCliqueadosJs = function(eventoJs) {
-  return (Mila.Tipo.esAlgo(eventoJs.target))
-    ? [Mila.Pantalla.elementoDeId_(eventoJs.target.getAttribute('id'))] // TODO: agregar también los elementos que lo contienen a este
+  const nodoConId = Mila.Tipo.esAlgo(eventoJs.target)
+    ? Mila.Evento.nodoConIdPara_(eventoJs.target)
+    : Mila.Nada
+  ;
+  return (nodoConId.esAlgo())
+    ? [Mila.Pantalla.elementoDeId_(nodoConId.getAttribute('id'))]
     : []
+  ;
+};
+
+Mila.Evento.nodoConIdPara_ = function(nodo) {
+  while (Mila.Tipo.esAlgo(nodo) && !nodo.hasAttribute('id')) {
+    nodo = nodo.parentNode;
+  }
+  return Mila.Tipo.esAlgo(nodo)
+    ? nodo
+    : Mila.Nada
   ;
 };
 
@@ -385,6 +413,7 @@ Mila.Evento._Evento.prototype.esAtomico = function() {
     "Tecla",
     "BotonMouse",
     "MovimientoMouse",
+    "RuedaMouse",
     "Tiempo"
   ].includes(this._clase);
 };
@@ -411,6 +440,8 @@ Mila.Evento._Evento.prototype.serializado = function() {
       }`;
     case "MovimientoMouse":
       return `MOUSE_MOVIDO(${this._atributos.posiciónEnX},${this._atributos.posiciónEnY})`;
+    case "RuedaMouse":
+      return `RUEDA_MOUSE_DESPLAZADA(${this._atributos.desplazamiento})`;
     case "Tiempo":
       return `TIEMPO(${this._atributos.cantidadDeMilisegundos})`;
     case "Conjuncion":
@@ -434,6 +465,8 @@ Mila.Evento._Evento.prototype.iniciadores = function() {
     case "BotonMouse":
       return [this];
     case "MovimientoMouse":
+      return [this];
+    case "RuedaMouse":
       return [this];
     case "Tiempo":
       return [this];
@@ -464,6 +497,8 @@ Mila.Evento._Evento.prototype.proximoEvento = function(eventoAnterior) {
       return Mila.Nada;
     case "MovimientoMouse":
       return Mila.Nada;
+    case "RuedaMouse":
+      return Mila.Nada;
     case "Tiempo":
       return Mila.Nada;
     case "Conjuncion":
@@ -490,6 +525,7 @@ Mila.alIniciar(function() {
     document.addEventListener('pointerdown', Mila.Evento.AtenderJs);
     document.addEventListener('pointermove', Mila.Evento.AtenderJs);
     document.addEventListener('pointerup', Mila.Evento.AtenderJs);
+    document.addEventListener('wheel', Mila.Evento.AtenderJs);
   } else {
     // TODO
   }

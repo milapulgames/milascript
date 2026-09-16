@@ -214,7 +214,7 @@ Mila.Objeto.aTextoPorNivel = function(objeto, nivel, conSaltosDeLínea) {
     cierra = "\n" + cierra;
   }
   return `${abre}${Mila.Objeto.clavesDefinidas(objeto).map(function(k) {
-    return `${k}:${Mila.Tipo.aTextoPorNivel(objeto[k], nivel + 1, conSaltosDeLínea)}`
+    return `${k}:${Mila.Objeto.aTextoPorNivel(objeto[k], nivel + 1, conSaltosDeLínea)}`
   }).join(coma)}${cierra}`;
 };
 
