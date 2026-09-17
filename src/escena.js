@@ -22,7 +22,7 @@ Mila.Tipo.Registrar({
 Mila.Tipo.Registrar({
   nombre:'AtributosEscena',
   es: {
-    "?contenido":Mila.Tipo.ListaDe_(Mila.Tipo.ElementoEscenificable),
+    "?contenido":Mila.Tipo.Lista/*De_(Mila.Tipo.ElementoEscenificable)*/,
     "?dimensiones":Mila.Tipo.O([Mila.Tipo.Nada, Mila.Tipo.Rectángulo])
   },
   inferible: false

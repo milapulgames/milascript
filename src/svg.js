@@ -23,6 +23,15 @@ Mila.Svg.clavesDeComandos = [
 
 Mila.Svg.ClaseComandoSvg = Mila.Tipo.Variante("ClaseComandoSvg", Mila.Svg.clavesDeComandos);
 
+Mila.Svg.ClaveClaseComandoSvg = Mila.Tipo.Registrar({
+  nombre:'ClaveClaseComandoSvg',
+  subtipoDe:Mila.Tipo.Texto,
+  es: function(elemento) {
+    return elemento in Mila.Svg.clavesDeComandos;
+  },
+  inferible: false
+});
+
 Mila.Svg._ComandoSvg = function ComandoSvg() {};
 
 Mila.Tipo.Registrar({
@@ -41,12 +50,12 @@ Mila.Svg.nuevoComando = function(clase, argumentos) {
       Mila.Tipo.ComandoSvg
     ],
     Parámetros: [
-      [clase, Mila.Tipo.ClaseComandoSvg],
+      [clase, Mila.Tipo.O([Mila.Tipo.ClaseComandoSvg, Mila.Tipo.ClaveClaseComandoSvg])],
       [argumentos, Mila.Tipo.Lista]
     ]
   });
   const nuevoComando = new Mila.Svg._ComandoSvg();
-  nuevoComando._clase = clase;
+  nuevoComando._clase = clase.esDeTipo_(Mila.Tipo.ClaseComandoSvg) ? clase : Mila.Svg.ClaseComandoSvg[clase];
   nuevoComando._argumentos = argumentos;
   return nuevoComando;
 };
