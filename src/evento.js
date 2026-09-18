@@ -39,7 +39,7 @@ Mila.Evento.RegistrarContexto = function(identificador) {
 Mila.Evento.Registrar = function(nombre, evento, funcion, contexto=Mila.Evento.contextoGlobal) {
   Mila.Contrato({
     Proposito: "Registrar la función dada para que sea invocada cuando ocurre un evento como el dado.\
-      Si ya se había registrado el nombre dado en el contexto dado se sobreescribe",
+      Si ya se había registrado el nombre dado en el contexto dado se sobreescribe.",
     Parametros: [
       [nombre, Mila.Tipo.Texto],
       [evento, Mila.Tipo.Evento],
@@ -71,6 +71,86 @@ Mila.Evento.Registrar = function(nombre, evento, funcion, contexto=Mila.Evento.c
     };
     Mila.Evento._registroAcciones[contexto][nombre].iniciadores.push(claveIniciador);
   }
+};
+
+Mila.Evento.RegistrarArrastre = function(
+  nombre,
+  elementos,
+  función,
+  opcionales={}
+) {
+  Mila.Contrato({
+    Proposito: "Registrar la función dada para que sea invocada cuando ocurre un evento de arrastre sobre alguno de los elementos dados.\
+      Si ya se había registrado el nombre dado en el contexto dado se sobreescribe.",
+    Parametros: [
+      [nombre, Mila.Tipo.Texto],
+      [elementos, Mila.Tipo.O([
+        Mila.Tipo.ElementoVisual,
+        Mila.Tipo.ListaDe_(Mila.Tipo.ElementoVisual)
+      ])],
+      [función, Mila.Tipo.Funcion], // que tome un objeto con los campos
+        // posiciónEnX, posiciónEnY, desplazamientoEnX y desplazamientoEnY
+      [opcionales, Mila.Tipo.RegistroCon_({
+        "?fInicio":Mila.Tipo.Funcion, // Función a ejecutar al inicio del arrastre, que tome
+          // un objeto con los campos posiciónEnX, posiciónEnY y elementosCliqueados
+        "?fFin":Mila.Tipo.Funcion, // Función a ejecutar al final del arrastre, que tome
+          // un objeto con los campos posiciónEnX, posiciónEnY, desplazamientoEnX y desplazamientoEnY
+        "?contexto":Mila.Evento.Contexto
+      })]
+    ]
+  });
+  const fInicial = ('fInicial' in opcionales) ? opcionales.fInicial : (evento) => {};
+  const fFinal = ('fFinal' in opcionales) ? (
+    function (evento) {
+      opcionales.fFinal(calcularDesplazamientos(evento));
+    }
+  ) : (evento) => {};
+  const contexto = ('contexto' in opcionales) ? opcionales.contexto : Mila.Evento.contextoGlobal;
+  const calcularDesplazamientos = function(evento) {
+    let posiciónEnX = evento.atributo_('posiciónEnX');
+    let posiciónEnY = evento.atributo_('posiciónEnY');
+    let desplazamientoEnX = posiciónEnX - Mila.Evento._arrastreActual.xInicial;
+    let desplazamientoEnY = posiciónEnY - Mila.Evento._arrastreActual.yInicial;
+    return {posiciónEnX, posiciónEnY, desplazamientoEnX, desplazamientoEnY};
+  }
+
+  Mila.Evento.Registrar(`${nombre}_Arrastre`,
+    Mila.Evento.deMovimientoMouse(Mila.Nada, Mila.Nada),
+    function(evento) {
+      función(calcularDesplazamientos(evento));
+    },
+    contexto
+  );
+  Mila.Evento.Deshabilitar(`${nombre}_Arrastre`);
+
+  Mila.Evento.Registrar(`${nombre}_FinalizarArrastre`,
+    Mila.Evento.deBotonMouse(Mila.Evento.Mouse.clicIzquierdo, false),
+    function(evento) {
+      Mila.Evento.Deshabilitar(`${nombre}_Arrastre`);
+      Mila.Evento.Deshabilitar(`${nombre}_FinalizarArrastre`);
+      Mila.Evento._arrastreActual = Mila.Nada;
+      fFinal(evento);
+    },
+    contexto
+  );
+  Mila.Evento.Deshabilitar(`${nombre}_FinalizarArrastre`);
+
+  Mila.Evento.Registrar(`${nombre}_IniciarArrastre`,
+    Mila.Evento.deClicSobreElementos(elementos),
+    function(evento) {
+    let posiciónEnX = evento.atributo_('posiciónEnX');
+    let posiciónEnY = evento.atributo_('posiciónEnY');
+    let elementosCliqueados = evento.atributo_('elementosCliqueados');
+      Mila.Evento._arrastreActual = {
+        xInicial:posiciónEnX,
+        yInicial:posiciónEnY
+      };
+      fInicial({posiciónEnX, posiciónEnY, elementosCliqueados});
+      Mila.Evento.Habilitar(`${nombre}_Arrastre`);
+      Mila.Evento.Habilitar(`${nombre}_FinalizarArrastre`);
+    },
+    contexto
+  );
 };
 
 Mila.Evento.Habilitar = function(nombre, contexto=Mila.Evento.contextoGlobal) {
@@ -511,6 +591,8 @@ Mila.Evento._Evento.prototype.proximoEvento = function(eventoAnterior) {
       return Mila.Nada;
   }
 };
+
+Mila.Evento._arrastreActual = Mila.Nada;
 
 Mila.Tipo.Registrar({
   nombre:'Evento',
