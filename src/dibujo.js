@@ -206,6 +206,36 @@ Mila.Dibujo._Dibujo.prototype.CambiarPosiciónYA_ = function(nuevaPosiciónY) {
   this.CambiarEstilo_A_('posiciónY', nuevaPosiciónY);
 };
 
+Mila.Dibujo._Dibujo.prototype.CambiarRotaciónA_ = function(nuevaRotación) {
+  Mila.Contrato({
+    Propósito: "Reemplazar la rotación de este dibujo por la dada.",
+    Parámetros: [
+      [nuevaRotación, Mila.Tipo.Numero]
+    ]
+  });
+  this.CambiarEstilo_A_('rotación', nuevaRotación);
+};
+
+Mila.Dibujo._Dibujo.prototype.CambiarEjeDeRotaciónX_ = function(nuevaCoordenadaXDelEjeDeRotación) {
+  Mila.Contrato({
+    Propósito: "Reemplazar la coordenada x del eje de rotación de este dibujo por la dada.",
+    Parámetros: [
+      [nuevaCoordenadaXDelEjeDeRotación, Mila.Tipo.Entero]
+    ]
+  });
+  this.CambiarEstilo_A_('ejeDeRotaciónX', nuevaCoordenadaXDelEjeDeRotación);
+};
+
+Mila.Dibujo._Dibujo.prototype.CambiarEjeDeRotaciónY_ = function(nuevaCoordenadaYDelEjeDeRotación) {
+  Mila.Contrato({
+    Propósito: "Reemplazar la coordenada y del eje de rotación de este dibujo por la dada.",
+    Parámetros: [
+      [nuevaCoordenadaYDelEjeDeRotación, Mila.Tipo.Entero]
+    ]
+  });
+  this.CambiarEstilo_A_('ejeDeRotaciónY', nuevaCoordenadaYDelEjeDeRotación);
+};
+
 Mila.Dibujo._Dibujo.prototype.CambiarEscalaA_ = function(nuevaEscala) {
   Mila.Contrato({
     Propósito: "Reemplazar la escala de este dibujo por la dada.",
@@ -274,6 +304,36 @@ Mila.Dibujo._Dibujo.prototype.posiciónY = function() {
     ]
   });
   return this.estilo().posiciónY;
+};
+
+Mila.Dibujo._Dibujo.prototype.rotación = function() {
+  Mila.Contrato({
+    Propósito: [
+      "Describir la rotación de este dibujo.",
+      Mila.Tipo.Numero
+    ]
+  });
+  return this.estilo().rotación;
+};
+
+Mila.Dibujo._Dibujo.prototype.ejeDeRotaciónX = function() {
+  Mila.Contrato({
+    Propósito: [
+      "Describir la coordenada x del eje de rotación de este dibujo.",
+      Mila.Tipo.Entero
+    ]
+  });
+  return this.estilo().ejeDeRotaciónX;
+};
+
+Mila.Dibujo._Dibujo.prototype.ejeDeRotaciónY = function() {
+  Mila.Contrato({
+    Propósito: [
+      "Describir la coordenada y del eje de rotación de este dibujo.",
+      Mila.Tipo.Entero
+    ]
+  });
+  return this.estilo().ejeDeRotaciónY;
 };
 
 Mila.Dibujo._Dibujo.prototype.escala = function() {
@@ -360,6 +420,9 @@ Mila.Tipo.Registrar({
   es: {
     "?posiciónX":Mila.Tipo.Entero,
     "?posiciónY":Mila.Tipo.Entero,
+    "?rotación":Mila.Tipo.Numero,
+    "?ejeDeRotaciónX":Mila.Tipo.Entero,
+    "?ejeDeRotaciónY":Mila.Tipo.Entero,
     "?escala":Mila.Tipo.Numero,
     "?colorFondo":Mila.Tipo.Texto, // ¿Color?
     "?grosorBorde":Mila.Tipo.Entero,
@@ -372,6 +435,9 @@ Mila.Tipo.Registrar({
 Mila.Dibujo.estiloPorDefecto = {
   posiciónX:0,
   posiciónY:0,
+  rotación:0,
+  ejeDeRotaciónX:0,
+  ejeDeRotaciónY:0,
   escala:1,
   colorFondo:"#0000",
   grosorBorde:1,

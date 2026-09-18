@@ -81,6 +81,15 @@ Mila.Pantalla._Dibujable.prototype.CambiarEstilo_A_ = function(clave, nuevoValor
       nodoDibujo.setAttribute("fill", nuevoValor);
     } else if (clave.esIgualA_('opacidadFondo')) {
       nodoDibujo.setAttribute("fill-opacity", nuevoValor);
+    } else if (clave.esIgualA_('rotación')) {
+      this._transformación.rotación.a = nuevoValor;
+      this._ActualizarTransformaciónEnNodoHtml();
+    } else if (clave.esIgualA_('ejeDeRotaciónX')) {
+      this._transformación.rotación.x = nuevoValor;
+      this._ActualizarTransformaciónEnNodoHtml();
+    } else if (clave.esIgualA_('ejeDeRotaciónY')) {
+      this._transformación.rotación.y = nuevoValor;
+      this._ActualizarTransformaciónEnNodoHtml();
     } else if (clave.esIgualA_('posiciónX')) {
       this._CambiarPosiciónXDeNodoHtmlA_(nuevoValor);
     } else if (clave.esIgualA_('posiciónY')) {
@@ -254,20 +263,14 @@ Mila.Pantalla._Dibujable.prototype.QuitarDelHtml = function() {
 };
 
 Mila.Pantalla._transformaciónAPartirDeEstiloDibujo = function(estilo) {
-  let x = 0;
-  let y = 0;
-  let escala = 1;
-  if ('posiciónX' in estilo) {
-    x += estilo.posiciónX;
-  }
-  if ('posiciónY' in estilo) {
-    y += estilo.posiciónY;
-  }
-  if ('escala' in estilo) {
-    escala *= estilo.escala;
-  }
+  let x = ('posiciónX' in estilo) ? estilo.posiciónX : 0;
+  let y = ('posiciónY' in estilo) ? estilo.posiciónY : 0;
+  let a = ('rotación' in estilo) ? estilo.rotación : 0;
+  let rx = ('ejeDeRotaciónX' in estilo) ? estilo.ejeDeRotaciónX : 0;
+  let ry = ('ejeDeRotaciónY' in estilo) ? estilo.ejeDeRotaciónY : 0;
+  let escala = ('escala' in estilo) ? estilo.escala : 1;
   return {
-    traslación:{x,y}, rotación:{a:0, x:0, y:0}, escala:{x:escala, y:escala}
+    traslación:{x,y}, rotación:{a, x:rx, y:ry}, escala:{x:escala, y:escala}
   };
 };
 
