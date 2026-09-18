@@ -23,7 +23,7 @@ Mila.Dibujo.deRectángulo_ = function(rectángulo, estilo={}) {
     ]
   });
   const nuevoDibujo = new Mila.Dibujo._Dibujo(Mila.Dibujo.ClaseDibujo.Rectángulo, estilo);
-  nuevoDibujo._rectángulo = rectángulo;
+  nuevoDibujo._rectángulo = rectángulo.copia();
   return nuevoDibujo;
 };
 
@@ -39,7 +39,7 @@ Mila.Dibujo.deCírculo_ = function(círculo, estilo={}) {
     ]
   });
   const nuevoDibujo = new Mila.Dibujo._Dibujo(Mila.Dibujo.ClaseDibujo.Círculo, estilo);
-  nuevoDibujo._círculo = círculo;
+  nuevoDibujo._círculo = círculo.copia();
   return nuevoDibujo;
 };
 
@@ -55,7 +55,7 @@ Mila.Dibujo.deRutaSvg_ = function(rutaSvg, estilo={}) {
     ]
   });
   const nuevoDibujo = new Mila.Dibujo._Dibujo(Mila.Dibujo.ClaseDibujo.RutaSvg, estilo);
-  nuevoDibujo._rutaSvg = rutaSvg;
+  nuevoDibujo._rutaSvg = rutaSvg.copia();
   return nuevoDibujo;
 };
 
@@ -155,6 +155,17 @@ Mila.Dibujo._Dibujo = function Dibujo(clase, estilo={}) {
   this._estilo = estilo;
 };
 
+Mila.Dibujo._Dibujo.prototype.CambiarEstilo_A_ = function(clave, nuevoValor) {
+  Mila.Contrato({
+    Propósito: "Reemplazar el estilo de la clave dada de este dibujo por el valor dado.",
+    Parámetros: [
+      [clave, Mila.Tipo.Texto], // una de las claves de EstiloDibujo
+      [nuevoValor, Mila.Tipo.Cualquiera] // el que le corresponda a la clave
+    ]
+  });
+  this._estilo[clave] = nuevoValor;
+};
+
 Mila.Dibujo._Dibujo.prototype.clase = function() {
   Mila.Contrato({
     Propósito: [
@@ -182,7 +193,7 @@ Mila.Dibujo._Dibujo.prototype.CambiarPosiciónXA_ = function(nuevaPosiciónX) {
       [nuevaPosiciónX, Mila.Tipo.Entero]
     ]
   });
-  this._estilo.posiciónX = nuevaPosiciónX;
+  this.CambiarEstilo_A_('posiciónX', nuevaPosiciónX);
 };
 
 Mila.Dibujo._Dibujo.prototype.CambiarPosiciónYA_ = function(nuevaPosiciónY) {
@@ -192,7 +203,7 @@ Mila.Dibujo._Dibujo.prototype.CambiarPosiciónYA_ = function(nuevaPosiciónY) {
       [nuevaPosiciónY, Mila.Tipo.Entero]
     ]
   });
-  this._estilo.posiciónY = nuevaPosiciónY;
+  this.CambiarEstilo_A_('posiciónY', nuevaPosiciónY);
 };
 
 Mila.Dibujo._Dibujo.prototype.CambiarEscalaA_ = function(nuevaEscala) {
@@ -202,7 +213,7 @@ Mila.Dibujo._Dibujo.prototype.CambiarEscalaA_ = function(nuevaEscala) {
       [nuevaEscala, Mila.Tipo.Numero]
     ]
   });
-  this._estilo.escala = nuevaEscala;
+  this.CambiarEstilo_A_('escala', nuevaEscala);
 };
 
 Mila.Dibujo._Dibujo.prototype.CambiarColorFondoA_ = function(nuevoColorFondo) {
@@ -212,7 +223,7 @@ Mila.Dibujo._Dibujo.prototype.CambiarColorFondoA_ = function(nuevoColorFondo) {
       [nuevoColorFondo, Mila.Tipo.Texto] // ¿Color?
     ]
   });
-  this._estilo.colorFondo = nuevoColorFondo;
+  this.CambiarEstilo_A_('colorFondo', nuevoColorFondo);
 };
 
 Mila.Dibujo._Dibujo.prototype.CambiarColorBordeA_ = function(nuevoColorBorde) {
@@ -222,7 +233,7 @@ Mila.Dibujo._Dibujo.prototype.CambiarColorBordeA_ = function(nuevoColorBorde) {
       [nuevoColorBorde, Mila.Tipo.Texto] // ¿Color?
     ]
   });
-  this._estilo.colorBorde = nuevoColorBorde;
+  this.CambiarEstilo_A_('colorBorde', nuevoColorBorde);
 };
 
 Mila.Dibujo._Dibujo.prototype.CambiarGrosorBordeA_ = function(nuevoGrosorBorde) {
@@ -232,7 +243,7 @@ Mila.Dibujo._Dibujo.prototype.CambiarGrosorBordeA_ = function(nuevoGrosorBorde) 
       [nuevoGrosorBorde, Mila.Tipo.Entero]
     ]
   });
-  this._estilo.grosorBorde = nuevoGrosorBorde;
+  this.CambiarEstilo_A_('grosorBorde', nuevoGrosorBorde);
 };
 
 Mila.Dibujo._Dibujo.prototype.CambiarOpacidadFondoA_ = function(nuevaOpacidadFondo) {
@@ -242,7 +253,7 @@ Mila.Dibujo._Dibujo.prototype.CambiarOpacidadFondoA_ = function(nuevaOpacidadFon
       [nuevaOpacidadFondo, Mila.Tipo.Numero]
     ]
   });
-  this._estilo.opacidadFondo = nuevaOpacidadFondo;
+  this.CambiarEstilo_A_('opacidadFondo', nuevaOpacidadFondo);
 };
 
 Mila.Dibujo._Dibujo.prototype.posiciónX = function() {

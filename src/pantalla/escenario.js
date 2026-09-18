@@ -1,7 +1,7 @@
 Mila.Módulo({
   define:"Mila.Pantalla.Escenario",
   necesita:["../tipo","lienzo","../pantalla","../cámara","../escena"],
-  usa:["../lista","../geometria"]
+  usa:["../lista","../geometria","../dibujo"]
 });
 
 Mila.Tipo.Registrar({
@@ -125,23 +125,24 @@ Mila.Pantalla._nuevoElementoEscenario = function(elementoEscena, escenario) {
       [escenario, Mila.Tipo.Escenario]
     ]
   });
+  const cámara = escenario.cámara();
   const nuevoElementoEscenario = new Mila.Pantalla._ElementoEscenario(elementoEscena);
   if (elementoEscena.sabeResponder_('dibujo')) {
     nuevoElementoEscenario.EstablecerDibujo(Mila.Pantalla._dibujoParaElementoEscenaEnEscenario(elementoEscena, escenario));
     if (escenario._modoHtml.esIgualA_(Mila.Pantalla.ModoHtmlLienzo.Svg)) {
       if (elementoEscena.sabeResponder_('CambiarPosiciónYA_')) {
-        Mila.Base.ReemplazarFuncion_De_Por_('CambiarPosiciónYA_',elementoEscena, function(funcionOriginal) {
+        Mila.Base.ReemplazarFuncion_De_Por_('CambiarPosiciónYA_',elementoEscena, function(funciónOriginal) {
           return function(nuevaPosiciónY) {
-            dibujo.CambiarPosiciónYA_(nuevaPosiciónY);
-            funcionOriginal.call(elementoEscena, nuevaPosiciónY);
+            funciónOriginal.call(elementoEscena, nuevaPosiciónY);
+            Mila.Pantalla._PosicionarDibujoSegúnCámara(nuevoElementoEscenario.dibujo(), cámara, "Vertical");
           };
         });
       }
       if (elementoEscena.sabeResponder_('CambiarPosiciónXA_')) {
-        Mila.Base.ReemplazarFuncion_De_Por_('CambiarPosiciónXA_',elementoEscena, function(funcionOriginal) {
+        Mila.Base.ReemplazarFuncion_De_Por_('CambiarPosiciónXA_',elementoEscena, function(funciónOriginal) {
           return function(nuevaPosiciónX) {
-            dibujo.CambiarPosiciónXA_(nuevaPosiciónX);
-            funcionOriginal.call(elementoEscena, nuevaPosiciónX);
+            funciónOriginal.call(elementoEscena, nuevaPosiciónX);
+            Mila.Pantalla._PosicionarDibujoSegúnCámara(nuevoElementoEscenario.dibujo(), cámara, "Horizontal");
           };
         });
       }
@@ -162,14 +163,83 @@ Mila.Pantalla._dibujoParaElementoEscenaEnEscenario = function(elementoEscena, es
     ]
   });
   const cámara = escenario._cámara;
-  const dibujo = elementoEscena.dibujo().copia();
+  const dibujoOriginal = elementoEscena.dibujo();
+  const dibujo = Mila.Pantalla._copiaDeDibujoAsociandoCambios(dibujoOriginal, cámara);
   dibujo.elementoOriginal = elementoEscena;
   let escala = Mila.Pantalla._escalaDibujoSegúnCámara(elementoEscena, cámara);
-  let posición = Mila.Pantalla._posiciónDibujoSegúnCámara(elementoEscena, cámara);
-  dibujo.CambiarPosiciónXA_(posición.x);
-  dibujo.CambiarPosiciónYA_(posición.y);
+  Mila.Pantalla._PosicionarDibujoSegúnCámara(dibujo, cámara, Mila.Nada);
   dibujo.CambiarEscalaA_(escala);
   return dibujo;
+};
+
+Mila.Pantalla._copiaDeDibujoAsociandoCambios = function(dibujoOriginal, cámara=Mila.Nada) {
+  Mila.Contrato({
+    Proposito: [
+      "Describir una copia del dibujo dado que tenga asociados los cambios del dibujo original. Si se pasa también una cámara el posicionamiento se calcula a partir de ella y del elemento de escena asociado al dibujo resultante.",
+      Mila.Tipo.Dibujo
+    ],
+    Parametros: [
+      [dibujoOriginal, Mila.Tipo.Dibujo],
+      [cámara, Mila.Tipo.O([Mila.Tipo.Nada, Mila.Tipo.Cámara])]
+    ]
+  });
+  const claseDibujo = dibujoOriginal.clase();
+  let dibujo;
+  if (claseDibujo.esIgualA_(Mila.Dibujo.ClaseDibujo.Rectángulo)) {
+    dibujo = Mila.Dibujo.deRectángulo_(dibujoOriginal._rectángulo, dibujoOriginal.estilo().copia());
+  } else if (claseDibujo.esIgualA_(Mila.Dibujo.ClaseDibujo.Círculo)) {
+    dibujo = Mila.Dibujo.deCírculo_(dibujoOriginal._círculo, dibujoOriginal.estilo().copia());
+  } else if (claseDibujo.esIgualA_(Mila.Dibujo.ClaseDibujo.RutaSvg)) {
+    dibujo = Mila.Dibujo.deRutaSvg_(dibujoOriginal._rutaSvg, dibujoOriginal.estilo().copia());
+  } else { // claseDibujo.esIgualA_(Mila.Dibujo.ClaseDibujo.Grupo)
+    dibujo = Mila.Dibujo.deGrupo_(dibujoOriginal._grupo.transformados(
+      dibujo => Mila.Pantalla._copiaDeDibujoAsociandoCambios(dibujo, Mila.Nada)
+    ), dibujoOriginal.estilo().copia());
+  }
+  if (cámara.esAlgo()) { // Es el dibujo raíz, asociado al elemento de la escena.
+    Mila.Base.ReemplazarFuncion_De_Por_('CambiarEstilo_A_',dibujoOriginal, function(funciónOriginal) {
+      return function(clave, nuevoValor) {
+        if (clave.esIgualA_("posiciónX")) {
+          Mila.Pantalla._PosicionarDibujoSegúnCámara(dibujo, cámara, "Horizontal");
+          dibujo.estilo().posiciónX = nuevoValor;
+        } else if (clave.esIgualA_("posiciónY")) {
+          dibujo.estilo().posiciónY = nuevoValor;
+          Mila.Pantalla._PosicionarDibujoSegúnCámara(dibujo, cámara, "Vertical");
+        } else {
+          dibujo.CambiarEstilo_A_(clave, nuevoValor);
+        }
+        funciónOriginal.call(dibujoOriginal, clave, nuevoValor);
+      };
+    });
+  } else { // Es una parte del dibujo principal. Su transformación no se asocia al elemento de la escena.
+    Mila.Base.ReemplazarFuncion_De_Por_('CambiarEstilo_A_',dibujoOriginal, function(funciónOriginal) {
+      return function(clave, nuevoValor) {
+        dibujo.CambiarEstilo_A_(clave, nuevoValor);
+        funciónOriginal.call(dibujoOriginal, clave, nuevoValor);
+      };
+    });
+  }
+  return dibujo;
+};
+
+Mila.Pantalla._PosicionarDibujoSegúnCámara = function(dibujo, cámara, eje=Mila.Nada) {
+  Mila.Contrato({
+    Proposito: "Establecer la posición del dibujo dado en un escenario con la cámara dada.",
+    Parametros: [
+      [dibujo, Mila.Tipo.Dibujo],
+      [cámara, Mila.Tipo.Cámara],
+      [eje, Mila.Tipo.O([Mila.Tipo.Nada, Mila.Tipo.Eje, Mila.Tipo.ClaveEje])]
+    ]
+  });
+  const elementoEscena = dibujo.elementoOriginal;
+  let posición = Mila.Pantalla._posiciónDibujoSegúnCámara(elementoEscena, cámara);
+  eje = eje.esAlgo() ? (eje.esDeTipo_(Mila.Tipo.Eje) ? eje : Mila.Tipo.Eje[eje]) : eje;
+  if (eje.esNada() || eje.esIgualA_(Mila.Tipo.Eje.Horizontal)) {
+    dibujo.CambiarPosiciónXA_(posición.x);
+  }
+  if (eje.esNada() || eje.esIgualA_(Mila.Tipo.Eje.Vertical)) {
+    dibujo.CambiarPosiciónYA_(posición.y);
+  }
 };
 
 Mila.Pantalla._contenidoDeEscenarioParaLienzo = function(escenario) {

@@ -41,18 +41,51 @@ Object.setPrototypeOf(Mila.Pantalla._Dibujable.prototype, Mila.Pantalla._Element
 
 Mila.Pantalla._Dibujable.prototype.CambiarDibujoA_ = function(nuevoDibujo) {
   Mila.Contrato({
-    Proposito: "Reemplazar el dibujo de este dibujable por el dado",
+    Proposito: "Reemplazar el dibujo de este dibujable por el dado.",
     Parametros: [
       [nuevoDibujo, Mila.Tipo.Dibujo]
     ]
   });
+  const esteDibujable = this;
   this._dibujo = nuevoDibujo;
+  Mila.Base.ReemplazarFuncion_De_Por_('CambiarEstilo_A_',nuevoDibujo, function(funciónOriginal) {
+    return function(clave, nuevoValor) {
+      esteDibujable.CambiarEstilo_A_(clave, nuevoValor);
+      funciónOriginal.call(nuevoDibujo, clave, nuevoValor);
+    };
+  });
   this._hijos = (nuevoDibujo.clase().esIgualA_(Mila.Dibujo.ClaseDibujo.Grupo))
     ? nuevoDibujo._grupo.transformados(dibujo => Mila.Pantalla.nuevoDibujable({dibujo}))
     : []
   ;
   if ('_nodoHtml' in this) {
     // TODO: REEMPLAZAR EL DIBUJO
+  }
+};
+
+Mila.Pantalla._Dibujable.prototype.CambiarEstilo_A_ = function(clave, nuevoValor) {
+  Mila.Contrato({
+    Proposito: "Actualizar el estilo de este dibujable como consecuencia de un cambio de estilo en el dibujo asociado.",
+    Parámetros: [
+      [clave, Mila.Tipo.Texto], // una de las claves de EstiloDibujo
+      [nuevoValor, Mila.Tipo.Cualquiera] // el que le corresponda a la clave
+    ]
+  });
+  if ('_nodoDibujo' in this) {
+    const nodoDibujo = this._nodoDibujo;
+    if (clave.esIgualA_('colorBorde')) {
+      nodoDibujo.setAttribute("stroke", nuevoValor);
+    } else if (clave.esIgualA_('grosorBorde')) {
+      nodoDibujo.setAttribute("stroke-width", nuevoValor);
+    } else if (clave.esIgualA_('colorFondo')) {
+      nodoDibujo.setAttribute("fill", nuevoValor);
+    } else if (clave.esIgualA_('opacidadFondo')) {
+      nodoDibujo.setAttribute("fill-opacity", nuevoValor);
+    } else if (clave.esIgualA_('posiciónX')) {
+      this._CambiarPosiciónXDeNodoHtmlA_(nuevoValor);
+    } else if (clave.esIgualA_('posiciónY')) {
+      this._CambiarPosiciónYDeNodoHtmlA_(nuevoValor);
+    }
   }
 };
 
@@ -132,7 +165,7 @@ Mila.Pantalla._Dibujable.prototype._ActualizarTransformaciónEnNodoHtml = functi
       '_nodoHtml' in this /* && this._nodoHtml es de tipo nodo dom */
     ]
   });
-  this._nodoHtml.setAttribute("transform", this._transformaciónParaNodoHtml());
+  this._nodoDibujo.setAttribute("transform", this._transformaciónParaNodoHtml());
 };
 
 Mila.Pantalla._Dibujable.prototype._transformaciónParaNodoHtml = function() {
@@ -189,13 +222,14 @@ Mila.Pantalla._Dibujable.prototype.PlasmarEnHtml = function(nodoMadre) {
     this._hijos.conCadaUno(hijo => {
       hijo.PlasmarEnHtml(nodoDibujo);
     })
+    this._nodoDibujo = nodoDibujo;
+    this._nodoDibujo.setAttribute("transform", Mila.Pantalla._transformaciónParaNodoHtmlAPartirDe_(this._transformación));
     if (Mila.Pantalla._es_NodoHtmlParaDibujable(nodoMadre)) {
       this._nodoHtml = nodoDibujo;
     } else {
       this._nodoHtml = Mila.Pantalla._nodoHtmlParaDibujable();
       this._nodoHtml.appendChild(nodoDibujo);
     }
-    this._nodoHtml.setAttribute("transform", Mila.Pantalla._transformaciónParaNodoHtmlAPartirDe_(this._transformación));
     nodoMadre.appendChild(this._nodoHtml);
     this.InicializarHtml();
   }
@@ -215,6 +249,7 @@ Mila.Pantalla._Dibujable.prototype.QuitarDelHtml = function() {
   if ('_nodoHtml' in this) {
     this._nodoHtml.remove();
     delete this._nodoHtml;
+    delete this._nodoDibujo;
   }
 };
 
