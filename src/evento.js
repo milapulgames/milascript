@@ -191,6 +191,17 @@ Mila.Evento.AtenderJs = function(eventoJs) {
   for (let evento of Mila.Evento.desdeJs(eventoJs)) {
     Mila.Evento.Atender(evento);
   }
+  // Hack para reenviar los eventos a la ventana superior si estoy en un iframe.
+  /*if (window.parent != window) {
+    const claseEvento = eventoJs instanceof PointerEvent
+      ? PointerEvent
+      : Mila.Nada
+    ;
+    if (claseEvento.esAlgo()) {
+      const eventoDuplicado = new claseEvento("", eventoJs);
+      window.parent.dispatchEvent(eventoDuplicado);
+    }
+  }*/
 };
 
 Mila.Evento.Atender = function(evento) {
@@ -466,10 +477,10 @@ Mila.Evento.elementosCliqueadosJs = function(eventoJs) {
 };
 
 Mila.Evento.nodoConIdPara_ = function(nodo) {
-  while (Mila.Tipo.esAlgo(nodo) && !nodo.hasAttribute('id')) {
+  while (Mila.Tipo.esAlgo(nodo) && nodo.sabeResponder_('hasAttribute') && !nodo.hasAttribute('id')) {
     nodo = nodo.parentNode;
   }
-  return Mila.Tipo.esAlgo(nodo)
+  return Mila.Tipo.esAlgo(nodo) && nodo.sabeResponder_('hasAttribute')
     ? nodo
     : Mila.Nada
   ;
