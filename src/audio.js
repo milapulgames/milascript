@@ -128,7 +128,7 @@ Mila.Audio._CanalAudio.prototype.Reproducir = function(elementoSonoro, opcionesR
   } else if (elementoSonoro.esUnaNotaMusical()) {
     this.ReproducirNotaMusical(elementoSonoro, opcionesReproducción);
   } else { // es un texto
-    // TODO
+    this.ReproducirNotaMusical(Mila.Audio.notaDesdeTexto(elementoSonoro), opcionesReproducción);
   }
 };
 
