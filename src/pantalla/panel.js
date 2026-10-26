@@ -215,12 +215,15 @@ Mila.Pantalla._Panel.prototype._MinimizarAnchoDeRectángulo_ = function(rectáng
   });
   Mila.Pantalla._ElementoVisual.prototype._MinimizarAnchoDeRectángulo_.call(this, rectánguloCompleto);
   for (let elemento of this._elementos) {
-    let redimensiónAnterior = elemento._últimaRedimensión.resultado.copia();
-    redimensiónAnterior.ancho = rectánguloCompleto.ancho - this.todosLosMárgenesHorizontales();
-    if (this._enDisposiciónHorizontalInvertida) {
-      redimensiónAnterior.y = 0;
+    let redimensiónAnterior = elemento._últimaRedimensión;
+    if (redimensiónAnterior.esAlgo()) {
+      redimensiónAnterior = redimensiónAnterior.resultado.copia();
+      redimensiónAnterior.ancho = rectánguloCompleto.ancho - this.todosLosMárgenesHorizontales();
+      if (this._enDisposiciónHorizontalInvertida) {
+        redimensiónAnterior.y = 0;
+      }
+      elemento.Redimensionar(redimensiónAnterior);
     }
-    elemento.Redimensionar(redimensiónAnterior);
   }
 };
 
@@ -233,12 +236,15 @@ Mila.Pantalla._Panel.prototype._MinimizarAltoDeRectángulo_ = function(rectángu
   });
   Mila.Pantalla._ElementoVisual.prototype._MinimizarAltoDeRectángulo_.call(this, rectánguloCompleto);
   for (let elemento of this._elementos) {
-    let redimensiónAnterior = elemento._últimaRedimensión.resultado.copia();
-    redimensiónAnterior.alto = rectánguloCompleto.alto - this.todosLosMárgenesVerticales();
-    if (this._enDisposiciónVerticalInverida) {
-      redimensiónAnterior.y = 0;
+    let redimensiónAnterior = elemento._últimaRedimensión;
+    if (redimensiónAnterior.esAlgo()) {
+      redimensiónAnterior = redimensiónAnterior.resultado.copia();
+      redimensiónAnterior.alto = rectánguloCompleto.alto - this.todosLosMárgenesVerticales();
+      if (this._enDisposiciónVerticalInverida) {
+        redimensiónAnterior.y = 0;
+      }
+      elemento.Redimensionar(redimensiónAnterior);
     }
-    elemento.Redimensionar(redimensiónAnterior);
   }
 };
 
